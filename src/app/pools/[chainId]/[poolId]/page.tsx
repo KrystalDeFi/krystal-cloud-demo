@@ -132,7 +132,7 @@ export default function PoolDetailsPage() {
                 leftIcon={<ArrowBackIcon />}
                 variant="ghost"
                 onClick={() => router.push("/pools")}
-                size="sm"
+                size="sm"git
               >
                 Back to Pools
               </Button>

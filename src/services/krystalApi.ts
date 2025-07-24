@@ -11,13 +11,13 @@ import { IAChain, IAPool, IAProtocol, IAPoolDetails, IAPosition, IAPositionDetai
 
 // Pools API parameters
 export interface IPoolsParams {
-  chainId?: string;           // Chain ID (e.g., ethereum@1, polygon@137, bsc@56)
+  chainId?: number;           // Chain ID (e.g., 1, 137, 56)
   factoryAddress?: string;    // Factory address to filter pools
   protocol?: string;          // Protocol name (e.g., uniswapv2, uniswapv3, etc.)
   token?: string;             // Token address to filter pools
   sortBy?: number;            // Sort by criteria (0: APR, 1: TVL, 2: Volume 24h, 3: Fee)
-  tvlFrom?: number;           // Minimum TVL filter in USD
-  volume24hFrom?: number;     // Minimum 24h volume filter in USD
+  minTvl?: number;           // Minimum TVL filter in USD
+  minVolume24h?: number;     // Minimum 24h volume filter in USD
   limit?: number;             // Number of results to return (max 5000)
   offset?: number;            // Number of results to skip
   withIncentives?: boolean;   // Include incentive data
@@ -174,7 +174,7 @@ const poolsApi = {
   getById: async (apiKey: string, params: IPoolDetailParams): Promise<IAPoolDetails> => {
     const { chainId, poolAddress, ...queryParams } = params;
     const response = await apiRequest<IAPoolDetails>(
-      `/v1/pools/ethereum@${chainId}/${poolAddress}`,
+      `/v1/pools/${chainId}/${poolAddress}`,
       apiKey,
       queryParams
     );

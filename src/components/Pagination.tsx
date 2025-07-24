@@ -12,7 +12,18 @@ import {
   Tooltip,
 } from "@chakra-ui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
-import { IPaginationProps } from "../common/config";
+
+interface IPaginationProps {
+  currentPage: number;
+  totalItems?: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  pageSizeOptions?: number[];
+  showPageSizeSelector?: boolean;
+  showFirstLastButtons?: boolean;
+}
+
 
 export default function Pagination({
   currentPage,
@@ -24,8 +35,7 @@ export default function Pagination({
   showPageSizeSelector = true,
   showFirstLastButtons = true,
 }: IPaginationProps) {
-  const totalPages = Math.ceil(totalItems / pageSize);
-  const startItem = (currentPage - 1) * pageSize + 1;
+  const totalPages = totalItems ? Math.ceil(totalItems / pageSize) : null;
   
   const buttonBg = useColorModeValue("white", "gray.800");
   const buttonBorderColor = useColorModeValue("gray.200", "gray.700");
@@ -35,45 +45,25 @@ export default function Pagination({
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
-    const maxVisiblePages = 7; // Show max 7 page numbers
-    
-    if (totalPages <= maxVisiblePages) {
-      // Show all pages if total is small
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Show smart pagination with ellipsis
-      if (currentPage <= 4) {
-        // Near the beginning
-        for (let i = 1; i <= 5; i++) {
-          pages.push(i);
-        }
-        pages.push("...");
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 3) {
-        // Near the end
-        pages.push(1);
-        pages.push("...");
-        for (let i = totalPages - 4; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        // In the middle
-        pages.push(1);
-        pages.push("...");
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i);
-        }
-        pages.push("...");
-        pages.push(totalPages);
-      }
+
+    if (currentPage <= 3) {
+      pages.push(...[1, 2, 3]);
     }
-    
+    if (currentPage > 3) {
+      pages.push(...[1, "...", currentPage - 1, currentPage, currentPage + 1]);
+    }
+    if (!!totalPages) {
+      if (totalPages > currentPage + 2) {
+        pages.push("...");
+      }
+      if (totalPages > currentPage + 1) {
+        pages.push(totalPages);
+      }
+    }    
     return pages;
   };
 
-  if (totalPages <= 1) {
+  if (totalPages != null && totalPages <= 1) {
     return null;
   }
 
@@ -207,7 +197,7 @@ export default function Pagination({
           </Tooltip>
 
           {/* Last page button */}
-          {showFirstLastButtons && (
+          {showFirstLastButtons && !!totalPages && (
             <Tooltip label="Last page">
               <IconButton
                 aria-label="Go to last page"

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Flex,
   Box,
@@ -36,24 +36,25 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   InputRightElement,
+  Image,
 } from "@chakra-ui/react";
 import { 
-  SearchIcon, 
   ExternalLinkIcon, 
   ArrowBackIcon,
-  ArrowRightIcon,
 } from "@chakra-ui/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { IPoolsParams, KrystalApi } from "../../services/krystalApi";
 import { 
-  ISortField, 
-  ISortOrder, 
   CHAIN_CONFIGS,
   SORT_OPTIONS,
 } from "../../common/config";
 import { useChainsProtocols } from "../../contexts/ChainsProtocolsContext";
 import Pagination from "../../components/Pagination";
 import { IAPool } from "../../services/apiTypes";
+import TextInput from "@/components/TextInput";
+import { Formatter } from "@/common/formatter";
+
+interface FilterParams extends IPoolsParams {}
 
 export default function PoolsPage() {
   const router = useRouter();
@@ -62,22 +63,18 @@ export default function PoolsPage() {
   const [pools, setPools] = useState<IAPool[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Filter states
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
-  const [tempSearchTerm, setTempSearchTerm] = useState(searchParams.get("search") || "");
-  const [selectedChain, setSelectedChain] = useState(searchParams.get("chainId") || "all");
-  const [selectedProtocol, setSelectedProtocol] = useState(searchParams.get("protocol") || "all");
-  const [tvlFrom, setTvlFrom] = useState<number>(parseInt(searchParams.get("tvlFrom") || "1000"));
-  const [volume24hFrom, setVolume24hFrom] = useState<number>(parseInt(searchParams.get("volume24hFrom") || "1000"));
-  const [sortField, setSortField] = useState<ISortField>((searchParams.get("sort") as ISortField) || "tvl");
-  const [sortOrder, setSortOrder] = useState<ISortOrder>((searchParams.get("order") as ISortOrder) || "desc");
-  
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get("page") || "1"));
-  const [pageSize, setPageSize] = useState(parseInt(searchParams.get("limit") || "20"));
-  const [totalItems, setTotalItems] = useState(0);
 
+  const [filters, setFilters] = useState<FilterParams>({
+    token: searchParams?.get("token") || undefined,
+    chainId: searchParams?.get("chainId") ? +searchParams.get("chainId")! : undefined,
+    protocol: searchParams?.get("protocol") || undefined,
+    minTvl: searchParams?.get("minTvl") ? parseInt(searchParams.get("minTvl")!) : undefined,
+    minVolume24h: searchParams?.get("minVolume24h") ? parseInt(searchParams.get("minVolume24h")!) : undefined,
+    sortBy: parseInt(searchParams?.get("sortBy") || SORT_OPTIONS.TVL.toString()),
+    limit: parseInt(searchParams?.get("limit") || "50"),
+    offset: parseInt(searchParams?.get("offset") || "0"),
+  });
+  
   // Cache data
   const { chains, protocols} = useChainsProtocols();
 
@@ -110,30 +107,8 @@ export default function PoolsPage() {
       
       // Prepare API parameters based on swagger specification
       const apiParams: IPoolsParams = {
-        chainId: selectedChain !== "all" ? selectedChain : undefined,
-        protocol: selectedProtocol !== "all" ? selectedProtocol : undefined,
-        token: searchTerm || undefined,
-        tvlFrom: tvlFrom > 1000 ? tvlFrom : undefined,
-        volume24hFrom: volume24hFrom > 1000 ? volume24hFrom : undefined,
-        limit: pageSize,
-        offset: (currentPage - 1) * pageSize,
+        ...filters,
       };
-
-      // Add sort parameters (convert UI sort to API sortBy)
-      switch (sortField) {
-        case "apr":
-          apiParams.sortBy = SORT_OPTIONS.APR;
-          break;
-        case "tvl":
-          apiParams.sortBy = SORT_OPTIONS.TVL;
-          break;
-        case "volume24h":
-          apiParams.sortBy = SORT_OPTIONS.VOLUME_24H;
-          break;
-        case "fees24h":
-          apiParams.sortBy = SORT_OPTIONS.FEE;
-          break;
-      }
 
       console.log("API Parameters:", apiParams);
 
@@ -144,10 +119,7 @@ export default function PoolsPage() {
       
       if (response && response.data && Array.isArray(response.data)) {
         const poolsData = response.data;
-        const totalCount = response.total || response.data.length;
-        
         setPools(poolsData);
-        setTotalItems(totalCount);
       } else {
         console.error("Invalid response format:", response);
         setError("Invalid response format from API");
@@ -163,105 +135,17 @@ export default function PoolsPage() {
   // Fetch pools whenever parameters change
   useEffect(() => {
     fetchPools();
-  }, [selectedChain, selectedProtocol, searchTerm, tvlFrom, volume24hFrom, sortField, sortOrder, currentPage, pageSize]);
+  }, [filters]);
 
-  // Sync URL params with state
-  useEffect(() => {
-    const urlSearch = searchParams.get("search") || "";
-    const urlChain = searchParams.get("chainId") || "all";
-    const urlProtocol = searchParams.get("protocol") || "all";
-    const urlTvlFrom = parseInt(searchParams.get("tvlFrom") || "1000");
-    const urlVolume24hFrom = parseInt(searchParams.get("volume24hFrom") || "1000");
-    const urlSort = (searchParams.get("sort") as ISortField) || "tvl";
-    const urlOrder = (searchParams.get("order") as ISortOrder) || "desc";
-    const urlPage = parseInt(searchParams.get("page") || "1");
-    const urlLimit = parseInt(searchParams.get("limit") || "20");
-
-    if (urlSearch !== searchTerm) {
-      setSearchTerm(urlSearch);
-      setTempSearchTerm(urlSearch);
+  const handleFilterChange = (key: keyof FilterParams, value: string | number | undefined) => {
+    // Only trigger when the value changes
+    if (filters[key] === value) {
+      return;
     }
-    if (urlChain !== selectedChain) setSelectedChain(urlChain);
-    if (urlProtocol !== selectedProtocol) setSelectedProtocol(urlProtocol);
-    if (urlTvlFrom !== tvlFrom) setTvlFrom(urlTvlFrom);
-    if (urlVolume24hFrom !== volume24hFrom) setVolume24hFrom(urlVolume24hFrom);
-    if (urlSort !== sortField) setSortField(urlSort);
-    if (urlOrder !== sortOrder) setSortOrder(urlOrder);
-    if (urlPage !== currentPage) setCurrentPage(urlPage);
-    if (urlLimit !== pageSize) setPageSize(urlLimit);
-  }, [searchParams]);
 
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-    updateUrlParams({ search: value, page: "1" });
-  };
-
-  const handleSearchSubmit = () => {
-    handleSearch(tempSearchTerm);
-  };
-
-  const handleSearchBlur = () => {
-    if (tempSearchTerm !== searchTerm) {
-      handleSearch(tempSearchTerm);
-    }
-  };
-
-  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit();
-    }
-  };
-
-  const handleChainFilter = (value: string) => {
-    setSelectedChain(value);
-    setCurrentPage(1);
-    updateUrlParams({ chainId: value, page: "1" });
-  };
-
-  const handleProtocolFilter = (value: string) => {
-    setSelectedProtocol(value);
-    setCurrentPage(1);
-    updateUrlParams({ protocol: value, page: "1" });
-  };
-
-  const handleTvlFromChange = (value: number) => {
-    setTvlFrom(value);
-    setCurrentPage(1);
-    updateUrlParams({ tvlFrom: value.toString(), page: "1" });
-  };
-
-  const handleVolume24hFromChange = (value: number) => {
-    setVolume24hFrom(value);
-    setCurrentPage(1);
-    updateUrlParams({ volume24hFrom: value.toString(), page: "1" });
-  };
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    updateUrlParams({ page: page.toString() });
-  };
-
-  const handlePageSizeChange = (size: number) => {
-    setPageSize(size);
-    setCurrentPage(1);
-    updateUrlParams({ limit: size.toString(), page: "1" });
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
-  const formatNumber = (value: number) => {
-    return new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+    // Always reset to 0 offset, unless offset param is present
+    setFilters({ ...filters, offset: 0, [key]: value });
+    updateUrlParams({ [key]: value?.toString() || "" });
   };
 
   const getChainColor = (chainId: string) => {
@@ -271,17 +155,6 @@ export default function PoolsPage() {
   const getExplorerUrl = (chainId: string, address: string) => {
     return `${CHAIN_CONFIGS[chainId]?.explorer || CHAIN_CONFIGS["unknown"]?.explorer || "#"}/address/${address}`;
   };
-
-  if (loading) {
-    return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
-        <VStack spacing={4}>
-          <Spinner size="xl" color="brand.500" />
-          <Text>Loading pools and data...</Text>
-        </VStack>
-      </Box>
-    );
-  }
 
   if (error) {
     return (
@@ -297,6 +170,109 @@ export default function PoolsPage() {
       </Container>
     );
   }
+
+  const tableColumns = useMemo(() => [
+    {
+      label: "Pool",
+      renderer: (pool: IAPool) => (
+        <HStack>
+          <Image
+            boxSize={5}
+            src={pool.token0.logo}
+            alt={pool.token0.symbol}
+            fallbackSrc="/images/token-fallback.png"
+          />
+          <Text fontWeight="medium">{pool.token0.symbol}</Text>
+          <Text>/</Text>
+          <Image
+            boxSize={5}
+            src={pool.token1.logo}
+            alt={pool.token1.symbol}
+            fallbackSrc="/images/token-fallback.png"
+          />
+          <Text fontWeight="medium">{pool.token1.symbol}</Text>
+        </HStack>
+      )
+    },
+    {
+      label: "Chain",
+      renderer: (pool: IAPool) => (
+        <HStack>
+          <Image boxSize={5} src={pool.chain.logo} alt={pool.chain.name}/>
+          <Text fontSize="sm">{pool.chain.name}</Text>
+        </HStack>
+      )
+    },
+    {
+      label: "Protocol",
+      renderer: (pool: IAPool) => (
+        <HStack spacing={2}>
+          <Image boxSize={5} src={pool.protocol.logo} alt={pool.protocol.name}/>
+          <Text fontSize="sm">{pool.protocol.name}</Text>
+        </HStack>
+      )
+    },
+    {
+      label: "TVL",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.tvl)}</Text>
+      )
+    },
+    {
+      label: "24h Volume",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.stats24h?.volume || 0)}</Text>
+      )
+    },
+    { 
+      label: "24h Fees",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.stats24h?.fee || 0)}</Text>
+      )
+    },
+    {
+      label: "24h APR",
+      renderer: (pool: IAPool) => ( 
+        <Text color="green.500">{Formatter.formatAPR(pool.stats24h?.apr || 0)}</Text>
+      )
+    },
+    {
+      label: "7d Volume",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.stats7d?.volume || 0)}</Text>
+      )
+    },
+    {
+      label: "7d Fees",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.stats7d?.fee || 0)}</Text>
+      )
+    },
+    {
+      label: "7d APR",
+      renderer: (pool: IAPool) => (
+        <Text color="green.500">{Formatter.formatAPR(pool.stats7d?.apr || 0)}</Text>
+      )
+    },
+    {
+      label: "30d Volume",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.stats30d?.volume || 0)}</Text>
+      )
+    },
+    {
+      label: "30d Fees",
+      renderer: (pool: IAPool) => (
+        <Text>{Formatter.formatCurrency(pool.stats30d?.fee || 0)}</Text>
+      )
+    },
+    {
+      label: "30d APR",
+      renderer: (pool: IAPool) => (
+        <Text color="green.500">{Formatter.formatAPR(pool.stats30d?.apr || 0)}</Text>
+      )
+    },
+  ], []);
 
   return (
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
@@ -325,36 +301,17 @@ export default function PoolsPage() {
 
         <VStack spacing={4} align="stretch">
           {/* Search and Basic Filters */}
-          <Flex gap={4} wrap="wrap" justifyContent={"space-between"} fontSize={"xs"}>
-            <InputGroup w="fit-content" fontSize={"xs"}>
-              <InputLeftElement pointerEvents="none">
-                <SearchIcon color="gray.400" />
-              </InputLeftElement>
-              <Input
-                placeholder="Search by token"
-                value={tempSearchTerm}
-                onChange={(e) => setTempSearchTerm(e.target.value)}
-                onKeyDown={handleSearchKeyPress}
-                onBlur={handleSearchBlur}
-                pr={tempSearchTerm ? 10 : 4}
-              />
-              {tempSearchTerm && (
-                <InputRightElement>
-                  <IconButton
-                    aria-label="Search"
-                    icon={<ArrowRightIcon />}
-                    size="sm"
-                    variant="ghost"
-                    onClick={handleSearchSubmit}
-                    color="gray.500"
-                    _hover={{ color: "brand.500" }}
-                  />
-                </InputRightElement>
-              )}
-            </InputGroup>
+          <Flex gap={4} wrap="wrap" justifyContent={"space-between"} fontSize={"xs"} pb={8}>
+            <TextInput
+              placeholder="Search by token"
+              defaultValue={filters.token || ""}
+              onInputFinalized={(value) => handleFilterChange("token", value)}
+              size="sm"
+            />
             <Select w="fit-content"
-              value={selectedChain}
-              onChange={(e) => handleChainFilter(e.target.value)}
+              value={filters.chainId?.toString() || "all"}
+              onChange={(e) => handleFilterChange("chainId", e.target.value === "all" ? undefined : parseInt(e.target.value))}
+              size="sm"
             >
               <option value="all">All Chains</option>
               {chains.map((chain) => (
@@ -365,180 +322,95 @@ export default function PoolsPage() {
             </Select>
             <Select
               w="fit-content"
-              value={selectedProtocol}
-              onChange={(e) => handleProtocolFilter(e.target.value)}
+              value={filters.protocol || "all"}
+              onChange={(e) => handleFilterChange("protocol", e.target.value === "all" ? undefined : e.target.value)}
+              size="sm"
             >
               <option value="all">All Protocols</option>
               {protocols.map((protocol) => (
-                <option key={protocol.key} value={protocol.name}>
+                <option key={protocol.key} value={protocol.key}>
                   {protocol.name}
                 </option>
               ))}
             </Select>
             <Select
               w="fit-content"
-              value={`${sortField}-${sortOrder}`}
+              value={filters.sortBy ?? SORT_OPTIONS.TVL}
               onChange={(e) => {
-                const [field, order] = e.target.value.split('-');
-                setSortField(field as ISortField);
-                setSortOrder(order as ISortOrder);
-                setCurrentPage(1);
-                updateUrlParams({ sort: field, order, page: "1" });
+                handleFilterChange("sortBy", +e.target.value);
               }}
+              size="sm"
             >
-              <option value="tvl">Sort by: TVL</option>
-              <option value="apr">Sort by: APR</option>
-              <option value="volume24h">Sort by: 24h Volume</option>
-              <option value="fees24h">Sort by: 24h Fees</option>
+              <option value={SORT_OPTIONS.TVL}>Sort by: TVL</option>
+              <option value={SORT_OPTIONS.APR}>Sort by: APR</option>
+              <option value={SORT_OPTIONS.VOLUME_24H}>Sort by: 24h Volume</option>
+              <option value={SORT_OPTIONS.FEE}>Sort by: 24h Fees</option>
             </Select>
-
-            <Box >
-              <NumberInput
-                value={tvlFrom}
-                onChange={(_, value) => handleTvlFromChange(value)}
-                min={0}
-                maxW="150px"
-              >
-                <NumberInputField />
-              </NumberInput>
-              <Text fontSize="sm" mb={1}>Min TVL (USD)</Text>
-            </Box>
-            <Box>
-              <NumberInput
-                value={volume24hFrom}
-                onChange={(_, value) => handleVolume24hFromChange(value)}
-                min={0}
-                maxW="150px"
-              >
-                <NumberInputField />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-              <Text fontSize="sm" mb={1}>Min 24h Volume (USD)</Text>
-            </Box>
+            <TextInput 
+              label="Min TVL (USD)"
+              size="sm"
+              placeholder="default: 1000"
+              defaultValue={filters.minTvl}
+              onInputFinalized={(value) => handleFilterChange("minTvl", value ? parseInt(value) : undefined)}
+              type="number"
+            />
+            <TextInput
+              label="Min 24h Volume (USD)"
+              size="sm"
+              placeholder="default: 1000"
+              defaultValue={filters.minVolume24h}
+              onInputFinalized={(value) => handleFilterChange("minVolume24h", value ? parseInt(value) : undefined)}
+              type="number"
+            />
           </Flex>
         </VStack>
 
         {/* Pools Table */}
-        <Card bg={cardBg} _dark={{ bg: "gray.800" }} border="1px" borderColor={borderColor} mb={6}>
-          <TableContainer>
-            <Table variant="simple">
-              <Thead>
-                <Tr>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>Pool</Text>
-                    </HStack>
-                  </Th>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>Chain</Text>
-                    </HStack>
-                  </Th>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>Protocol</Text>
-                    </HStack>
-                  </Th>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>TVL</Text>
-                    </HStack>
-                  </Th>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>24h Volume</Text>
-                    </HStack>
-                  </Th>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>24h Fees</Text>
-                    </HStack>
-                  </Th>
-                  <Th>
-                    <HStack spacing={1}>
-                      <Text>APR</Text>
-                    </HStack>
-                  </Th>
-                  <Th>Actions</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {pools.map((pool: IAPool) => (
-                  <Tr
-                    key={pool.poolAddress}
-                    _hover={{ bg: "gray.50", _dark: { bg: "gray.700" }, cursor: "pointer" }}
-                    onClick={() => router.push(`/pools/${pool.chain.id}/${pool.poolAddress}`)}
-                  >
-                    <Td>
-                      <VStack align="start" spacing={1}>
-                        <HStack spacing={2}>
-                          <Text fontWeight="medium">{pool.token0.symbol}/{pool.token1.symbol}</Text>
+        {!loading && 
+          <Card bg={cardBg} _dark={{ bg: "gray.800" }} border="1px" borderColor={borderColor} mb={6}>
+            <TableContainer>
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    {tableColumns.map((col, idx) => (
+                      <Th key={idx}>
+                        <HStack spacing={1}>
+                          <Text>{col.label}</Text>
                         </HStack>
-                        <Text fontSize="xs" color="gray.500" fontFamily="mono">
-                          {pool.poolAddress.slice(0, 8)}...{pool.poolAddress.slice(-6)}
-                        </Text>
-                      </VStack>
-                    </Td>
-                    <Td>
-                      <Badge colorScheme={getChainColor(pool.chain.id)}>
-                        {pool.chain.name}
-                      </Badge>
-                    </Td>
-                    <Td>
-                      <Text fontSize="sm">{pool.protocol.name}</Text>
-                    </Td>
-                    <Td>{formatCurrency(pool.tvl)}</Td>
-                    <Td>{formatCurrency(pool.stats24h?.volume || 0)}</Td>
-                    <Td>{formatCurrency(pool.stats24h?.fee || 0)}</Td>
-                    <Td>
-                      <Text color={(pool.stats24h?.apr || 0) > 0 ? "green.500" : "red.500"}>
-                        {(pool.stats24h?.apr || 0).toFixed(2)}%
-                      </Text>
-                    </Td>
-                    <Td>
-                      <HStack spacing={2}>
-                        <Tooltip label="View Pool Details">
-                          <IconButton
-                            aria-label="View pool details"
-                            icon={<ExternalLinkIcon />}
-                            size="sm"
-                            variant="ghost"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              router.push(`/pools/${pool.chainId}/${pool.poolAddress}`);
-                            }}
-                          />
-                        </Tooltip>
-                        <Tooltip label="View on Explorer">
-                          <Link href={getExplorerUrl(pool.chainId, pool.poolAddress)} isExternal>
-                            <IconButton
-                              aria-label="View on explorer"
-                              icon={<ExternalLinkIcon />}
-                              size="sm"
-                              variant="ghost"
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                          </Link>
-                        </Tooltip>
-                      </HStack>
-                    </Td>
+                      </Th>
+                    ))}
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </TableContainer>
-        </Card>
+                </Thead>
+                <Tbody>
+                  {pools.map((pool: IAPool) => (
+                    <Tr
+                      key={pool.poolAddress}
+                      _hover={{ bg: "gray.50", _dark: { bg: "gray.700" }, cursor: "pointer" }}
+                      onClick={() => router.push(`/pools/${pool.chain.id}/${pool.poolAddress}`)}
+                    >
+                      {tableColumns.map((col, idx) => (
+                        <Td key={idx}>
+                          {col.renderer(pool)}
+                        </Td>
+                      ))}
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          </Card>
+        }
 
         {/* Pagination */}
         <Pagination
-          currentPage={currentPage}
-          totalItems={totalItems}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
+          currentPage={filters.offset ? filters.offset / (filters.limit ?? 50) + 1 : 1}
+          pageSize={filters.limit ?? 50}
+          onPageChange={(page) => {
+            handleFilterChange("offset", (page - 1) * (filters.limit ?? 50));
+          }}
+          onPageSizeChange={(size) => {
+            handleFilterChange("limit", size);
+          }}
         />
 
         {pools.length === 0 && !loading && (
@@ -546,6 +418,13 @@ export default function PoolsPage() {
             <Text color="gray.500" _dark={{ color: "gray.400" }}>
               No pools found matching your criteria.
             </Text>
+          </Box>
+        )}
+
+        {loading && (
+          <Box textAlign="center" py={12}>
+            <Spinner size="xl" color="brand.500" />
+            <Text>Loading pools and data...</Text>
           </Box>
         )}
 
