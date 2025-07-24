@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+
+export const dynamic = 'force-dynamic';
 import {
   Box,
   Container,
@@ -18,16 +20,9 @@ import {
   StatLabel,
   StatNumber,
   StatHelpText,
-  Divider,
   useColorModeValue,
   Button,
   Link,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -228,9 +223,6 @@ export default function PositionDetailsPage() {
                   <Text fontWeight="medium" mb={2}>Protocol</Text>
                   <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
                     {position.pool.protocol.name}
-                  </Text>
-                  <Text fontSize="xs" fontFamily="mono" color="gray.500">
-                    {position.pool.protocol.factoryAddress}
                   </Text>
                 </Box>
                 <Box>

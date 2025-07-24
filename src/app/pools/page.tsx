@@ -1,5 +1,7 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
+
+export const dynamic = 'force-dynamic';
 import {
   Flex,
   Box,
@@ -9,17 +11,11 @@ import {
   VStack,
   HStack,
   Card,
-  CardBody,
-  Badge,
   Spinner,
   Alert,
   AlertIcon,
   useColorModeValue,
   Button,
-  Link,
-  Input,
-  InputGroup,
-  InputLeftElement,
   Select,
   Table,
   Thead,
@@ -28,14 +24,6 @@ import {
   Th,
   Td,
   TableContainer,
-  IconButton,
-  Tooltip,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  InputRightElement,
   Image,
 } from "@chakra-ui/react";
 import { 
@@ -56,7 +44,7 @@ import { Formatter } from "@/common/formatter";
 
 interface FilterParams extends IPoolsParams {}
 
-export default function PoolsPage() {
+function PoolsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -437,4 +425,19 @@ export default function PoolsPage() {
       </Container>
     </Box>
   );
-} 
+}
+
+export default function PoolsPage() {
+  return (
+    <Suspense fallback={
+      <Container maxW="7xl" py={6}>
+        <Box textAlign="center" py={12}>
+          <Spinner size="xl" color="brand.500" />
+          <Text>Loading...</Text>
+        </Box>
+      </Container>
+    }>
+      <PoolsPageContent />
+    </Suspense>
+  );
+}

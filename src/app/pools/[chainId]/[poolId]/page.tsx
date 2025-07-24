@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
+
+export const dynamic = 'force-dynamic';
 import {
   Box,
   Container,
@@ -132,7 +134,7 @@ export default function PoolDetailsPage() {
                 leftIcon={<ArrowBackIcon />}
                 variant="ghost"
                 onClick={() => router.push("/pools")}
-                size="sm"git
+                size="sm"
               >
                 Back to Pools
               </Button>

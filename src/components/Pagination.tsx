@@ -41,6 +41,8 @@ export default function Pagination({
   const buttonBorderColor = useColorModeValue("gray.200", "gray.700");
   const activeButtonBg = useColorModeValue("brand.500", "brand.400");
   const activeButtonColor = "white";
+  const hoverBg = useColorModeValue("gray.100", "gray.700");
+  const brandHoverBg = useColorModeValue("brand.600", "brand.300");
 
   // Generate page numbers to display
   const getPageNumbers = () => {
@@ -122,7 +124,7 @@ export default function Pagination({
                 bg={buttonBg}
                 borderColor={buttonBorderColor}
                 _hover={{
-                  bg: useColorModeValue("gray.100", "gray.700"),
+                  bg: hoverBg,
                 }}
               />
             </Tooltip>
@@ -140,7 +142,7 @@ export default function Pagination({
               bg={buttonBg}
               borderColor={buttonBorderColor}
               _hover={{
-                bg: useColorModeValue("gray.100", "gray.700"),
+                bg: hoverBg,
               }}
             />
           </Tooltip>
@@ -168,8 +170,8 @@ export default function Pagination({
                   borderColor={buttonBorderColor}
                   _hover={{
                     bg: currentPage === page 
-                      ? useColorModeValue("brand.600", "brand.300")
-                      : useColorModeValue("gray.100", "gray.700"),
+                      ? brandHoverBg
+                      : hoverBg,
                   }}
                   minW="40px"
                 >
@@ -191,7 +193,7 @@ export default function Pagination({
               bg={buttonBg}
               borderColor={buttonBorderColor}
               _hover={{
-                bg: useColorModeValue("gray.100", "gray.700"),
+                bg: hoverBg,
               }}
             />
           </Tooltip>
@@ -209,7 +211,7 @@ export default function Pagination({
                 bg={buttonBg}
                 borderColor={buttonBorderColor}
                 _hover={{
-                  bg: useColorModeValue("gray.100", "gray.700"),
+                  bg: hoverBg,
                 }}
               />
             </Tooltip>
