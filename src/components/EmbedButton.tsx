@@ -399,11 +399,10 @@ export default function EmbedButton() {
                   <Box
                     p={3}
                     bg="green.50"
-                    _dark={{ bg: "green.900" }}
+                    _dark={{ bg: "green.900", borderColor: "green.700" }}
                     borderRadius="md"
                     border="1px"
                     borderColor="green.200"
-                    _dark={{ borderColor: "green.700" }}
                   >
                     <Text
                       fontSize="xs"
