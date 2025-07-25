@@ -44,6 +44,9 @@ import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
 import { Formatter } from "@/common/formatter";
 import { FallbackImg } from "@/components/FallbackImg";
 import { Address } from "@/components/Address";
+import { useApiError, useApiKeyValidation } from "../../../../hooks/useApiError";
+import { ErrorDisplay } from "../../../../components/ErrorDisplay";
+import ErrorBoundary from "../../../../components/ErrorBoundary";
 import {
   LineChart,
   Line,
@@ -71,7 +74,7 @@ interface ChartDataPoint {
   apr: number;
 }
 
-export default function PoolDetailsPage() {
+function PoolDetailsPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,7 +86,8 @@ export default function PoolDetailsPage() {
   const [historicalData, setHistoricalData] = useState<IAPoolHistorical[]>([]);
   const [loading, setLoading] = useState(true);
   const [historicalLoading, setHistoricalLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, handleApiError, clearError } = useApiError();
+  const { validateApiKey } = useApiKeyValidation();
   const [selectedChart, setSelectedChart] = useState<
     "price" | "apr" | "tvl" | "volFee"
   >("tvl");
@@ -115,14 +119,9 @@ export default function PoolDetailsPage() {
   const fetchPoolDetails = async () => {
     try {
       setLoading(true);
-      setError(null);
+      clearError();
 
-      const apiKey = KrystalApi.getApiKey();
-      if (!apiKey) {
-        throw new Error(
-          "API key not found. Please set your API key in the navigation bar."
-        );
-      }
+      const apiKey = validateApiKey();
 
       const response = await KrystalApi.pools.getById(apiKey, {
         chainId,
@@ -132,12 +131,7 @@ export default function PoolDetailsPage() {
 
       setPool(response);
     } catch (err) {
-      console.error("Error fetching pool details:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to fetch pool details. Please check your API key."
-      );
+      handleApiError(err);
     } finally {
       setLoading(false);
     }
@@ -149,8 +143,7 @@ export default function PoolDetailsPage() {
     try {
       setHistoricalLoading(true);
 
-      const apiKey = KrystalApi.getApiKey();
-      if (!apiKey) return;
+      const apiKey = validateApiKey();
 
       const endTime = Math.floor(Date.now() / 1000);
       const startTime =
@@ -521,12 +514,11 @@ export default function PoolDetailsPage() {
 
   if (error || !pool) {
     return (
-      <Container maxW="7xl" py={6}>
-        <Alert status="error" borderRadius="lg">
-          <AlertIcon />
-          {error || "Pool not found"}
-        </Alert>
-      </Container>
+      <ErrorDisplay 
+        error={error || "Pool not found"} 
+        onRetry={fetchPoolDetails}
+        title="Failed to Load Pool Details"
+      />
     );
   }
 
@@ -913,5 +905,13 @@ export default function PoolDetailsPage() {
         )}
       </Container>
     </Box>
+  );
+}
+
+export default function PoolDetailsPage() {
+  return (
+    <ErrorBoundary>
+      <PoolDetailsPageContent />
+    </ErrorBoundary>
   );
 }

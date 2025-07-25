@@ -56,6 +56,9 @@ import { ChainDisplay } from "../../../../components/ChainDisplay";
 import { ProtocolDisplay } from "../../../../components/ProtocolDisplay";
 import { TokenPairDisplay } from "../../../../components/TokenPairDisplay";
 import { PriceRangeDisplay } from "../../../../components/PriceRangeDisplay";
+import { useApiError, useApiKeyValidation } from "../../../../hooks/useApiError";
+import { ErrorDisplay } from "../../../../components/ErrorDisplay";
+import ErrorBoundary from "../../../../components/ErrorBoundary";
 
 interface WalletStats {
   totalValue: number;
@@ -168,7 +171,7 @@ const VirtualizedTableRow = React.memo(
 
 VirtualizedTableRow.displayName = "VirtualizedTableRow";
 
-export default function WalletPositionsPage() {
+function WalletPositionsPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -180,7 +183,8 @@ export default function WalletPositionsPage() {
   const [filteredPositions, setFilteredPositions] = useState<IAPosition[]>([]);
   const [stats, setStats] = useState<WalletStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, handleApiError, clearError } = useApiError();
+  const { validateApiKey } = useApiKeyValidation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedChain, setSelectedChain] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("OPEN");
@@ -348,14 +352,9 @@ export default function WalletPositionsPage() {
   const fetchAllPositions = async () => {
     try {
       setLoading(true);
-      setError(null);
+      clearError();
 
-      const apiKey = KrystalApi.getApiKey();
-      if (!apiKey) {
-        throw new Error(
-          "API key not found. Please set your API key in the navigation bar."
-        );
-      }
+      const apiKey = validateApiKey();
 
       // Fetch open positions
       const openParams: IPositionsParams = {
@@ -382,12 +381,7 @@ export default function WalletPositionsPage() {
       setClosedPositions(closedPositions);
       setPositions([...openPositions, ...closedPositions]);
     } catch (err) {
-      console.error("Error fetching positions:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to fetch positions. Please check your API key."
-      );
+      handleApiError(err);
     } finally {
       setLoading(false);
     }
@@ -454,12 +448,11 @@ export default function WalletPositionsPage() {
 
   if (error) {
     return (
-      <Container maxW="7xl" py={6}>
-        <Alert status="error" borderRadius="lg">
-          <AlertIcon />
-          {error}
-        </Alert>
-      </Container>
+      <ErrorDisplay 
+        error={error} 
+        onRetry={fetchAllPositions}
+        title="Failed to Load Wallet Positions"
+      />
     );
   }
 
@@ -803,5 +796,13 @@ export default function WalletPositionsPage() {
         )}
       </Container>
     </Box>
+  );
+}
+
+export default function WalletPositionsPage() {
+  return (
+    <ErrorBoundary>
+      <WalletPositionsPageContent />
+    </ErrorBoundary>
   );
 }

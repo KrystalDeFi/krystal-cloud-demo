@@ -35,6 +35,9 @@ import Pagination from "../../components/Pagination";
 import { IAPool } from "../../services/apiTypes";
 import TextInput from "@/components/TextInput";
 import { Formatter } from "@/common/formatter";
+import { useApiError, useApiKeyValidation } from "../../hooks/useApiError";
+import { ErrorDisplay } from "../../components/ErrorDisplay";
+import ErrorBoundary from "../../components/ErrorBoundary";
 
 interface FilterParams extends IPoolsParams {}
 
@@ -44,7 +47,8 @@ function PoolsPageContent() {
 
   const [pools, setPools] = useState<IAPool[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { error, setError, handleApiError, clearError } = useApiError();
+  const { validateApiKey } = useApiKeyValidation();
 
   const [filters, setFilters] = useState<FilterParams>({
     token: searchParams?.get("token") || undefined,
@@ -88,14 +92,9 @@ function PoolsPageContent() {
   const fetchPools = async () => {
     try {
       setLoading(true);
-      setError(null);
+      clearError();
 
-      const apiKey = KrystalApi.getApiKey();
-      if (!apiKey) {
-        throw new Error(
-          "API key not found. Please set your API key in the navigation bar."
-        );
-      }
+      const apiKey = validateApiKey();
 
       // Prepare API parameters based on swagger specification
       const apiParams: IPoolsParams = {
@@ -114,15 +113,10 @@ function PoolsPageContent() {
         setPools(poolsData);
       } else {
         console.error("Invalid response format:", response);
-        setError("Invalid response format from API");
+        throw new Error("Invalid response format from API");
       }
     } catch (err) {
-      console.error("Error fetching pools:", err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to fetch pools. Please check your API key."
-      );
+      handleApiError(err);
     } finally {
       setLoading(false);
     }
@@ -149,16 +143,11 @@ function PoolsPageContent() {
 
   if (error) {
     return (
-      <Container maxW="7xl" py={6}>
-        <VStack spacing={4}>
-          {error && (
-            <Alert status="error" borderRadius="lg">
-              <AlertIcon />
-              {error}
-            </Alert>
-          )}
-        </VStack>
-      </Container>
+      <ErrorDisplay 
+        error={error} 
+        onRetry={fetchPools}
+        title="Failed to Load Pools"
+      />
     );
   }
 
@@ -494,17 +483,19 @@ function PoolsPageContent() {
 
 export default function PoolsPage() {
   return (
-    <Suspense
-      fallback={
-        <Container maxW="7xl" py={6}>
-          <Box textAlign="center" py={12}>
-            <Spinner size="xl" color="brand.500" />
-            <Text>Loading...</Text>
-          </Box>
-        </Container>
-      }
-    >
-      <PoolsPageContent />
-    </Suspense>
+    <ErrorBoundary>
+      <Suspense
+        fallback={
+          <Container maxW="7xl" py={6}>
+            <Box textAlign="center" py={12}>
+              <Spinner size="xl" color="brand.500" />
+              <Text>Loading...</Text>
+            </Box>
+          </Container>
+        }
+      >
+        <PoolsPageContent />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

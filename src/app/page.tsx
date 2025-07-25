@@ -19,6 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { SearchIcon, ViewIcon, InfoIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter } from "next/navigation";
+import ErrorBoundary from "../components/ErrorBoundary";
 
 const pages = [
   {
@@ -85,13 +86,14 @@ export default function Home() {
   };
 
   return (
-    <Box
-      minH="100vh"
-      bgGradient="linear(to-br, gray.50, brand.50, purple.50)"
-      _dark={{
-        bgGradient: "linear(to-br, gray.900, brand.900, purple.900)",
-      }}
-    >
+    <ErrorBoundary>
+      <Box
+        minH="100vh"
+        bgGradient="linear(to-br, gray.50, brand.50, purple.50)"
+        _dark={{
+          bgGradient: "linear(to-br, gray.900, brand.900, purple.900)",
+        }}
+      >
       <Container maxW="7xl" py={6}>
         {/* Header */}
         <VStack spacing={6} mb={10} textAlign="center">
@@ -243,5 +245,6 @@ export default function Home() {
         )}
       </Container>
     </Box>
+    </ErrorBoundary>
   );
 }
