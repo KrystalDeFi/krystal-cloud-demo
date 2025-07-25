@@ -47,6 +47,19 @@ import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
 import { Formatter } from "@/common/formatter";
 import { FallbackImg } from "@/components/FallbackImg";
 import { Address } from "@/components/Address";
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { CHAIN_CONFIGS } from "@/common/config";
 
 // Chart data interface for processed historical data
@@ -188,10 +201,26 @@ export default function PoolDetailsPage() {
     
     return sortedData.map((item, index) => {
       const date = new Date(item.timestamp * 1000);
-      const dateString = date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
+      
+      // Format date based on time range
+      let dateString;
+      if (timeRange === '7d') {
+        dateString = date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric',
+          hour: '2-digit'
+        });
+      } else if (timeRange === '30d') {
+        dateString = date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric'
+        });
+      } else {
+        dateString = date.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric'
+        });
+      }
       
       return {
         timestamp: item.timestamp,
@@ -224,21 +253,8 @@ export default function PoolDetailsPage() {
       );
     }
 
-    // Get appropriate number of data points based on time range
-    let displayData;
-    switch (timeRange) {
-      case '7d':
-        displayData = data.slice(-7);
-        break;
-      case '30d':
-        displayData = data.slice(-15);
-        break;
-      case '90d':
-        displayData = data.slice(-20);
-        break;
-      default:
-        displayData = data.slice(-10);
-    }
+    // Use all data points from API (API already filters by time range)
+    const displayData = data;
     
     // Extract values for the selected chart type
     const getValue = (item: ChartDataPoint) => {
@@ -251,10 +267,6 @@ export default function PoolDetailsPage() {
         default: return item.tvl;
       }
     };
-    
-    const values = displayData.map(getValue);
-    const maxValue = Math.max(...values);
-    const minValue = Math.min(...values);
 
     const formatYAxis = (value: number) => {
       if (selectedChart === 'price') return value.toFixed(6);
@@ -262,142 +274,89 @@ export default function PoolDetailsPage() {
       return formatCurrency(value);
     };
 
+    const formatTooltip = (value: number) => {
+      if (selectedChart === 'price') return value.toFixed(6);
+      if (selectedChart === 'apr') return `${value.toFixed(2)}%`;
+      return formatCurrency(value);
+    };
+
     return (
-      <Box h="400px" p={4}>
-        {/* Chart Container */}
-        <Box h="320px" position="relative">
-          {selectedChart === 'fee' ? (
-            /* Bar Chart for Fee */
-            <>
-              <HStack spacing={1} h="280px" align="end">
-                {displayData.map((item, index) => {
-                  const value = getValue(item);
-                  
-                  // Calculate bar height with better scaling
-                  const range = maxValue - minValue;
-                  const normalizedValue = range > 0 ? (value - minValue) / range : 0.5;
-                  const height = Math.max(8, normalizedValue * 260); // Min 8px, max 260px
-                  
-                  return (
-                    <Box
-                      key={index}
-                      flex={1}
-                      h={`${height}px`}
-                      minH="8px"
-                      bg="blue.500"
-                      borderRadius="sm"
-                      transition="all 0.2s"
-                      _hover={{ bg: "blue.600" }}
-                    >
-                      <Tooltip 
-                        label={`${item.date}: ${formatYAxis(value)}`}
-                        placement="top"
-                        hasArrow
-                      >
-                        <Box w="full" h="full" />
-                      </Tooltip>
-                    </Box>
-                  );
-                })}
-              </HStack>
-            </>
-          ) : (
-            /* Line Chart for Price, APR, TVL, Volume */
-            <Box h="280px" position="relative">
-              {/* Grid lines */}
-              <Box position="absolute" top={0} left={0} right={0} bottom={0}>
-                {[0, 25, 50, 75, 100].map((percent) => (
-                  <Box
-                    key={percent}
-                    position="absolute"
-                    left={0}
-                    right={0}
-                    top={`${percent}%`}
-                    borderTop="1px dashed"
-                    borderColor="gray.200"
-                    opacity={0.5}
-                  />
-                ))}
-              </Box>
-              
-              {/* Line chart */}
-              <svg width="100%" height="100%" style={{ position: 'absolute', top: 0, left: 0 }}>
-                <polyline
-                  fill="none"
-                  stroke="#3182CE"
-                  strokeWidth="2"
-                  points={displayData.map((item, index) => {
-                    const value = getValue(item);
-                    const range = maxValue - minValue;
-                    const normalizedValue = range > 0 ? (value - minValue) / range : 0.5;
-                    const y = 280 - (normalizedValue * 260); // Invert Y axis
-                    const x = (index / (displayData.length - 1)) * 100; // X as percentage
-                    return `${x}%,${y}`;
-                  }).join(' ')}
-                />
-                
-                {/* Data points */}
-                {displayData.map((item, index) => {
-                  const value = getValue(item);
-                  const range = maxValue - minValue;
-                  const normalizedValue = range > 0 ? (value - minValue) / range : 0.5;
-                  const y = 280 - (normalizedValue * 260);
-                  const x = (index / (displayData.length - 1)) * 100;
-                  
-                  return (
-                    <circle
-                      key={index}
-                      cx={`${x}%`}
-                      cy={y}
-                      r="4"
-                      fill="#3182CE"
-                      stroke="white"
-                      strokeWidth="2"
-                    />
-                  );
-                })}
-              </svg>
-            </Box>
-          )}
-          
-          {/* Date labels */}
-          <HStack spacing={1} mt={2} justify="space-between">
-            {displayData.map((item, index) => (
-              <Text 
-                key={index} 
-                fontSize="xs" 
-                color={mutedTextColor} 
-                textAlign="center" 
-                flex={1}
-                noOfLines={1}
-                overflow="hidden"
-              >
-                {item.date}
-              </Text>
-            ))}
-          </HStack>
-        </Box>
-        
-        {/* Value labels */}
-        <HStack spacing={1} mt={3} justify="space-between">
-          {displayData.map((item, index) => {
-            const value = getValue(item);
-            return (
-              <Text 
-                key={index} 
-                fontSize="xs" 
-                color={mutedTextColor} 
-                textAlign="center" 
-                flex={1}
-                fontFamily="mono"
-                noOfLines={1}
-                overflow="hidden"
-              >
-                {formatYAxis(value)}
-              </Text>
-            );
-          })}
-        </HStack>
+      <Box h="400px" w="full" overflow="hidden">
+        {selectedChart === 'fee' ? (
+          /* Bar Chart for Fee */
+          <ResponsiveContainer width="100%" height={400}>
+            <BarChart data={displayData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="gray.200" />
+              <XAxis 
+                dataKey="date" 
+                stroke="gray.600"
+                fontSize={12}
+                tick={{ fontSize: 10 }}
+              />
+              <YAxis 
+                stroke="gray.600"
+                fontSize={12}
+                tickFormatter={formatYAxis}
+                tick={{ fontSize: 10 }}
+              />
+              <RechartsTooltip 
+                formatter={(value: any) => [formatTooltip(value), selectedChart.toUpperCase()]}
+                labelFormatter={(label: any) => `Date: ${label}`}
+                contentStyle={{
+                  backgroundColor: cardBg,
+                  border: `1px solid ${borderColor}`,
+                  borderRadius: '8px',
+                }}
+              />
+              <Bar 
+                dataKey={selectedChart} 
+                fill="#3182CE" 
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          /* Line Chart for Price, APR, TVL, Volume */
+          <ResponsiveContainer width="100%" height={400}>
+            <AreaChart data={displayData}>
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3182CE" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3182CE" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="gray.200" />
+              <XAxis 
+                dataKey="date" 
+                stroke="gray.600"
+                fontSize={12}
+                tick={{ fontSize: 10 }}
+              />
+              <YAxis 
+                stroke="gray.600"
+                fontSize={12}
+                tickFormatter={formatYAxis}
+                tick={{ fontSize: 10 }}
+              />
+              <RechartsTooltip 
+                formatter={(value: any) => [formatTooltip(value), selectedChart.toUpperCase()]}
+                labelFormatter={(label: any) => `Date: ${label}`}
+                contentStyle={{
+                  backgroundColor: cardBg,
+                  border: `1px solid ${borderColor}`,
+                  borderRadius: '8px',
+                }}
+              />
+              <Area 
+                type="monotone" 
+                dataKey={selectedChart} 
+                stroke="#3182CE" 
+                fill="url(#colorValue)"
+                strokeWidth={2}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </Box>
     );
   };
@@ -606,9 +565,9 @@ export default function PoolDetailsPage() {
         {/* Main Content Grid */}
         <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8} mb={8}>
           {/* Historical Chart */}
-          <GridItem>
-            <Card bg={cardBg} border="1px" borderColor={borderColor}>
-              <CardBody>
+          <GridItem w="full" overflow="hidden">
+            <Card bg={cardBg} border="1px" borderColor={borderColor} w="full" overflow="hidden">
+              <CardBody w="full" overflow="hidden">
                 <HStack justify="space-between" mb={6}>
                   <VStack align="start" spacing={1}>
                     <Text fontSize="lg" fontWeight="semibold" color={textColor}>
@@ -703,7 +662,7 @@ export default function PoolDetailsPage() {
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
                     <Text fontSize="sm" color={mutedTextColor}>Token0</Text>
-                    <VStack align="end">
+                    <VStack align="end" spacing={0}>
                       <HStack spacing={2}>
                         <FallbackImg src={pool.token0.logo ?? ""} alt={pool.token0.symbol} boxSize="20px" />
                         <Text fontSize="sm" color={textColor}>{pool.token0.symbol} ({pool.token0.name})</Text>
@@ -713,7 +672,7 @@ export default function PoolDetailsPage() {
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
                     <Text fontSize="sm" color={mutedTextColor}>Token1</Text>
-                    <VStack align="end">
+                    <VStack align="end" spacing={0}>
                       <HStack spacing={2}>
                         <FallbackImg src={pool.token1.logo ?? ""} alt={pool.token1.symbol} boxSize="20px" />
                         <Text fontSize="sm" color={textColor}>{pool.token1.symbol} ({pool.token1.name})</Text>

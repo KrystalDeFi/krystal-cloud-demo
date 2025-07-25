@@ -25,7 +25,7 @@ export const Address: React.FC<AddressProps> = ({
   };
 
   return (
-    <HStack spacing={1} fontSize={"sm"} {...props}>
+    <HStack spacing={0} fontSize={"sm"} {...props}>
       <Tooltip label={address} hasArrow>
         <Text fontFamily="mono" whiteSpace="nowrap">
           {formatAddress(address)}
@@ -38,6 +38,7 @@ export const Address: React.FC<AddressProps> = ({
         variant="ghost"
         onClick={handleCopy}
         title={"Copy"}
+        colorScheme="gray"
       />
       <Link
         href={`${explorerBaseUrl}${address}`}
@@ -49,6 +50,7 @@ export const Address: React.FC<AddressProps> = ({
           aria-label="View on explorer"
           size="xs"
           variant="ghost"
+          colorScheme="gray"
         />
       </Link>
     </HStack>
