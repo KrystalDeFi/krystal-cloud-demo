@@ -66,7 +66,7 @@ export interface IAIncentive {
 }
 
 export interface IAPoolDetails {
-  chainId: string;
+  chain: IAChain;
   poolAddress: string;
   poolPrice: string;
   protocol: IAProtocol;
@@ -79,6 +79,16 @@ export interface IAPoolDetails {
   stats7d: IStats;
   stats30d: IStats;
   incentives?: IAIncentive[];
+}
+
+// Pool historical data interface
+export interface IAPoolHistorical {
+  timestamp: number;
+  volume24h: number;
+  fee24h: number;
+  apr24h: number;
+  tvlUsd: number;
+  poolPrice: number;
 }
 
 

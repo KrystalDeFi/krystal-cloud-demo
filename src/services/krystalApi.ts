@@ -2,7 +2,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_KRYSTAL_API_URL || 'https://cloud-api.k
 const API_KEY_STORAGE = 'krystal_api_key';
 
 // Import types from centralized apiObjects file
-import { IAChain, IAPool, IAProtocol, IAPoolDetails, IAPosition, IAPositionDetails } from './apiTypes';
+import { IAChain, IAPool, IAProtocol, IAPoolDetails, IAPosition, IAPositionDetails, IAPoolHistorical } from './apiTypes';
 
 
 // ============================================================================
@@ -29,6 +29,15 @@ export interface IPoolDetailParams {
   poolAddress: string;
   factoryAddress?: string;
   withIncentives?: boolean;
+}
+
+// Pool historical data API parameters
+export interface IPoolHistoricalParams {
+  chainId: string;
+  poolAddress: string;
+  factoryAddress?: string;
+  startTime?: number;
+  endTime?: number;
 }
 
 // Positions API parameters
@@ -175,6 +184,17 @@ const poolsApi = {
     const { chainId, poolAddress, ...queryParams } = params;
     const response = await apiRequest<IAPoolDetails>(
       `/v1/pools/${chainId}/${poolAddress}`,
+      apiKey,
+      queryParams
+    );
+    return response;
+  },
+
+  // Get pool historical data
+  getHistorical: async (apiKey: string, params: IPoolHistoricalParams): Promise<IAPoolHistorical[]> => {
+    const { chainId, poolAddress, ...queryParams } = params;
+    const response = await apiRequest<IAPoolHistorical[]>(
+      `/v1/pools/${chainId}/${poolAddress}/historical`,
       apiKey,
       queryParams
     );

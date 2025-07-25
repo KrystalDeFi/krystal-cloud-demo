@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
-
 export const dynamic = 'force-dynamic';
+
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -28,7 +28,6 @@ import { ExternalLinkIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { KrystalApi, IPositionDetailParams } from "../../../../services/krystalApi";
 import { IAPositionDetails } from "../../../../services/apiTypes";
-import { CHAIN_CONFIGS } from "../../../../common/config";
 
 export default function PositionDetailsPage() {
   const params = useParams();
@@ -89,16 +88,8 @@ export default function PositionDetailsPage() {
     return (amount / Math.pow(10, decimals)).toFixed(6);
   };
 
-  const getChainColor = (chainId: string) => {
-    return CHAIN_CONFIGS[chainId]?.color || "gray";
-  };
-
   const getStatusColor = (status: string) => {
     return status === "OPEN" ? "green" : "red";
-  };
-
-  const getExplorerUrl = (chainId: string, address: string) => {
-    return `${CHAIN_CONFIGS[chainId]?.explorer || "#"}/address/${address}`;
   };
 
   if (loading) {
@@ -140,9 +131,9 @@ export default function PositionDetailsPage() {
               </Button>
               <HStack spacing={4} align="center">
                 <Heading size="2xl">Position Details</Heading>
-                <Badge colorScheme={getChainColor(position.chainId || "")} size="lg">
-                  {CHAIN_CONFIGS[position.chainId || ""]?.name || position.chainId || "Unknown"}
-                </Badge>
+                {/* <Badge colorScheme={getChainColor(position.chainId || "")} size="lg"> */}
+                  {/* {CHAIN_CONFIGS[position.chainId || ""]?.name || position.chainId || "Unknown"} */}
+                {/* </Badge> */}
                 <Badge colorScheme={getStatusColor(position.status || "OPEN")} size="lg">
                   {position.status || "OPEN"}
                 </Badge>
@@ -151,11 +142,11 @@ export default function PositionDetailsPage() {
                 Position ID: {position.id}
               </Text>
             </VStack>
-            <Link href={getExplorerUrl(position.chainId || "", position.poolAddress || "")} isExternal>
+            {/* <Link href={getExplorerUrl(position.chainId || "", position.poolAddress || "")} isExternal>
               <Button rightIcon={<ExternalLinkIcon />} colorScheme="brand">
                 View on Explorer
               </Button>
-            </Link>
+            </Link> */}
           </HStack>
         </VStack>
 

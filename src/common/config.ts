@@ -60,66 +60,6 @@ export interface IChainConfig {
 // CONSTANTS
 // ============================================================================
 
-// Chain configurations
-export const CHAIN_CONFIGS: Record<IChainId, IChainConfig> = {
-  "ethereum@1": {
-    name: "Ethereum",
-    color: "blue",
-    explorer: "https://etherscan.io",
-  },
-  "polygon@137": {
-    name: "Polygon",
-    color: "purple",
-    explorer: "https://polygonscan.com",
-  },
-  "bsc@56": {
-    name: "BSC",
-    color: "yellow",
-    explorer: "https://bscscan.com",
-  },
-  "arbitrum@42161": {
-    name: "Arbitrum",
-    color: "cyan",
-    explorer: "https://arbiscan.io",
-  },
-  "optimism@10": {
-    name: "Optimism",
-    color: "red",
-    explorer: "https://optimistic.etherscan.io",
-  },
-  "avalanche@43114": {
-    name: "Avalanche",
-    color: "orange",
-    explorer: "https://snowtrace.io",
-  },
-  "fantom@250": {
-    name: "Fantom",
-    color: "teal",
-    explorer: "https://ftmscan.com",
-  },
-  "cronos@25": {
-    name: "Cronos",
-    color: "green",
-    explorer: "https://cronoscan.com",
-  },
-  "base@8453": {
-    name: "Base",
-    color: "blue",
-    explorer: "https://basescan.org",
-  },
-  "linea@59144": {
-    name: "Linea",
-    color: "purple",
-    explorer: "https://lineascan.build",
-  },
-  // Fallback for unknown chains
-  "unknown": {
-    name: "Unknown",
-    color: "gray",
-    explorer: "#",
-  },
-};
-
 // Sort options for pools API (matching swagger specification)
 export const SORT_OPTIONS = {
   APR: 0,        // Sort by APR

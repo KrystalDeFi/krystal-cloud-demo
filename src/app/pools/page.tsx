@@ -33,7 +33,6 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { IPoolsParams, KrystalApi } from "../../services/krystalApi";
 import { 
-  CHAIN_CONFIGS,
   SORT_OPTIONS,
 } from "../../common/config";
 import { useChainsProtocols } from "../../contexts/ChainsProtocolsContext";
@@ -134,14 +133,6 @@ function PoolsPageContent() {
     // Always reset to 0 offset, unless offset param is present
     setFilters({ ...filters, offset: 0, [key]: value });
     updateUrlParams({ [key]: value?.toString() || "" });
-  };
-
-  const getChainColor = (chainId: string) => {
-    return CHAIN_CONFIGS[chainId]?.color || CHAIN_CONFIGS["unknown"]?.color || "gray";
-  };
-
-  const getExplorerUrl = (chainId: string, address: string) => {
-    return `${CHAIN_CONFIGS[chainId]?.explorer || CHAIN_CONFIGS["unknown"]?.explorer || "#"}/address/${address}`;
   };
 
   if (error) {
