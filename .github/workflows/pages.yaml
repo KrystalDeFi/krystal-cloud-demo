@@ -80,6 +80,8 @@ jobs:
       # #   run: ${{ steps.detect-package-manager.outputs.runner }} next build
 
       - run: |
+          git status
+          git --no-pager diff
           cat next.config.ts
 
       - name: run
