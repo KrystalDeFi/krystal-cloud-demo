@@ -80,4 +80,115 @@ export const CHAIN_CONFIGS: Record<any, { dexscreener_key: string }> = {
   59144: {
     dexscreener_key: "linea",
   },
+  130: {
+    dexscreener_key: "unichain",
+  },
+  324: {
+    dexscreener_key: "zksync",
+  },
+  1313161554: {
+    dexscreener_key: "aurora",
+  },
+  1284: {
+    dexscreener_key: "moonbeam",
+  },
+  1285: {
+    dexscreener_key: "moonriver",
+  },
+  42220: {
+    dexscreener_key: "celo",
+  },
+  100: {
+    dexscreener_key: "gnosis",
+  },
+  40: {
+    dexscreener_key: "telos",
+  },
+  106: {
+    dexscreener_key: "velas",
+  },
+  66: {
+    dexscreener_key: "okc",
+  },
+  122: {
+    dexscreener_key: "fuse",
+  },
+  7700: {
+    dexscreener_key: "canto",
+  },
+  288: {
+    dexscreener_key: "boba",
+  },
+  128: {
+    dexscreener_key: "heco",
+  },
+  9001: {
+    dexscreener_key: "evmos",
+  },
+  8217: {
+    dexscreener_key: "klaytn",
+  },
+  42262: {
+    dexscreener_key: "oasis",
+  },
+  1666600000: {
+    dexscreener_key: "harmony",
+  },
+  11297108109: {
+    dexscreener_key: "palm",
+  },
+  2222: {
+    dexscreener_key: "kava",
+  },
+  5000: {
+    dexscreener_key: "mantle",
+  },
+  84531: {
+    dexscreener_key: "base-testnet",
+  },
+  534352: {
+    dexscreener_key: "scroll",
+  },
+  204: {
+    dexscreener_key: "opbnb",
+  },
+  196: {
+    dexscreener_key: "x1",
+  },
+  1101: {
+    dexscreener_key: "polygon-zkevm",
+  },
+  5001: {
+    dexscreener_key: "mantle-testnet",
+  },
+  84532: {
+    dexscreener_key: "base-sepolia",
+  },
+  11155111: {
+    dexscreener_key: "sepolia",
+  },
+  97: {
+    dexscreener_key: "bsc-testnet",
+  },
+  80001: {
+    dexscreener_key: "mumbai",
+  },
+  421613: {
+    dexscreener_key: "arbitrum-goerli",
+  },
+  420: {
+    dexscreener_key: "optimism-goerli",
+  },
+  43113: {
+    dexscreener_key: "avalanche-fuji",
+  },
+  44787: {
+    dexscreener_key: "celo-alfajores",
+  },
+  4002: {
+    dexscreener_key: "fantom-testnet",
+  },
+  15551: {
+    dexscreener_key: "tenet",
+  },
 }

@@ -25,6 +25,7 @@ const pages = [
     title: "Pools",
     description: "Browse and filter DeFi pools across different chains",
     path: "/pools",
+    defaultLink: "/pools",
     icon: SearchIcon,
     features: ["Filter by chain", "Search pools", "View pool details"],
     badge: "Browse",
@@ -33,6 +34,7 @@ const pages = [
     title: "Pool Details",
     description: "View detailed information about a specific pool",
     path: "/pools/[chainId]/[poolId]",
+    defaultLink: "/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",
     icon: InfoIcon,
     features: ["Pool statistics", "Token information", "Historical data"],
     badge: "Details",
@@ -42,6 +44,7 @@ const pages = [
     title: "Wallet Positions",
     description: "View all positions for a specific wallet address",
     path: "/wallets/0x01b31dd0714678f2b4c26f2113be1528ed005340/positions",
+    defaultLink: "/wallets/0x01b31dd0714678f2b4c26f2113be1528ed005340/positions",
     icon: ViewIcon,
     features: ["Portfolio overview", "Position tracking", "Performance metrics"],
     badge: "Portfolio",
@@ -51,6 +54,7 @@ const pages = [
     title: "Position Details",
     description: "View detailed information about a specific position",
     path: "/positions/[chainId]/[positionId]",
+    defaultLink: "/positions/ethereum/1",
     icon: InfoIcon,
     features: ["Position details", "Transaction history", "Performance analysis"],
     badge: "Details",
@@ -68,16 +72,7 @@ export default function Home() {
   const showFooter = searchParams.get("showFooter") !== "false";
 
   const handleCardClick = (path: string) => {
-    // For dynamic routes, navigate to a specific example
-    if (path.includes("[chainId]") && path.includes("[poolId]")) {
-      router.push("/pools/ethereum/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8");
-    } else if (path.includes("[walletAddress]")) {
-      router.push("/wallets/0x1234567890123456789012345678901234567890/positions");
-    } else if (path.includes("[chainId]") && path.includes("[positionId]")) {
-      router.push("/positions/ethereum/1");
-    } else {
-      router.push(path);
-    }
+    router.push(path);
   };
 
   return (
@@ -151,7 +146,7 @@ export default function Home() {
                 }}
                 transition="all 0.2s"
                 cursor="pointer"
-                onClick={() => handleCardClick(page.path)}
+                onClick={() => handleCardClick(page.defaultLink)}
               >
                 <CardHeader>
                   <HStack justify="space-between" align="start">

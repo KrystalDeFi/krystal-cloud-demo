@@ -54,6 +54,7 @@ import {
   Area,
   BarChart,
   Bar,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -86,7 +87,7 @@ export default function PoolDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [historicalLoading, setHistoricalLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedChart, setSelectedChart] = useState<'price' | 'apr' | 'tvl' | 'volume' | 'fee'>('tvl');
+  const [selectedChart, setSelectedChart] = useState<'price' | 'apr' | 'tvl' | 'volFee'>('tvl');
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
   const [selectedTimeframe, setSelectedTimeframe] = useState<'1h' | '24h' | '7d' | '30d'>('24h');
 
@@ -262,8 +263,7 @@ export default function PoolDetailsPage() {
         case 'price': return item.price;
         case 'apr': return item.apr;
         case 'tvl': return item.tvl;
-        case 'volume': return item.volume;
-        case 'fee': return item.fee;
+        case 'volFee': return item.volume; // For combined chart, we'll handle volume and fee separately
         default: return item.tvl;
       }
     };
@@ -282,10 +282,16 @@ export default function PoolDetailsPage() {
 
     return (
       <Box h="400px" w="full" overflow="hidden">
-        {selectedChart === 'fee' ? (
-          /* Bar Chart for Fee */
+        {selectedChart === 'volFee' ? (
+          /* Combined Volume/Fee Chart */
           <ResponsiveContainer width="100%" height={400}>
-            <BarChart data={displayData}>
+            <ComposedChart data={displayData}>
+              <defs>
+                <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3182CE" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#3182CE" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="gray.200" />
               <XAxis 
                 dataKey="date" 
@@ -294,13 +300,30 @@ export default function PoolDetailsPage() {
                 tick={{ fontSize: 10 }}
               />
               <YAxis 
+                yAxisId="left"
                 stroke="gray.600"
                 fontSize={12}
-                tickFormatter={formatYAxis}
+                tickFormatter={(value) => formatCurrency(value)}
                 tick={{ fontSize: 10 }}
               />
+              <YAxis 
+                yAxisId="right"
+                orientation="right"
+                stroke="gray.600"
+                fontSize={12}
+                tickFormatter={(value) => formatCurrency(value)}
+                tick={{ fontSize: 10 }}
+                domain={[0, dataMax => (dataMax * 1.7)]}
+              />
               <RechartsTooltip 
-                formatter={(value: any) => [formatTooltip(value), selectedChart.toUpperCase()]}
+                formatter={(value: any, name: any) => {
+                  if (name === 'volume') {
+                    return [formatCurrency(value), 'Volume'];
+                  } else if (name === 'fee') {
+                    return [formatCurrency(value), 'Fee'];
+                  }
+                  return [value, name];
+                }}
                 labelFormatter={(label: any) => `Date: ${label}`}
                 contentStyle={{
                   backgroundColor: cardBg,
@@ -308,12 +331,23 @@ export default function PoolDetailsPage() {
                   borderRadius: '8px',
                 }}
               />
-              <Bar 
-                dataKey={selectedChart} 
-                fill="#3182CE" 
-                radius={[4, 4, 0, 0]}
+              <Area 
+                type="monotone" 
+                dataKey="volume" 
+                stroke="#3182CE" 
+                fill="url(#volumeGradient)"
+                strokeWidth={2}
+                yAxisId="left"
+                name="volume"
               />
-            </BarChart>
+              <Bar 
+                dataKey="fee" 
+                fill="#3182CE" 
+                radius={[2, 2, 0, 0]}
+                yAxisId="right"
+                name="fee"
+              />
+            </ComposedChart>
           </ResponsiveContainer>
         ) : (
           /* Line Chart for Price, APR, TVL, Volume */
@@ -600,20 +634,16 @@ export default function PoolDetailsPage() {
                 </HStack>
                 
                 <Tabs variant="soft-rounded" colorScheme="blue" onChange={(index) => {
-                  const charts = ['price', 'apr', 'tvl', 'volume', 'fee'] as const;
+                  const charts = ['price', 'apr', 'tvl', 'volFee'] as const;
                   setSelectedChart(charts[index]);
                 }}>
                   <TabList mb={4}>
                     <Tab>Price</Tab>
                     <Tab>APR</Tab>
                     <Tab>TVL</Tab>
-                    <Tab>Volume</Tab>
-                    <Tab>Fee</Tab>
+                    <Tab>Vol/Fee</Tab>
                   </TabList>
                   <TabPanels>
-                    <TabPanel p={0}>
-                      {renderChart()}
-                    </TabPanel>
                     <TabPanel p={0}>
                       {renderChart()}
                     </TabPanel>

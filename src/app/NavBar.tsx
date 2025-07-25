@@ -12,6 +12,7 @@ import {
   useColorMode,
   Container,
   HStack,
+  Image,
 } from "@chakra-ui/react";
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
 import { useSearchParams } from "next/navigation";
@@ -71,13 +72,14 @@ export default function NavBar() {
             <Link
               href="https://cloud.krystal.app"
               isExternal
-              fontSize="2xl"
-              fontWeight="bold"
-              bgGradient="linear(to-r, brand.400, purple.500)"
-              bgClip="text"
               _hover={{ opacity: 0.8 }}
             >
-              cloud.krystal.app
+              <Image
+                src={colorMode === "light" ? "/images/krystal_cloud_black.svg" : "/images/krystal_cloud_white.svg"}
+                alt="Krystal Cloud"
+                h="40px"
+                w="auto"
+              />
             </Link>
             <HStack spacing={6}>
               <Link
