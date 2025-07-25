@@ -46,8 +46,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: 'projects/236698139289/locations/global/workloadIdentityPools/ops-workload-identity-pool/providers/github-action-provider'
+          service_account: 'image-uploader-develop@krystal-operation.iam.gserviceaccount.com'
 
       - name: Setup Gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
