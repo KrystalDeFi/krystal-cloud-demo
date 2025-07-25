@@ -96,26 +96,78 @@ export interface IAPoolHistorical {
 // POSITION INTERFACES
 // ============================================================================
 
-export interface IAPosition {
-  id: string;
-  poolName?: string;
-  status?: string;
-  type?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  walletAddress?: string;
-  chainId?: string;
-  poolAddress?: string;
-  tokenId?: string;
-  liquidity?: number;
-  feeGrowthInside0LastX128?: string;
-  feeGrowthInside1LastX128?: string;
-  tokensOwed0?: string;
-  tokensOwed1?: string;
+// Token amount interface for positions
+export interface IATokenAmount {
+  token: IAToken;
+  balance: string;
+  price: number;
+  value: number;
 }
 
-export interface IAPositionDetails extends IAPosition {
+// Trading fee interface
+export interface IATradingFee {
+  pending: IATokenAmount[];
+  claimed: IATokenAmount[];
+}
+
+// Performance interface
+export interface IAPerformance {
+  totalDepositValue: number;
+  totalWithdrawValue: number;
+  impermanentLoss: number;
+  pnl: number;
+  returnOnInvestment: number;
+  compareToHold: number;
+  apr: {
+    totalApr: number;
+    feeApr: number;
+    farmApr: number;
+  };
+}
+
+// Position interface based on the API response
+export interface IAPosition {
+  chain: IAChain;
+  pool: {
+    id: string;
+    poolAddress: string;
+    protocol: IAProtocol;
+  };
+  ownerAddress: string;
+  id: string;
+  tokenAddress: string;
+  tokenId: string;
+  liquidity: string;
+  minPrice: number;
+  maxPrice: number;
+  currentPositionValue?: number;
+  status: string;
+  currentAmounts: IATokenAmount[];
+  providedAmounts: IATokenAmount[];
+  tradingFee: IATradingFee;
+  lastUpdateBlock: number;
+  openedTime: number;
+  performance: IAPerformance;
+}
+
+export interface IAPositionDetails {
+  chain: IAChain;
   pool: IAPool;
+  ownerAddress: string;
+  id: string;
+  tokenAddress: string;
+  tokenId: string;
+  liquidity: string;
+  minPrice: number;
+  maxPrice: number;
+  currentPositionValue?: number;
+  status: string;
+  currentAmounts: IATokenAmount[];
+  providedAmounts: IATokenAmount[];
+  tradingFee: IATradingFee;
+  lastUpdateBlock: number;
+  openedTime: number;
+  performance: IAPerformance;
   currentValue: number;
   initialValue: number;
   pnl: number;
