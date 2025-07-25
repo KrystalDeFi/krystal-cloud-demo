@@ -44,6 +44,10 @@ import {
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
 import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
+import { Formatter } from "@/common/formatter";
+import { FallbackImg } from "@/components/FallbackImg";
+import { Address } from "@/components/Address";
+import { CHAIN_CONFIGS } from "@/common/config";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -580,16 +584,16 @@ export default function PoolDetailsPage() {
                     
                     <SimpleGrid columns={3} spacing={4} w="full">
                       <Stat>
-                        <StatLabel color={mutedTextColor} fontSize="xs">Volume</StatLabel>
-                        <StatNumber fontSize="lg" color={textColor}>{formatCurrency(statsData.volume)}</StatNumber>
+                        <StatLabel color={mutedTextColor} fontSize="xs">Volume ({selectedTimeframe})</StatLabel>
+                        <StatNumber fontSize="lg" color={textColor}>{Formatter.formatCurrency(statsData.volume)}</StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel color={mutedTextColor} fontSize="xs">Fee</StatLabel>
-                        <StatNumber fontSize="lg" color={textColor}>{formatCurrency(statsData.fee)}</StatNumber>
+                        <StatLabel color={mutedTextColor} fontSize="xs">Fee ({selectedTimeframe})</StatLabel>
+                        <StatNumber fontSize="lg" color={textColor}>{Formatter.formatCurrency(statsData.fee)}</StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel color={mutedTextColor} fontSize="xs">APR</StatLabel>
-                        <StatNumber fontSize="lg" color={textColor}>{statsData.apr.toFixed(2)}%</StatNumber>
+                        <StatLabel color={mutedTextColor} fontSize="xs">APR ({selectedTimeframe})</StatLabel>
+                        <StatNumber fontSize="lg" color={textColor}>{Formatter.formatAPR(statsData.apr)}</StatNumber>
                       </Stat>
                     </SimpleGrid>
                   </VStack>
@@ -600,7 +604,7 @@ export default function PoolDetailsPage() {
         </Box>
 
         {/* Main Content Grid */}
-        <Grid templateColumns={{ base: "1fr", lg: "2fr 1fr" }} gap={8} mb={8}>
+        <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8} mb={8}>
           {/* Historical Chart */}
           <GridItem>
             <Card bg={cardBg} border="1px" borderColor={borderColor}>
@@ -669,125 +673,91 @@ export default function PoolDetailsPage() {
             </Card>
           </GridItem>
 
-          {/* Token Information */}
+          {/* Information */}
           <GridItem>
-            <VStack spacing={6}>
-              <Card bg={cardBg} border="1px" borderColor={borderColor} w="full">
-                <CardBody>
-                  <Heading size="md" mb={6} color={textColor}>Token Information</Heading>
-                  <VStack spacing={4} align="stretch">
-                    <Box>
-                      <HStack spacing={2} mb={2} justify="space-between">
-                        <HStack spacing={2}>
-                          <Image 
-                            src={pool.token0.logo || `/images/token-fallback.png`} 
-                            alt={pool.token0.symbol}
-                            boxSize="24px"
-                            borderRadius="full"
-                            fallbackSrc="/images/token-fallback.png"
-                          />
-                          <Text fontWeight="medium" color={textColor}>{pool.token0.symbol}</Text>
-                        </HStack>
-                        <Text fontSize="sm" color={mutedTextColor}>{pool.token0.name}</Text>
-                      </HStack>
-                      <HStack spacing={2} justify="space-between">
-                        <HStack spacing={2}>
-                          <Text fontSize="xs" fontFamily="mono" color={mutedTextColor}>
-                            {pool.token0.address.slice(0, 8)}...{pool.token0.address.slice(-4)}
-                          </Text>
-                          <IconButton
-                            icon={<CopyIcon />}
-                            size="xs"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(pool.token0.address, "Token address")}
-                            aria-label="Copy token address"
-                          />
-                        </HStack>
-                        {/* <Link href={getExplorerUrl(pool.chainId, pool.token0.address)} isExternal>
-                          <IconButton
-                            icon={<ExternalLinkIcon />}
-                            size="xs"
-                            variant="ghost"
-                            aria-label="View token on explorer"
-                          />
-                        </Link> */}
-                      </HStack>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <HStack spacing={2} mb={2} justify="space-between">
-                        <HStack spacing={2}>
-                          <Image 
-                            src={pool.token1.logo || `/images/token-fallback.png`} 
-                            alt={pool.token1.symbol}
-                            boxSize="24px"
-                            borderRadius="full"
-                            fallbackSrc="/images/token-fallback.png"
-                          />
-                          <Text fontWeight="medium" color={textColor}>{pool.token1.symbol}</Text>
-                        </HStack>
-                        <Text fontSize="sm" color={mutedTextColor}>{pool.token1.name}</Text>
-                      </HStack>
-                      <HStack spacing={2} justify="space-between">
-                        <HStack spacing={2}>
-                          <Text fontSize="xs" fontFamily="mono" color={mutedTextColor}>
-                            {pool.token1.address.slice(0, 8)}...{pool.token1.address.slice(-4)}
-                          </Text>
-                          <IconButton
-                            icon={<CopyIcon />}
-                            size="xs"
-                            variant="ghost"
-                            onClick={() => copyToClipboard(pool.token1.address, "Token address")}
-                            aria-label="Copy token address"
-                          />
-                        </HStack>
-                        {/* <Link href={getExplorerUrl(pool.chainId, pool.token1.address)} isExternal>
-                          <IconButton
-                            icon={<ExternalLinkIcon />}
-                            size="xs"
-                            variant="ghost"
-                            aria-label="View token on explorer"
-                          />
-                        </Link> */}
-                      </HStack>
-                    </Box>
-                  </VStack>
-                </CardBody>
-              </Card>
-
-              {/* Reference Links */}
-              <Card bg={cardBg} border="1px" borderColor={borderColor} w="full">
-                <CardBody>
-                  <Heading size="md" mb={4} color={textColor}>References</Heading>
-                  <HStack spacing={3} justify="center">
-                    <Link href="https://krystal.app" isExternal>
-                      <IconButton
-                        icon={<Image src="/images/krystal-logo.png" alt="Krystal" boxSize="16px" fallbackSrc="/images/token-fallback.png" />}
-                        size="md"
-                        variant="outline"
-                        aria-label="Visit Krystal"
-                      />
-                    </Link>
-                    {/* <Link href={getDexscreenerUrl(pool.chainId, pool.poolAddress)} isExternal>
-                      <IconButton
-                        icon={<Image src="/images/dexscreener-logo.png" alt="DexScreener" boxSize="16px" fallbackSrc="/images/token-fallback.png" />}
-                        size="md"
-                        variant="outline"
-                        aria-label="View on DexScreener"
-                      />
-                    </Link>
-                    <Link href={getExplorerUrl(pool.chainId, pool.poolAddress)} isExternal>
-                      <IconButton
-                        icon={<ExternalLinkIcon />}
-                        size="md"
-                        variant="outline"
-                        aria-label="View on Explorer"
-                      />
-                    </Link> */}
+            <Card bg={cardBg} border="1px" borderColor={borderColor} w="full">
+              <CardBody>
+                <Heading size="md" mb={6} color={textColor}>Information</Heading>
+                <VStack spacing={4} align="stretch">
+                  <HStack spacing={2} justify="space-between">
+                    <Text fontSize="sm" color={mutedTextColor}>Chain</Text>
+                    <HStack spacing={2}>
+                      <FallbackImg src={pool.chain.logo} alt={pool.chain.name} boxSize="20px" />
+                      <Text fontSize="sm" color={textColor}>{pool.chain.name}</Text>
+                    </HStack>
                   </HStack>
-                </CardBody>
-              </Card>
-            </VStack>
+                  <HStack spacing={2} justify="space-between">
+                    <Text fontSize="sm" color={mutedTextColor}>Protocol</Text>
+                    <HStack spacing={2}>
+                      <FallbackImg src={pool.protocol.logo} alt={pool.protocol.name} boxSize="20px" />
+                      <Text fontSize="sm" color={textColor}>{pool.protocol.name}</Text>
+                    </HStack>
+                  </HStack>
+                  <HStack spacing={2} justify="space-between">
+                    <Text fontSize="sm" color={mutedTextColor}>Pool</Text>
+                    <Address address={pool.poolAddress} explorerBaseUrl={pool.chain.explorer + "/address/"}/>
+                  </HStack>
+                  <HStack spacing={2} justify="space-between">
+                    <Text fontSize="sm" color={mutedTextColor}>Fee-tier</Text>
+                    <Text fontSize="sm" color={textColor}>{pool.feeTier / 10000}%</Text>
+                  </HStack>
+                  <HStack spacing={2} justify="space-between" align="start">
+                    <Text fontSize="sm" color={mutedTextColor}>Token0</Text>
+                    <VStack align="end">
+                      <HStack spacing={2}>
+                        <FallbackImg src={pool.token0.logo ?? ""} alt={pool.token0.symbol} boxSize="20px" />
+                        <Text fontSize="sm" color={textColor}>{pool.token0.symbol} ({pool.token0.name})</Text>
+                      </HStack>
+                      <Address address={pool.token0.address} explorerBaseUrl={pool.chain.explorer + "/token/"} color={textColor} fontSize="xs"/>
+                    </VStack>
+                  </HStack>
+                  <HStack spacing={2} justify="space-between" align="start">
+                    <Text fontSize="sm" color={mutedTextColor}>Token1</Text>
+                    <VStack align="end">
+                      <HStack spacing={2}>
+                        <FallbackImg src={pool.token1.logo ?? ""} alt={pool.token1.symbol} boxSize="20px" />
+                        <Text fontSize="sm" color={textColor}>{pool.token1.symbol} ({pool.token1.name})</Text>
+                      </HStack>
+                      <Address address={pool.token1.address} explorerBaseUrl={pool.chain.explorer + "/token/"} color={textColor} fontSize="xs"/>
+                    </VStack>
+                  </HStack>
+
+                  <Divider />
+
+                  <HStack spacing={2} justify="center">
+                    {[
+                      {
+                        img: "/images/krystal.png",
+                        label: "[krystal]",
+                        href: `https://defi.krystal.app/pools/detail?chainId=${pool.chain.id}&poolAddress=${pool.poolAddress}&protocol=${pool.protocol.key}`
+                      },
+                      {
+                        img: "/images/dexscreener.png",
+                        label: "[dexscreener]",
+                        href: `https://dexscreener.com/${CHAIN_CONFIGS[pool.chain.id]?.dexscreener_key}/${pool.poolAddress}`
+                      },
+                      {
+                        img: "/images/scan.png",
+                        label: "[explorer]",
+                        href: `${pool.chain.explorer}/address/${pool.poolAddress}`
+                      }
+                    ].map((item) => (
+                      <Link href={item.href} isExternal fontSize="xs">
+                        {item.label}
+                        {/* <Image
+                          src={item.img}
+                          boxSize="22px"
+                          filter="grayscale(1)"
+                          _hover={{ filter: "none" }}
+                          transition="filter 0.2s"
+                        /> */}
+                      </Link>
+                    ))}
+                  </HStack>
+
+                </VStack>
+              </CardBody>
+            </Card>
           </GridItem>
         </Grid>
 

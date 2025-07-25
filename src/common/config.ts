@@ -32,31 +32,6 @@ export interface IEmbedConfig {
 }
 
 // ============================================================================
-// UTILITY INTERFACES
-// ============================================================================
-
-// Chain ID type
-export type IChainId = 
-  | "ethereum@1"
-  | "polygon@137"
-  | "bsc@56"
-  | "arbitrum@42161"
-  | "optimism@10"
-  | "avalanche@43114"
-  | "fantom@250"
-  | "cronos@25"
-  | "base@8453"
-  | "linea@59144"
-  | "unknown"
-  | string; // Allow any string for dynamic chain IDs
-
-export interface IChainConfig {
-  name: string;
-  color: string;
-  explorer: string;
-}
-
-// ============================================================================
 // CONSTANTS
 // ============================================================================
 
@@ -73,3 +48,36 @@ export const POSITION_STATUS = {
   OPEN: 'OPEN',
   CLOSED: 'CLOSED',
 } as const; 
+
+export const CHAIN_CONFIGS: Record<any, { dexscreener_key: string }> = {
+  1: {
+    dexscreener_key: "ethereum",
+  },
+  137: {
+    dexscreener_key: "polygon",
+  },
+  56: {
+    dexscreener_key: "bsc",
+  },
+  42161: {
+    dexscreener_key: "arbitrum",
+  },
+  10: {
+    dexscreener_key: "optimism",
+  },
+  43114: {
+    dexscreener_key: "avalanche",
+  },
+  250: {
+    dexscreener_key: "fantom",
+  },
+  25: {
+    dexscreener_key: "cronos",
+  },
+  8453: {
+    dexscreener_key: "base",
+  },
+  59144: {
+    dexscreener_key: "linea",
+  },
+}

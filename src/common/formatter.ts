@@ -9,11 +9,11 @@ export class Formatter {
     }).format(value);
   }
 
-  static formatAPR(value: number) {
+  static formatAPR(value: number, isPercentage: boolean = true) {
     return new Intl.NumberFormat("en-US", {
       style: "percent",
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(value);
+    }).format(isPercentage ? value/100 : value);
   }
 }
