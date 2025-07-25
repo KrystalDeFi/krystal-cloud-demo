@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {Image} from "@chakra-ui/react";
+import { Image } from "@chakra-ui/react";
 
 type FallbackImgProps = {
   src: string;
@@ -8,7 +8,7 @@ type FallbackImgProps = {
   [key: string]: any;
 };
 
-const DEFAULT_FALLBACK = "/images/token-fallback.png"; 
+const DEFAULT_FALLBACK = "/images/token-fallback.png";
 
 export const FallbackImg: React.FC<FallbackImgProps> = ({
   src,
@@ -16,7 +16,6 @@ export const FallbackImg: React.FC<FallbackImgProps> = ({
   fallbackSrc = DEFAULT_FALLBACK,
   ...props
 }) => {
-
   return (
     <Image
       src={src}

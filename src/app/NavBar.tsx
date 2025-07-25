@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import {
   Box,
   Flex,
@@ -75,18 +75,18 @@ export default function NavBar() {
               _hover={{ opacity: 0.8 }}
             >
               <Image
-                src={colorMode === "light" ? "/images/krystal_cloud_black.svg" : "/images/krystal_cloud_white.svg"}
+                src={
+                  colorMode === "light"
+                    ? "/images/krystal_cloud_black.svg"
+                    : "/images/krystal_cloud_white.svg"
+                }
                 alt="Krystal Cloud"
                 h="40px"
                 w="auto"
               />
             </Link>
             <HStack spacing={6}>
-              <Link
-                href="/"
-                fontSize="sm"
-                fontWeight="medium"
-              >
+              <Link href="/" fontSize="sm" fontWeight="medium">
                 Home
               </Link>
 
@@ -166,4 +166,4 @@ export default function NavBar() {
       </Container>
     </Box>
   );
-} 
+}

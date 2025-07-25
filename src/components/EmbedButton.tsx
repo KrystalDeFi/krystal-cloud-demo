@@ -29,7 +29,7 @@ export default function EmbedButton() {
   const router = useRouter();
   const pathname = usePathname();
   const toast = useToast();
-  
+
   const isEmbedMode = searchParams.get("embed") === "true";
   const [config, setConfig] = useState<IEmbedConfig>({
     theme: "auto",
@@ -50,7 +50,8 @@ export default function EmbedButton() {
 
   useEffect(() => {
     // Load config from URL params
-    const theme = searchParams.get("theme") as "light" | "dark" | "auto" || "auto";
+    const theme =
+      (searchParams.get("theme") as "light" | "dark" | "auto") || "auto";
     const primaryColor = searchParams.get("primaryColor") || "blue";
     const showHeader = searchParams.get("showHeader") !== "false";
     const showFooter = searchParams.get("showFooter") !== "false";
@@ -74,14 +75,14 @@ export default function EmbedButton() {
     // Update URL params without page reload
     const params = new URLSearchParams(searchParams.toString());
     params.set(key.toString(), value.toString());
-    
+
     // Use replace to update URL without navigation
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
   const generateEmbedCode = () => {
     if (!mounted) return "";
-    
+
     const params = new URLSearchParams();
     params.set("embed", "true");
     params.set("theme", config.theme);
@@ -92,7 +93,7 @@ export default function EmbedButton() {
     params.set("width", config.width);
 
     const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
-    
+
     return `<iframe 
   src="${embedUrl}"
   width="${config.width}"
@@ -131,12 +132,7 @@ export default function EmbedButton() {
   return (
     <>
       {/* Fixed Embed Button */}
-      <Box
-        position="fixed"
-        bottom={4}
-        right={4}
-        zIndex={998}
-      >
+      <Box position="fixed" bottom={4} right={4} zIndex={998}>
         <Button
           onClick={onOpen}
           colorScheme="gray"
@@ -146,7 +142,6 @@ export default function EmbedButton() {
         >
           Embed this page
         </Button>
-
       </Box>
 
       {/* Embed Configuration Panel */}
@@ -189,11 +184,21 @@ export default function EmbedButton() {
             <Box p={6}>
               <VStack spacing={6} align="stretch">
                 {/* Current Page Info */}
-                <Box p={4} bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="lg">
+                <Box
+                  p={4}
+                  bg="gray.50"
+                  _dark={{ bg: "gray.700" }}
+                  borderRadius="lg"
+                >
                   <Text fontSize="sm" fontWeight="medium" mb={2}>
                     Current Page
                   </Text>
-                  <Text fontSize="xs" fontFamily="mono" color="gray.600" _dark={{ color: "gray.300" }}>
+                  <Text
+                    fontSize="xs"
+                    fontFamily="mono"
+                    color="gray.600"
+                    _dark={{ color: "gray.300" }}
+                  >
                     {pathname}
                   </Text>
                 </Box>
@@ -208,7 +213,7 @@ export default function EmbedButton() {
                       <FormLabel fontSize="sm">Theme</FormLabel>
                       <Select
                         value={config.theme}
-                        onChange={(e) => updateConfig("theme", e.target.value)}
+                        onChange={e => updateConfig("theme", e.target.value)}
                         size="sm"
                       >
                         <option value="auto">Auto (System)</option>
@@ -221,7 +226,9 @@ export default function EmbedButton() {
                       <FormLabel fontSize="sm">Primary Color</FormLabel>
                       <Select
                         value={config.primaryColor}
-                        onChange={(e) => updateConfig("primaryColor", e.target.value)}
+                        onChange={e =>
+                          updateConfig("primaryColor", e.target.value)
+                        }
                         size="sm"
                       >
                         <option value="blue">Blue</option>
@@ -248,7 +255,9 @@ export default function EmbedButton() {
                       </FormLabel>
                       <Switch
                         isChecked={config.showHeader}
-                        onChange={(e) => updateConfig("showHeader", e.target.checked)}
+                        onChange={e =>
+                          updateConfig("showHeader", e.target.checked)
+                        }
                       />
                     </FormControl>
 
@@ -258,7 +267,9 @@ export default function EmbedButton() {
                       </FormLabel>
                       <Switch
                         isChecked={config.showFooter}
-                        onChange={(e) => updateConfig("showFooter", e.target.checked)}
+                        onChange={e =>
+                          updateConfig("showFooter", e.target.checked)
+                        }
                       />
                     </FormControl>
                   </VStack>
@@ -276,7 +287,7 @@ export default function EmbedButton() {
                       <FormLabel fontSize="sm">Width</FormLabel>
                       <Input
                         value={config.width}
-                        onChange={(e) => updateConfig("width", e.target.value)}
+                        onChange={e => updateConfig("width", e.target.value)}
                         size="sm"
                         placeholder="e.g., 100%, 800px"
                       />
@@ -286,7 +297,7 @@ export default function EmbedButton() {
                       <FormLabel fontSize="sm">Height</FormLabel>
                       <Input
                         value={config.height}
-                        onChange={(e) => updateConfig("height", e.target.value)}
+                        onChange={e => updateConfig("height", e.target.value)}
                         size="sm"
                         placeholder="e.g., 600px, 100vh"
                       />
@@ -302,7 +313,11 @@ export default function EmbedButton() {
                     <Text fontSize="md" fontWeight="medium">
                       Embed Code
                     </Text>
-                    <Button size="sm" onClick={copyToClipboard} colorScheme="brand">
+                    <Button
+                      size="sm"
+                      onClick={copyToClipboard}
+                      colorScheme="brand"
+                    >
                       Copy
                     </Button>
                   </HStack>
@@ -316,16 +331,31 @@ export default function EmbedButton() {
                     maxH="200px"
                     overflowY="auto"
                   >
-                    <Text fontSize="xs" fontFamily="mono" color="gray.600" _dark={{ color: "gray.300" }}>
+                    <Text
+                      fontSize="xs"
+                      fontFamily="mono"
+                      color="gray.600"
+                      _dark={{ color: "gray.300" }}
+                    >
                       {generateEmbedCode()}
                     </Text>
                   </Box>
                 </Box>
 
                 {/* Live Preview Note */}
-                <Box p={3} bg="blue.50" _dark={{ bg: "blue.900" }} borderRadius="md">
-                  <Text fontSize="sm" color="blue.700" _dark={{ color: "blue.200" }}>
-                    💡 Changes are applied immediately. Copy the embed code to use this configuration in other applications.
+                <Box
+                  p={3}
+                  bg="blue.50"
+                  _dark={{ bg: "blue.900" }}
+                  borderRadius="md"
+                >
+                  <Text
+                    fontSize="sm"
+                    color="blue.700"
+                    _dark={{ color: "blue.200" }}
+                  >
+                    💡 Changes are applied immediately. Copy the embed code to
+                    use this configuration in other applications.
                   </Text>
                 </Box>
               </VStack>
@@ -350,4 +380,4 @@ export default function EmbedButton() {
       )}
     </>
   );
-} 
+}

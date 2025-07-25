@@ -1,4 +1,3 @@
-
 export class Formatter {
   static formatCurrency(value: number) {
     return new Intl.NumberFormat("en-US", {
@@ -14,11 +13,11 @@ export class Formatter {
       style: "percent",
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(isPercentage ? value/100 : value);
+    }).format(isPercentage ? value / 100 : value);
   }
 
   static formatPercentage(value: number, showSign: boolean = true) {
-    const sign = showSign && value >= 0 ? '+' : '';
+    const sign = showSign && value >= 0 ? "+" : "";
     return `${sign}${value.toFixed(2)}%`;
   }
 
@@ -45,13 +44,13 @@ export class Formatter {
     const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
     if (diffDays > 0) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''}`;
+      return `${diffDays} day${diffDays > 1 ? "s" : ""}`;
     } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''}`;
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""}`;
     } else if (diffMinutes > 0) {
-      return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''}`;
+      return `${diffMinutes} minute${diffMinutes > 1 ? "s" : ""}`;
     } else {
-      return 'about 1 hour';
+      return "about 1 hour";
     }
   }
 }

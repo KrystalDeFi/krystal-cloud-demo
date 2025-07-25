@@ -1,7 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import NavBar from "./NavBar";
 import ThemeProvider from "./ThemeProvider";

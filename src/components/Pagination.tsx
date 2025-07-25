@@ -24,7 +24,6 @@ interface IPaginationProps {
   showFirstLastButtons?: boolean;
 }
 
-
 export default function Pagination({
   currentPage,
   totalItems,
@@ -36,7 +35,7 @@ export default function Pagination({
   showFirstLastButtons = true,
 }: IPaginationProps) {
   const totalPages = totalItems ? Math.ceil(totalItems / pageSize) : null;
-  
+
   const buttonBg = useColorModeValue("white", "gray.800");
   const buttonBorderColor = useColorModeValue("gray.200", "gray.700");
   const activeButtonBg = useColorModeValue("brand.500", "brand.400");
@@ -61,7 +60,7 @@ export default function Pagination({
       if (totalPages > currentPage + 1) {
         pages.push(totalPages);
       }
-    }    
+    }
     return pages;
   };
 
@@ -85,24 +84,32 @@ export default function Pagination({
         >
           {showPageSizeSelector && (
             <HStack spacing={2}>
-              <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
+              <Text
+                fontSize="sm"
+                color="gray.600"
+                _dark={{ color: "gray.300" }}
+              >
                 Show:
               </Text>
               <Select
                 value={pageSize.toString()}
-                onChange={(e) => onPageSizeChange(parseInt(e.target.value))}
+                onChange={e => onPageSizeChange(parseInt(e.target.value))}
                 size="sm"
                 w="80px"
                 bg={buttonBg}
                 borderColor={buttonBorderColor}
               >
-                {pageSizeOptions.map((size) => (
+                {pageSizeOptions.map(size => (
                   <option key={size} value={size}>
                     {size}
                   </option>
                 ))}
               </Select>
-              <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
+              <Text
+                fontSize="sm"
+                color="gray.600"
+                _dark={{ color: "gray.300" }}
+              >
                 per page
               </Text>
             </HStack>
@@ -169,9 +176,7 @@ export default function Pagination({
                   color={currentPage === page ? activeButtonColor : "inherit"}
                   borderColor={buttonBorderColor}
                   _hover={{
-                    bg: currentPage === page 
-                      ? brandHoverBg
-                      : hoverBg,
+                    bg: currentPage === page ? brandHoverBg : hoverBg,
                   }}
                   minW="40px"
                 >
@@ -220,4 +225,4 @@ export default function Pagination({
       </Flex>
     </Box>
   );
-} 
+}

@@ -123,14 +123,18 @@ const createTheme = (primaryColor: string = "blue") => {
   });
 };
 
-export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+export default function ThemeProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const searchParams = useSearchParams();
   const [theme, setTheme] = useState(createTheme());
 
   useEffect(() => {
     const primaryColor = searchParams.get("primaryColor") || "blue";
     const embedTheme = searchParams.get("theme");
-    
+
     // Handle embed theme mode
     if (embedTheme && embedTheme !== "auto") {
       // Force light or dark mode based on embed parameter
@@ -144,4 +148,4 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   }, [searchParams]);
 
   return <ChakraProvider theme={theme}>{children}</ChakraProvider>;
-} 
+}

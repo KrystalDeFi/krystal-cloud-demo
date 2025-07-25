@@ -1,6 +1,6 @@
-import React from 'react';
-import { VStack, HStack, Text, Box } from '@chakra-ui/react';
-import { Formatter } from '../common/formatter';
+import React from "react";
+import { VStack, HStack, Text, Box } from "@chakra-ui/react";
+import { Formatter } from "../common/formatter";
 
 interface PriceRangeDisplayProps {
   minPrice: number;
@@ -10,12 +10,12 @@ interface PriceRangeDisplayProps {
   showVisual?: boolean;
 }
 
-export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({ 
-  minPrice, 
-  maxPrice, 
+export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({
+  minPrice,
+  maxPrice,
   currentPrice,
   showPercentages = true,
-  showVisual = true
+  showVisual = true,
 }) => {
   const calculatePercentage = (price: number, basePrice: number) => {
     return ((price - basePrice) / basePrice) * 100;
@@ -35,14 +35,14 @@ export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({
         <Text fontSize="xs">{Formatter.formatPrice(minPrice)}</Text>
         {showVisual && (
           <Box w="40px" h="2px" bg="gray.300" position="relative">
-            <Box 
-              position="absolute" 
-              left={`${getCurrentPricePosition()}%`} 
-              top="-2px" 
-              w="4px" 
-              h="6px" 
-              bg="yellow.400" 
-              borderRadius="sm" 
+            <Box
+              position="absolute"
+              left={`${getCurrentPricePosition()}%`}
+              top="-2px"
+              w="4px"
+              h="6px"
+              bg="yellow.400"
+              borderRadius="sm"
             />
           </Box>
         )}
@@ -51,13 +51,17 @@ export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({
       {showPercentages && currentPrice && (
         <HStack spacing={2}>
           <Text fontSize="xs" color="red.500">
-            {Formatter.formatPercentage(calculatePercentage(minPrice, currentPrice))}
+            {Formatter.formatPercentage(
+              calculatePercentage(minPrice, currentPrice)
+            )}
           </Text>
           <Text fontSize="xs" color="green.500">
-            {Formatter.formatPercentage(calculatePercentage(maxPrice, currentPrice))}
+            {Formatter.formatPercentage(
+              calculatePercentage(maxPrice, currentPrice)
+            )}
           </Text>
         </HStack>
       )}
     </VStack>
   );
-}; 
+};

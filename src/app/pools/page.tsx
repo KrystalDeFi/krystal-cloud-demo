@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import {
   Flex,
   Box,
@@ -26,15 +26,10 @@ import {
   TableContainer,
   Image,
 } from "@chakra-ui/react";
-import { 
-  ExternalLinkIcon, 
-  ArrowBackIcon,
-} from "@chakra-ui/icons";
+import { ExternalLinkIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { IPoolsParams, KrystalApi } from "../../services/krystalApi";
-import { 
-  SORT_OPTIONS,
-} from "../../common/config";
+import { SORT_OPTIONS } from "../../common/config";
 import { useChainsProtocols } from "../../contexts/ChainsProtocolsContext";
 import Pagination from "../../components/Pagination";
 import { IAPool } from "../../services/apiTypes";
@@ -53,21 +48,29 @@ function PoolsPageContent() {
 
   const [filters, setFilters] = useState<FilterParams>({
     token: searchParams?.get("token") || undefined,
-    chainId: searchParams?.get("chainId") ? +searchParams.get("chainId")! : undefined,
+    chainId: searchParams?.get("chainId")
+      ? +searchParams.get("chainId")!
+      : undefined,
     protocol: searchParams?.get("protocol") || undefined,
-    minTvl: searchParams?.get("minTvl") ? parseInt(searchParams.get("minTvl")!) : undefined,
-    minVolume24h: searchParams?.get("minVolume24h") ? parseInt(searchParams.get("minVolume24h")!) : undefined,
-    sortBy: parseInt(searchParams?.get("sortBy") || SORT_OPTIONS.TVL.toString()),
+    minTvl: searchParams?.get("minTvl")
+      ? parseInt(searchParams.get("minTvl")!)
+      : undefined,
+    minVolume24h: searchParams?.get("minVolume24h")
+      ? parseInt(searchParams.get("minVolume24h")!)
+      : undefined,
+    sortBy: parseInt(
+      searchParams?.get("sortBy") || SORT_OPTIONS.TVL.toString()
+    ),
     limit: parseInt(searchParams?.get("limit") || "50"),
     offset: parseInt(searchParams?.get("offset") || "0"),
   });
-  
+
   // Cache data
-  const { chains, protocols} = useChainsProtocols();
+  const { chains, protocols } = useChainsProtocols();
 
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
-  
+
   // Update URL params when filters change
   const updateUrlParams = (updates: Record<string, string>) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -86,12 +89,14 @@ function PoolsPageContent() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const apiKey = KrystalApi.getApiKey();
       if (!apiKey) {
-        throw new Error("API key not found. Please set your API key in the navigation bar.");
+        throw new Error(
+          "API key not found. Please set your API key in the navigation bar."
+        );
       }
-      
+
       // Prepare API parameters based on swagger specification
       const apiParams: IPoolsParams = {
         ...filters,
@@ -101,9 +106,9 @@ function PoolsPageContent() {
 
       // Call the actual API with parameters
       const response = await KrystalApi.pools.getAll(apiKey, apiParams);
-      
+
       console.log("API Response:", response);
-      
+
       if (response && response.data && Array.isArray(response.data)) {
         const poolsData = response.data;
         setPools(poolsData);
@@ -113,7 +118,11 @@ function PoolsPageContent() {
       }
     } catch (err) {
       console.error("Error fetching pools:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch pools. Please check your API key.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch pools. Please check your API key."
+      );
     } finally {
       setLoading(false);
     }
@@ -124,7 +133,10 @@ function PoolsPageContent() {
     fetchPools();
   }, [filters]);
 
-  const handleFilterChange = (key: keyof FilterParams, value: string | number | undefined) => {
+  const handleFilterChange = (
+    key: keyof FilterParams,
+    value: string | number | undefined
+  ) => {
     // Only trigger when the value changes
     if (filters[key] === value) {
       return;
@@ -150,108 +162,121 @@ function PoolsPageContent() {
     );
   }
 
-  const tableColumns = useMemo(() => [
-    {
-      label: "Pool",
-      renderer: (pool: IAPool) => (
-        <HStack>
-          <Image
-            boxSize={5}
-            src={pool.token0.logo}
-            alt={pool.token0.symbol}
-            fallbackSrc="/images/token-fallback.png"
-          />
-          <Text fontWeight="medium">{pool.token0.symbol}</Text>
-          <Text>/</Text>
-          <Image
-            boxSize={5}
-            src={pool.token1.logo}
-            alt={pool.token1.symbol}
-            fallbackSrc="/images/token-fallback.png"
-          />
-          <Text fontWeight="medium">{pool.token1.symbol}</Text>
-        </HStack>
-      )
-    },
-    {
-      label: "Chain",
-      renderer: (pool: IAPool) => (
-        <HStack>
-          <Image boxSize={5} src={pool.chain.logo} alt={pool.chain.name}/>
-          <Text fontSize="sm">{pool.chain.name}</Text>
-        </HStack>
-      )
-    },
-    {
-      label: "Protocol",
-      renderer: (pool: IAPool) => (
-        <HStack spacing={2}>
-          <Image boxSize={5} src={pool.protocol.logo} alt={pool.protocol.name}/>
-          <Text fontSize="sm">{pool.protocol.name}</Text>
-        </HStack>
-      )
-    },
-    {
-      label: "TVL",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.tvl)}</Text>
-      )
-    },
-    {
-      label: "24h Volume",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.stats24h?.volume || 0)}</Text>
-      )
-    },
-    { 
-      label: "24h Fees",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.stats24h?.fee || 0)}</Text>
-      )
-    },
-    {
-      label: "24h APR",
-      renderer: (pool: IAPool) => ( 
-        <Text color="green.500">{Formatter.formatAPR(pool.stats24h?.apr || 0)}</Text>
-      )
-    },
-    {
-      label: "7d Volume",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.stats7d?.volume || 0)}</Text>
-      )
-    },
-    {
-      label: "7d Fees",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.stats7d?.fee || 0)}</Text>
-      )
-    },
-    {
-      label: "7d APR",
-      renderer: (pool: IAPool) => (
-        <Text color="green.500">{Formatter.formatAPR(pool.stats7d?.apr || 0)}</Text>
-      )
-    },
-    {
-      label: "30d Volume",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.stats30d?.volume || 0)}</Text>
-      )
-    },
-    {
-      label: "30d Fees",
-      renderer: (pool: IAPool) => (
-        <Text>{Formatter.formatCurrency(pool.stats30d?.fee || 0)}</Text>
-      )
-    },
-    {
-      label: "30d APR",
-      renderer: (pool: IAPool) => (
-        <Text color="green.500">{Formatter.formatAPR(pool.stats30d?.apr || 0)}</Text>
-      )
-    },
-  ], []);
+  const tableColumns = useMemo(
+    () => [
+      {
+        label: "Pool",
+        renderer: (pool: IAPool) => (
+          <HStack>
+            <Image
+              boxSize={5}
+              src={pool.token0.logo}
+              alt={pool.token0.symbol}
+              fallbackSrc="/images/token-fallback.png"
+            />
+            <Text fontWeight="medium">{pool.token0.symbol}</Text>
+            <Text>/</Text>
+            <Image
+              boxSize={5}
+              src={pool.token1.logo}
+              alt={pool.token1.symbol}
+              fallbackSrc="/images/token-fallback.png"
+            />
+            <Text fontWeight="medium">{pool.token1.symbol}</Text>
+          </HStack>
+        ),
+      },
+      {
+        label: "Chain",
+        renderer: (pool: IAPool) => (
+          <HStack>
+            <Image boxSize={5} src={pool.chain.logo} alt={pool.chain.name} />
+            <Text fontSize="sm">{pool.chain.name}</Text>
+          </HStack>
+        ),
+      },
+      {
+        label: "Protocol",
+        renderer: (pool: IAPool) => (
+          <HStack spacing={2}>
+            <Image
+              boxSize={5}
+              src={pool.protocol.logo}
+              alt={pool.protocol.name}
+            />
+            <Text fontSize="sm">{pool.protocol.name}</Text>
+          </HStack>
+        ),
+      },
+      {
+        label: "TVL",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.tvl)}</Text>
+        ),
+      },
+      {
+        label: "24h Volume",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.stats24h?.volume || 0)}</Text>
+        ),
+      },
+      {
+        label: "24h Fees",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.stats24h?.fee || 0)}</Text>
+        ),
+      },
+      {
+        label: "24h APR",
+        renderer: (pool: IAPool) => (
+          <Text color="green.500">
+            {Formatter.formatAPR(pool.stats24h?.apr || 0)}
+          </Text>
+        ),
+      },
+      {
+        label: "7d Volume",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.stats7d?.volume || 0)}</Text>
+        ),
+      },
+      {
+        label: "7d Fees",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.stats7d?.fee || 0)}</Text>
+        ),
+      },
+      {
+        label: "7d APR",
+        renderer: (pool: IAPool) => (
+          <Text color="green.500">
+            {Formatter.formatAPR(pool.stats7d?.apr || 0)}
+          </Text>
+        ),
+      },
+      {
+        label: "30d Volume",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.stats30d?.volume || 0)}</Text>
+        ),
+      },
+      {
+        label: "30d Fees",
+        renderer: (pool: IAPool) => (
+          <Text>{Formatter.formatCurrency(pool.stats30d?.fee || 0)}</Text>
+        ),
+      },
+      {
+        label: "30d APR",
+        renderer: (pool: IAPool) => (
+          <Text color="green.500">
+            {Formatter.formatAPR(pool.stats30d?.apr || 0)}
+          </Text>
+        ),
+      },
+    ],
+    []
+  );
 
   return (
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
@@ -269,7 +294,11 @@ function PoolsPageContent() {
                 Back to Home
               </Button>
               <Heading size="2xl">DeFi Pools</Heading>
-              <Text fontSize="lg" color="gray.600" _dark={{ color: "gray.300" }}>
+              <Text
+                fontSize="lg"
+                color="gray.600"
+                _dark={{ color: "gray.300" }}
+              >
                 Browse and filter DeFi pools across different chains
               </Text>
             </VStack>
@@ -280,20 +309,34 @@ function PoolsPageContent() {
 
         <VStack spacing={4} align="stretch">
           {/* Search and Basic Filters */}
-          <Flex gap={4} wrap="wrap" justifyContent={"space-between"} fontSize={"xs"} pb={8}>
+          <Flex
+            gap={4}
+            wrap="wrap"
+            justifyContent={"space-between"}
+            fontSize={"xs"}
+            pb={8}
+          >
             <TextInput
               placeholder="Search by token"
               defaultValue={filters.token || ""}
-              onInputFinalized={(value) => handleFilterChange("token", value)}
+              onInputFinalized={value => handleFilterChange("token", value)}
               size="sm"
             />
-            <Select w="fit-content"
+            <Select
+              w="fit-content"
               value={filters.chainId?.toString() || "all"}
-              onChange={(e) => handleFilterChange("chainId", e.target.value === "all" ? undefined : parseInt(e.target.value))}
+              onChange={e =>
+                handleFilterChange(
+                  "chainId",
+                  e.target.value === "all"
+                    ? undefined
+                    : parseInt(e.target.value)
+                )
+              }
               size="sm"
             >
               <option value="all">All Chains</option>
-              {chains.map((chain) => (
+              {chains.map(chain => (
                 <option key={chain.id} value={chain.id}>
                   {chain.name}
                 </option>
@@ -302,11 +345,16 @@ function PoolsPageContent() {
             <Select
               w="fit-content"
               value={filters.protocol || "all"}
-              onChange={(e) => handleFilterChange("protocol", e.target.value === "all" ? undefined : e.target.value)}
+              onChange={e =>
+                handleFilterChange(
+                  "protocol",
+                  e.target.value === "all" ? undefined : e.target.value
+                )
+              }
               size="sm"
             >
               <option value="all">All Protocols</option>
-              {protocols.map((protocol) => (
+              {protocols.map(protocol => (
                 <option key={protocol.key} value={protocol.key}>
                   {protocol.name}
                 </option>
@@ -315,22 +363,29 @@ function PoolsPageContent() {
             <Select
               w="fit-content"
               value={filters.sortBy ?? SORT_OPTIONS.TVL}
-              onChange={(e) => {
+              onChange={e => {
                 handleFilterChange("sortBy", +e.target.value);
               }}
               size="sm"
             >
               <option value={SORT_OPTIONS.TVL}>Sort by: TVL</option>
               <option value={SORT_OPTIONS.APR}>Sort by: APR</option>
-              <option value={SORT_OPTIONS.VOLUME_24H}>Sort by: 24h Volume</option>
+              <option value={SORT_OPTIONS.VOLUME_24H}>
+                Sort by: 24h Volume
+              </option>
               <option value={SORT_OPTIONS.FEE}>Sort by: 24h Fees</option>
             </Select>
-            <TextInput 
+            <TextInput
               label="Min TVL (USD)"
               size="sm"
               placeholder="default: 1000"
               defaultValue={filters.minTvl}
-              onInputFinalized={(value) => handleFilterChange("minTvl", value ? parseInt(value) : undefined)}
+              onInputFinalized={value =>
+                handleFilterChange(
+                  "minTvl",
+                  value ? parseInt(value) : undefined
+                )
+              }
               type="number"
             />
             <TextInput
@@ -338,15 +393,26 @@ function PoolsPageContent() {
               size="sm"
               placeholder="default: 1000"
               defaultValue={filters.minVolume24h}
-              onInputFinalized={(value) => handleFilterChange("minVolume24h", value ? parseInt(value) : undefined)}
+              onInputFinalized={value =>
+                handleFilterChange(
+                  "minVolume24h",
+                  value ? parseInt(value) : undefined
+                )
+              }
               type="number"
             />
           </Flex>
         </VStack>
 
         {/* Pools Table */}
-        {!loading && 
-          <Card bg={cardBg} _dark={{ bg: "gray.800" }} border="1px" borderColor={borderColor} mb={6}>
+        {!loading && (
+          <Card
+            bg={cardBg}
+            _dark={{ bg: "gray.800" }}
+            border="1px"
+            borderColor={borderColor}
+            mb={6}
+          >
             <TableContainer>
               <Table variant="simple">
                 <Thead>
@@ -364,13 +430,19 @@ function PoolsPageContent() {
                   {pools.map((pool: IAPool) => (
                     <Tr
                       key={pool.poolAddress}
-                      _hover={{ bg: "gray.50", _dark: { bg: "gray.700" }, cursor: "pointer" }}
-                      onClick={() => router.push(`/pools/${pool.chain.id}/${pool.poolAddress}`)}
+                      _hover={{
+                        bg: "gray.50",
+                        _dark: { bg: "gray.700" },
+                        cursor: "pointer",
+                      }}
+                      onClick={() =>
+                        router.push(
+                          `/pools/${pool.chain.id}/${pool.poolAddress}`
+                        )
+                      }
                     >
                       {tableColumns.map((col, idx) => (
-                        <Td key={idx}>
-                          {col.renderer(pool)}
-                        </Td>
+                        <Td key={idx}>{col.renderer(pool)}</Td>
                       ))}
                     </Tr>
                   ))}
@@ -378,16 +450,18 @@ function PoolsPageContent() {
               </Table>
             </TableContainer>
           </Card>
-        }
+        )}
 
         {/* Pagination */}
         <Pagination
-          currentPage={filters.offset ? filters.offset / (filters.limit ?? 50) + 1 : 1}
+          currentPage={
+            filters.offset ? filters.offset / (filters.limit ?? 50) + 1 : 1
+          }
           pageSize={filters.limit ?? 50}
-          onPageChange={(page) => {
+          onPageChange={page => {
             handleFilterChange("offset", (page - 1) * (filters.limit ?? 50));
           }}
-          onPageSizeChange={(size) => {
+          onPageSizeChange={size => {
             handleFilterChange("limit", size);
           }}
         />
@@ -420,14 +494,16 @@ function PoolsPageContent() {
 
 export default function PoolsPage() {
   return (
-    <Suspense fallback={
-      <Container maxW="7xl" py={6}>
-        <Box textAlign="center" py={12}>
-          <Spinner size="xl" color="brand.500" />
-          <Text>Loading...</Text>
-        </Box>
-      </Container>
-    }>
+    <Suspense
+      fallback={
+        <Container maxW="7xl" py={6}>
+          <Box textAlign="center" py={12}>
+            <Spinner size="xl" color="brand.500" />
+            <Text>Loading...</Text>
+          </Box>
+        </Container>
+      }
+    >
       <PoolsPageContent />
     </Suspense>
   );

@@ -1,9 +1,17 @@
-const BASE_URL = process.env.NEXT_PUBLIC_KRYSTAL_API_URL || 'https://cloud-api.krystal.app';
-const API_KEY_STORAGE = 'krystal_api_key';
+const BASE_URL =
+  process.env.NEXT_PUBLIC_KRYSTAL_API_URL || "https://cloud-api.krystal.app";
+const API_KEY_STORAGE = "krystal_api_key";
 
 // Import types from centralized apiObjects file
-import { IAChain, IAPool, IAProtocol, IAPoolDetails, IAPosition, IAPositionDetails, IAPoolHistorical } from './apiTypes';
-
+import {
+  IAChain,
+  IAPool,
+  IAProtocol,
+  IAPoolDetails,
+  IAPosition,
+  IAPositionDetails,
+  IAPoolHistorical,
+} from "./apiTypes";
 
 // ============================================================================
 // API REQUEST PARAMETERS
@@ -11,16 +19,16 @@ import { IAChain, IAPool, IAProtocol, IAPoolDetails, IAPosition, IAPositionDetai
 
 // Pools API parameters
 export interface IPoolsParams {
-  chainId?: number;           // Chain ID (e.g., 1, 137, 56)
-  factoryAddress?: string;    // Factory address to filter pools
-  protocol?: string;          // Protocol name (e.g., uniswapv2, uniswapv3, etc.)
-  token?: string;             // Token address to filter pools
-  sortBy?: number;            // Sort by criteria (0: APR, 1: TVL, 2: Volume 24h, 3: Fee)
-  minTvl?: number;           // Minimum TVL filter in USD
-  minVolume24h?: number;     // Minimum 24h volume filter in USD
-  limit?: number;             // Number of results to return (max 5000)
-  offset?: number;            // Number of results to skip
-  withIncentives?: boolean;   // Include incentive data
+  chainId?: number; // Chain ID (e.g., 1, 137, 56)
+  factoryAddress?: string; // Factory address to filter pools
+  protocol?: string; // Protocol name (e.g., uniswapv2, uniswapv3, etc.)
+  token?: string; // Token address to filter pools
+  sortBy?: number; // Sort by criteria (0: APR, 1: TVL, 2: Volume 24h, 3: Fee)
+  minTvl?: number; // Minimum TVL filter in USD
+  minVolume24h?: number; // Minimum 24h volume filter in USD
+  limit?: number; // Number of results to return (max 5000)
+  offset?: number; // Number of results to skip
+  withIncentives?: boolean; // Include incentive data
 }
 
 // Pool detail API parameters
@@ -44,7 +52,7 @@ export interface IPoolHistoricalParams {
 export interface IPositionsParams {
   wallet: string;
   chainId?: string;
-  positionStatus?: 'OPEN' | 'CLOSED';
+  positionStatus?: "OPEN" | "CLOSED";
   protocols?: string[];
 }
 
@@ -77,13 +85,13 @@ export interface IApiError {
 
 // Helper function to get API key from localStorage
 const getApiKey = (): string => {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(API_KEY_STORAGE) || '';
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(API_KEY_STORAGE) || "";
 };
 
 // Helper function to set API key in localStorage
 const setApiKey = (key: string): void => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
   localStorage.setItem(API_KEY_STORAGE, key);
 };
 
@@ -94,7 +102,7 @@ const apiRequest = async <T>(
   params?: Record<string, any>
 ): Promise<T> => {
   const url = new URL(`${BASE_URL}${endpoint}`);
-  
+
   // Add query parameters if provided
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
@@ -112,11 +120,11 @@ const apiRequest = async <T>(
   console.log("Making API request to:", url.toString());
 
   const response = await fetch(url.toString(), {
-    method: 'GET',
+    method: "GET",
     headers: {
-      'KC-APIKey': apiKey,
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
+      "KC-APIKey": apiKey,
+      Accept: "application/json",
+      "Content-Type": "application/json",
     },
   });
 
@@ -125,7 +133,10 @@ const apiRequest = async <T>(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     console.error("API Error:", errorData);
-    throw new Error(errorData.message || `API error: ${response.status} - ${response.statusText}`);
+    throw new Error(
+      errorData.message ||
+        `API error: ${response.status} - ${response.statusText}`
+    );
   }
 
   const data = await response.json();
@@ -144,7 +155,10 @@ const chainsApi = {
 // Protocols API
 const protocolsApi = {
   getAll: async (apiKey: string): Promise<Record<string, IAProtocol>> => {
-    const response = await apiRequest<Record<string, IAProtocol>>("/v1/protocols", apiKey);
+    const response = await apiRequest<Record<string, IAProtocol>>(
+      "/v1/protocols",
+      apiKey
+    );
     return response;
   },
 };
@@ -152,9 +166,12 @@ const protocolsApi = {
 // Pools API
 const poolsApi = {
   // Get pools with filtering and pagination
-  getAll: async (apiKey: string, params: IPoolsParams = {}): Promise<IApiResponse<IAPool>> => {
+  getAll: async (
+    apiKey: string,
+    params: IPoolsParams = {}
+  ): Promise<IApiResponse<IAPool>> => {
     const response = await apiRequest<any>("/v1/pools", apiKey, params);
-    
+
     // Handle different response formats
     if (response && response.data && Array.isArray(response.data)) {
       // Standard wrapped response
@@ -180,7 +197,10 @@ const poolsApi = {
   },
 
   // Get specific pool details
-  getById: async (apiKey: string, params: IPoolDetailParams): Promise<IAPoolDetails> => {
+  getById: async (
+    apiKey: string,
+    params: IPoolDetailParams
+  ): Promise<IAPoolDetails> => {
     const { chainId, poolAddress, ...queryParams } = params;
     const response = await apiRequest<IAPoolDetails>(
       `/v1/pools/${chainId}/${poolAddress}`,
@@ -191,7 +211,10 @@ const poolsApi = {
   },
 
   // Get pool historical data
-  getHistorical: async (apiKey: string, params: IPoolHistoricalParams): Promise<IAPoolHistorical[]> => {
+  getHistorical: async (
+    apiKey: string,
+    params: IPoolHistoricalParams
+  ): Promise<IAPoolHistorical[]> => {
     const { chainId, poolAddress, ...queryParams } = params;
     const response = await apiRequest<IAPoolHistorical[]>(
       `/v1/pools/${chainId}/${poolAddress}/historical`,
@@ -205,13 +228,23 @@ const poolsApi = {
 // Positions API
 const positionsApi = {
   // Get all positions for a wallet
-  getAll: async (apiKey: string, params: IPositionsParams): Promise<IAPosition[]> => {
-    const response = await apiRequest<IAPosition[]>("/v1/positions", apiKey, params);
+  getAll: async (
+    apiKey: string,
+    params: IPositionsParams
+  ): Promise<IAPosition[]> => {
+    const response = await apiRequest<IAPosition[]>(
+      "/v1/positions",
+      apiKey,
+      params
+    );
     return response;
   },
 
   // Get specific position details
-  getById: async (apiKey: string, params: IPositionDetailParams): Promise<IAPositionDetails> => {
+  getById: async (
+    apiKey: string,
+    params: IPositionDetailParams
+  ): Promise<IAPositionDetails> => {
     const { chainId, positionId } = params;
     const response = await apiRequest<IAPositionDetails>(
       `/v1/positions/${chainId}/${positionId}`,

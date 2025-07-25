@@ -4,7 +4,7 @@ A demo application for [cloud.krystal.app](https://cloud.krystal.app) that showc
 
 ## Features
 
-- **Header Bar**: 
+- **Header Bar**:
   - Header link to cloud.krystal.app
   - API key input with localStorage persistence
   - Link to generate API key if none present
@@ -29,11 +29,13 @@ A demo application for [cloud.krystal.app](https://cloud.krystal.app) that showc
 ## Getting Started
 
 1. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Run the development server**:
+
    ```bash
    npm run dev
    ```
@@ -50,6 +52,7 @@ A demo application for [cloud.krystal.app](https://cloud.krystal.app) that showc
 ## API Integration
 
 The app integrates with the [Krystal Cloud API](https://cloud-api.krystal.app/swagger/index.html#/) to fetch:
+
 - Pools: `/api/v1/pools`
 - Positions: `/api/v1/positions`
 

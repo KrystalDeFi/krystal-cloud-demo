@@ -7,14 +7,17 @@ interface TextInputProps extends InputProps {
 }
 
 const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
-  ({ onInputFinalized, label, value: propValue, defaultValue, ...rest }, ref) => {
+  (
+    { onInputFinalized, label, value: propValue, defaultValue, ...rest },
+    ref
+  ) => {
     const [isFocused, setIsFocused] = useState(false);
     const [inputValue, setInputValue] = useState<string>(
       propValue !== undefined
         ? String(propValue)
         : defaultValue !== undefined
-        ? String(defaultValue)
-        : ""
+          ? String(defaultValue)
+          : ""
     );
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,9 +73,11 @@ const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
               zIndex={1}
               pointerEvents="none"
             >
-              <Text color="gray.500" fontSize="xs">hit enter ↳ to apply</Text>
+              <Text color="gray.500" fontSize="xs">
+                hit enter ↳ to apply
+              </Text>
             </Box>
-            )}
+          )}
         </Box>
       </Box>
     );

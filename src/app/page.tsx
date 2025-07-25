@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import {
   Box,
   Container,
@@ -44,9 +44,14 @@ const pages = [
     title: "Wallet Positions",
     description: "View all positions for a specific wallet address",
     path: "/wallets/0x01b31dd0714678f2b4c26f2113be1528ed005340/positions",
-    defaultLink: "/wallets/0x01b31dd0714678f2b4c26f2113be1528ed005340/positions",
+    defaultLink:
+      "/wallets/0x01b31dd0714678f2b4c26f2113be1528ed005340/positions",
     icon: ViewIcon,
-    features: ["Portfolio overview", "Position tracking", "Performance metrics"],
+    features: [
+      "Portfolio overview",
+      "Position tracking",
+      "Performance metrics",
+    ],
     badge: "Portfolio",
     example: "/wallets/0x1234.../positions",
   },
@@ -56,7 +61,11 @@ const pages = [
     path: "/positions/[chainId]/[positionId]",
     defaultLink: "/positions/ethereum/1",
     icon: InfoIcon,
-    features: ["Position details", "Transaction history", "Performance analysis"],
+    features: [
+      "Position details",
+      "Transaction history",
+      "Performance analysis",
+    ],
     badge: "Details",
     example: "/positions/ethereum/0x567...",
   },
@@ -67,7 +76,7 @@ export default function Home() {
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const searchParams = useSearchParams();
   const router = useRouter();
-  
+
   const isEmbedMode = searchParams.get("embed") === "true";
   const showFooter = searchParams.get("showFooter") !== "false";
 
@@ -76,11 +85,11 @@ export default function Home() {
   };
 
   return (
-    <Box 
-      minH="100vh" 
+    <Box
+      minH="100vh"
       bgGradient="linear(to-br, gray.50, brand.50, purple.50)"
       _dark={{
-        bgGradient: "linear(to-br, gray.900, brand.900, purple.900)"
+        bgGradient: "linear(to-br, gray.900, brand.900, purple.900)",
       }}
     >
       <Container maxW="7xl" py={6}>
@@ -94,34 +103,49 @@ export default function Home() {
           >
             Krystal Cloud Demo
           </Heading>
-          <Text fontSize="lg" color="gray.600" _dark={{ color: "gray.300" }} maxW="2xl">
-            Explore DeFi pools and positions with the Krystal Cloud API. This embeddable interface provides comprehensive data and analytics.
+          <Text
+            fontSize="lg"
+            color="gray.600"
+            _dark={{ color: "gray.300" }}
+            maxW="2xl"
+          >
+            Explore DeFi pools and positions with the Krystal Cloud API. This
+            embeddable interface provides comprehensive data and analytics.
           </Text>
         </VStack>
 
         {/* Guidelines */}
-        <Box 
-          bg={cardBg} 
+        <Box
+          bg={cardBg}
           _dark={{ bg: "gray.800" }}
-          borderRadius="xl" 
-          p={6} 
-          mb={8} 
+          borderRadius="xl"
+          p={6}
+          mb={8}
           boxShadow="lg"
           border="1px"
           borderColor={borderColor}
         >
-          <Heading size="md" mb={4} color="brand.600" _dark={{ color: "brand.400" }}>
+          <Heading
+            size="md"
+            mb={4}
+            color="brand.600"
+            _dark={{ color: "brand.400" }}
+          >
             🚀 Getting Started
           </Heading>
           <VStack align="start" spacing={3}>
             <Text>
-              <strong>Embedding:</strong> Use the embed button (bottom right) to customize and embed any page in your application.
+              <strong>Embedding:</strong> Use the embed button (bottom right) to
+              customize and embed any page in your application.
             </Text>
             <Text>
-              <strong>API Integration:</strong> All data is fetched from the Krystal Cloud API. Make sure to set your API key in the navigation bar.
+              <strong>API Integration:</strong> All data is fetched from the
+              Krystal Cloud API. Make sure to set your API key in the navigation
+              bar.
             </Text>
             <Text>
-              <strong>Customization:</strong> In embed mode, you can customize colors, themes, and display options through the right panel.
+              <strong>Customization:</strong> In embed mode, you can customize
+              colors, themes, and display options through the right panel.
             </Text>
           </VStack>
         </Box>
@@ -133,16 +157,16 @@ export default function Home() {
           </Heading>
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
             {pages.map((page, index) => (
-              <Card 
-                key={index} 
-                bg={cardBg} 
+              <Card
+                key={index}
+                bg={cardBg}
                 _dark={{ bg: "gray.800" }}
                 border="1px"
                 borderColor={borderColor}
-                _hover={{ 
+                _hover={{
                   transform: "translateY(-2px)",
                   boxShadow: "xl",
-                  borderColor: "brand.300"
+                  borderColor: "brand.300",
                 }}
                 transition="all 0.2s"
                 cursor="pointer"
@@ -166,18 +190,39 @@ export default function Home() {
                     {page.description}
                   </Text>
                   <VStack align="start" spacing={2}>
-                    <Text fontSize="sm" fontWeight="medium" color="gray.700" _dark={{ color: "gray.200" }}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="medium"
+                      color="gray.700"
+                      _dark={{ color: "gray.200" }}
+                    >
                       Features:
                     </Text>
                     {page.features.map((feature, idx) => (
-                      <Text key={idx} fontSize="sm" color="gray.600" _dark={{ color: "gray.400" }}>
+                      <Text
+                        key={idx}
+                        fontSize="sm"
+                        color="gray.600"
+                        _dark={{ color: "gray.400" }}
+                      >
                         • {feature}
                       </Text>
                     ))}
                   </VStack>
                   {page.example && (
-                    <Box mt={4} p={3} bg="gray.50" _dark={{ bg: "gray.700" }} borderRadius="md">
-                      <Text fontSize="xs" fontFamily="mono" color="gray.600" _dark={{ color: "gray.300" }}>
+                    <Box
+                      mt={4}
+                      p={3}
+                      bg="gray.50"
+                      _dark={{ bg: "gray.700" }}
+                      borderRadius="md"
+                    >
+                      <Text
+                        fontSize="xs"
+                        fontFamily="mono"
+                        color="gray.600"
+                        _dark={{ color: "gray.300" }}
+                      >
                         Example: {page.example}
                       </Text>
                     </Box>

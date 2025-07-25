@@ -17,7 +17,7 @@ permissions:
   # Optional: Allow write access to checks to allow the action to annotate code in the PR.
   checks: write
   # The 'id-token: write' permission allows the workflow to generate and write OpenID Connect (OIDC) tokens.
-  id-token: write  
+  id-token: write
 
 jobs:
   build-and-push-js-app:
@@ -25,7 +25,7 @@ jobs:
     environment: dev
     runs-on: ubuntu-latest
     env:
-      SERVICE_NAME: krystal-cloud-demo      
+      SERVICE_NAME: krystal-cloud-demo
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -34,7 +34,7 @@ jobs:
         id: buildx-context
         run: |
           docker context create builder
-          
+
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v2.2.1
@@ -45,8 +45,8 @@ jobs:
         id: auth
         uses: google-github-actions/auth@v1
         with:
-          workload_identity_provider: 'projects/236698139289/locations/global/workloadIdentityPools/ops-workload-identity-pool/providers/github-action-provider'
-          service_account: 'image-uploader-develop@krystal-operation.iam.gserviceaccount.com'
+          workload_identity_provider: "projects/236698139289/locations/global/workloadIdentityPools/ops-workload-identity-pool/providers/github-action-provider"
+          service_account: "image-uploader-develop@krystal-operation.iam.gserviceaccount.com"
 
       - name: Setup Gcloud SDK
         uses: google-github-actions/setup-gcloud@v2

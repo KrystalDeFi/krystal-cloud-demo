@@ -4,7 +4,7 @@ import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 
 type AddressProps = {
   address: string;
-  explorerBaseUrl?: string; 
+  explorerBaseUrl?: string;
   [key: string]: any;
 };
 

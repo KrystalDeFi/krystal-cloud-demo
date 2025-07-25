@@ -1,5 +1,5 @@
 "use client";
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 import React, { useState, useEffect, useMemo } from "react";
 import {
@@ -31,7 +31,10 @@ import {
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, ArrowBackIcon, CopyIcon } from "@chakra-ui/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { KrystalApi, IPositionDetailParams } from "../../../../services/krystalApi";
+import {
+  KrystalApi,
+  IPositionDetailParams,
+} from "../../../../services/krystalApi";
 import { IAPositionDetails } from "../../../../services/apiTypes";
 import { Formatter } from "../../../../common/formatter";
 import { DotIndicator } from "../../../../components/DotIndicator";
@@ -55,7 +58,7 @@ export default function PositionDetailsPage() {
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const textColor = useColorModeValue("gray.800", "white");
   const mutedTextColor = useColorModeValue("gray.600", "gray.300");
-  
+
   const isEmbedMode = searchParams.get("embed") === "true";
   const showFooter = searchParams.get("showFooter") !== "false";
 
@@ -67,12 +70,14 @@ export default function PositionDetailsPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const apiKey = KrystalApi.getApiKey();
       if (!apiKey) {
-        throw new Error("API key not found. Please set your API key in the navigation bar.");
+        throw new Error(
+          "API key not found. Please set your API key in the navigation bar."
+        );
       }
-      
+
       const params: IPositionDetailParams = {
         chainId,
         positionId,
@@ -82,7 +87,11 @@ export default function PositionDetailsPage() {
       setPosition(response);
     } catch (err) {
       console.error("Error fetching position details:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch position details. Please check your API key.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to fetch position details. Please check your API key."
+      );
     } finally {
       setLoading(false);
     }
@@ -95,7 +104,7 @@ export default function PositionDetailsPage() {
 
   const getCurrentPrice = useMemo(() => {
     if (!position || position.currentAmounts.length < 2) return undefined;
-    
+
     const token0 = position.currentAmounts[0];
     const token1 = position.currentAmounts[1];
     if (token0.price > 0 && token1.price > 0) {
@@ -116,7 +125,12 @@ export default function PositionDetailsPage() {
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+      <Box
+        minH="100vh"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+      >
         <VStack spacing={4}>
           <Spinner size="xl" color="brand.500" />
           <Text>Loading position details...</Text>
@@ -146,13 +160,17 @@ export default function PositionDetailsPage() {
               <Button
                 leftIcon={<ArrowBackIcon />}
                 variant="ghost"
-                onClick={() => router.push(`/wallets/${position?.ownerAddress}/positions`)}
+                onClick={() =>
+                  router.push(`/wallets/${position?.ownerAddress}/positions`)
+                }
                 size="sm"
               >
                 Back to Wallet
               </Button>
               <HStack spacing={4} align="center">
-                <Heading size="2xl" color={textColor}>Position Details</Heading>
+                <Heading size="2xl" color={textColor}>
+                  Position Details
+                </Heading>
                 <ChainDisplay chain={position.chain} size="lg" />
                 <ProtocolDisplay protocol={position.pool.protocol} size="lg" />
                 <DotIndicator status={position.status} size="lg" />
@@ -161,7 +179,10 @@ export default function PositionDetailsPage() {
                 Position ID: {position.id}
               </Text>
             </VStack>
-            <Link href={`${position.chain.explorer}/address/${position.pool.poolAddress}`} isExternal>
+            <Link
+              href={`${position.chain.explorer}/address/${position.pool.poolAddress}`}
+              isExternal
+            >
               <Button rightIcon={<ExternalLinkIcon />} colorScheme="blue">
                 View on Explorer
               </Button>
@@ -175,7 +196,9 @@ export default function PositionDetailsPage() {
             <CardBody>
               <Stat>
                 <StatLabel>Current Value</StatLabel>
-                <StatNumber fontSize="2xl">{Formatter.formatCurrency(position.currentPositionValue || 0)}</StatNumber>
+                <StatNumber fontSize="2xl">
+                  {Formatter.formatCurrency(position.currentPositionValue || 0)}
+                </StatNumber>
                 <StatHelpText>Current position value</StatHelpText>
               </Stat>
             </CardBody>
@@ -185,7 +208,11 @@ export default function PositionDetailsPage() {
             <CardBody>
               <Stat>
                 <StatLabel>Total Deposited</StatLabel>
-                <StatNumber fontSize="2xl">{Formatter.formatCurrency(position.performance.totalDepositValue)}</StatNumber>
+                <StatNumber fontSize="2xl">
+                  {Formatter.formatCurrency(
+                    position.performance.totalDepositValue
+                  )}
+                </StatNumber>
                 <StatHelpText>Total amount deposited</StatHelpText>
               </Stat>
             </CardBody>
@@ -195,10 +222,20 @@ export default function PositionDetailsPage() {
             <CardBody>
               <Stat>
                 <StatLabel>P&L</StatLabel>
-                <StatNumber fontSize="2xl" color={position.performance.pnl >= 0 ? "green.500" : "red.500"}>
+                <StatNumber
+                  fontSize="2xl"
+                  color={
+                    position.performance.pnl >= 0 ? "green.500" : "red.500"
+                  }
+                >
                   {Formatter.formatCurrency(position.performance.pnl)}
                 </StatNumber>
-                <StatHelpText>{Formatter.formatPercentage(position.performance.returnOnInvestment)} ROI</StatHelpText>
+                <StatHelpText>
+                  {Formatter.formatPercentage(
+                    position.performance.returnOnInvestment
+                  )}{" "}
+                  ROI
+                </StatHelpText>
               </Stat>
             </CardBody>
           </Card>
@@ -207,7 +244,9 @@ export default function PositionDetailsPage() {
             <CardBody>
               <Stat>
                 <StatLabel>Total APR</StatLabel>
-                <StatNumber fontSize="2xl" color="green.500">{Formatter.formatAPR(position.performance.apr.totalApr)}</StatNumber>
+                <StatNumber fontSize="2xl" color="green.500">
+                  {Formatter.formatAPR(position.performance.apr.totalApr)}
+                </StatNumber>
                 <StatHelpText>Annual percentage rate</StatHelpText>
               </Stat>
             </CardBody>
@@ -217,28 +256,56 @@ export default function PositionDetailsPage() {
         {/* Performance Metrics */}
         <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
           <CardBody>
-            <Heading size="md" mb={6} color={textColor}>Performance Metrics</Heading>
+            <Heading size="md" mb={6} color={textColor}>
+              Performance Metrics
+            </Heading>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
               <Box>
-                <Text fontWeight="medium" mb={2}>Impermanent Loss</Text>
-                <Text fontSize="lg" color={position.performance.impermanentLoss >= 0 ? "green.500" : "red.500"}>
-                  {Formatter.formatPercentage(position.performance.impermanentLoss)}
+                <Text fontWeight="medium" mb={2}>
+                  Impermanent Loss
+                </Text>
+                <Text
+                  fontSize="lg"
+                  color={
+                    position.performance.impermanentLoss >= 0
+                      ? "green.500"
+                      : "red.500"
+                  }
+                >
+                  {Formatter.formatPercentage(
+                    position.performance.impermanentLoss
+                  )}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="medium" mb={2}>Compare to Hold</Text>
-                <Text fontSize="lg" color={position.performance.compareToHold >= 0 ? "green.500" : "red.500"}>
-                  {Formatter.formatPercentage(position.performance.compareToHold)}
+                <Text fontWeight="medium" mb={2}>
+                  Compare to Hold
+                </Text>
+                <Text
+                  fontSize="lg"
+                  color={
+                    position.performance.compareToHold >= 0
+                      ? "green.500"
+                      : "red.500"
+                  }
+                >
+                  {Formatter.formatPercentage(
+                    position.performance.compareToHold
+                  )}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="medium" mb={2}>Fee APR</Text>
+                <Text fontWeight="medium" mb={2}>
+                  Fee APR
+                </Text>
                 <Text fontSize="lg" color="green.500">
                   {Formatter.formatAPR(position.performance.apr.feeApr)}
                 </Text>
               </Box>
               <Box>
-                <Text fontWeight="medium" mb={2}>Farm APR</Text>
+                <Text fontWeight="medium" mb={2}>
+                  Farm APR
+                </Text>
                 <Text fontSize="lg" color="green.500">
                   {Formatter.formatAPR(position.performance.apr.farmApr)}
                 </Text>
@@ -250,11 +317,15 @@ export default function PositionDetailsPage() {
         {/* Token Information */}
         <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
           <CardBody>
-            <Heading size="md" mb={6} color={textColor}>Token Information</Heading>
-            
+            <Heading size="md" mb={6} color={textColor}>
+              Token Information
+            </Heading>
+
             {/* Current Amounts */}
             <Box mb={6}>
-              <Text fontWeight="medium" mb={4}>Current Amounts</Text>
+              <Text fontWeight="medium" mb={4}>
+                Current Amounts
+              </Text>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                 {position.currentAmounts.map((amount, index) => (
                   <Card key={index} variant="outline" p={4}>
@@ -268,9 +339,19 @@ export default function PositionDetailsPage() {
                       />
                       <VStack align="start" spacing={1} flex={1}>
                         <Text fontWeight="medium">{amount.token.symbol}</Text>
-                        <Text fontSize="sm" color={mutedTextColor}>{amount.token.name}</Text>
-                        <Text fontSize="xs" fontFamily="mono" color={mutedTextColor}>
-                          {Formatter.formatNumber(parseFloat(amount.balance) / Math.pow(10, amount.token.decimals), 6)}
+                        <Text fontSize="sm" color={mutedTextColor}>
+                          {amount.token.name}
+                        </Text>
+                        <Text
+                          fontSize="xs"
+                          fontFamily="mono"
+                          color={mutedTextColor}
+                        >
+                          {Formatter.formatNumber(
+                            parseFloat(amount.balance) /
+                              Math.pow(10, amount.token.decimals),
+                            6
+                          )}
                         </Text>
                         <Text fontSize="sm" fontWeight="medium">
                           {Formatter.formatCurrency(amount.value)}
@@ -284,7 +365,9 @@ export default function PositionDetailsPage() {
 
             {/* Provided Amounts */}
             <Box mb={6}>
-              <Text fontWeight="medium" mb={4}>Initial Provided Amounts</Text>
+              <Text fontWeight="medium" mb={4}>
+                Initial Provided Amounts
+              </Text>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                 {position.providedAmounts.map((amount, index) => (
                   <Card key={index} variant="outline" p={4}>
@@ -298,9 +381,19 @@ export default function PositionDetailsPage() {
                       />
                       <VStack align="start" spacing={1} flex={1}>
                         <Text fontWeight="medium">{amount.token.symbol}</Text>
-                        <Text fontSize="sm" color={mutedTextColor}>{amount.token.name}</Text>
-                        <Text fontSize="xs" fontFamily="mono" color={mutedTextColor}>
-                          {Formatter.formatNumber(parseFloat(amount.balance) / Math.pow(10, amount.token.decimals), 6)}
+                        <Text fontSize="sm" color={mutedTextColor}>
+                          {amount.token.name}
+                        </Text>
+                        <Text
+                          fontSize="xs"
+                          fontFamily="mono"
+                          color={mutedTextColor}
+                        >
+                          {Formatter.formatNumber(
+                            parseFloat(amount.balance) /
+                              Math.pow(10, amount.token.decimals),
+                            6
+                          )}
                         </Text>
                         <Text fontSize="sm" fontWeight="medium">
                           {Formatter.formatCurrency(amount.value)}
@@ -314,10 +407,14 @@ export default function PositionDetailsPage() {
 
             {/* Trading Fees */}
             <Box>
-              <Text fontWeight="medium" mb={4}>Trading Fees</Text>
+              <Text fontWeight="medium" mb={4}>
+                Trading Fees
+              </Text>
               <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
                 <Box>
-                  <Text fontSize="sm" color={mutedTextColor} mb={2}>Pending Fees</Text>
+                  <Text fontSize="sm" color={mutedTextColor} mb={2}>
+                    Pending Fees
+                  </Text>
                   <VStack spacing={2}>
                     {position.tradingFee.pending.map((fee, index) => (
                       <HStack key={index} justify="space-between" w="full">
@@ -339,14 +436,18 @@ export default function PositionDetailsPage() {
                   </VStack>
                   <Divider my={2} />
                   <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" fontWeight="medium">Total Pending</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      Total Pending
+                    </Text>
                     <Text fontSize="sm" fontWeight="medium" color="green.500">
                       {Formatter.formatCurrency(getTotalPendingFees)}
                     </Text>
                   </HStack>
                 </Box>
                 <Box>
-                  <Text fontSize="sm" color={mutedTextColor} mb={2}>Claimed Fees</Text>
+                  <Text fontSize="sm" color={mutedTextColor} mb={2}>
+                    Claimed Fees
+                  </Text>
                   <VStack spacing={2}>
                     {position.tradingFee.claimed.map((fee, index) => (
                       <HStack key={index} justify="space-between" w="full">
@@ -368,7 +469,9 @@ export default function PositionDetailsPage() {
                   </VStack>
                   <Divider my={2} />
                   <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" fontWeight="medium">Total Claimed</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      Total Claimed
+                    </Text>
                     <Text fontSize="sm" fontWeight="medium" color="blue.500">
                       {Formatter.formatCurrency(getTotalClaimedFees)}
                     </Text>
@@ -382,48 +485,82 @@ export default function PositionDetailsPage() {
         {/* Position Details */}
         <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
           <CardBody>
-            <Heading size="md" mb={6} color={textColor}>Position Details</Heading>
-            <Grid templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }} gap={6}>
+            <Heading size="md" mb={6} color={textColor}>
+              Position Details
+            </Heading>
+            <Grid
+              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+              gap={6}
+            >
               <GridItem>
                 <VStack align="start" spacing={4}>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Wallet Address</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Wallet Address
+                    </Text>
                     <HStack>
-                      <Text fontSize="sm" fontFamily="mono" color={mutedTextColor}>
+                      <Text
+                        fontSize="sm"
+                        fontFamily="mono"
+                        color={mutedTextColor}
+                      >
                         {position.ownerAddress}
                       </Text>
                       <IconButton
                         size="sm"
                         icon={<CopyIcon />}
                         aria-label="Copy address"
-                        onClick={() => copyToClipboard(position.ownerAddress, "Wallet address")}
+                        onClick={() =>
+                          copyToClipboard(
+                            position.ownerAddress,
+                            "Wallet address"
+                          )
+                        }
                       />
                     </HStack>
                   </Box>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Pool Address</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Pool Address
+                    </Text>
                     <HStack>
-                      <Text fontSize="sm" fontFamily="mono" color={mutedTextColor}>
+                      <Text
+                        fontSize="sm"
+                        fontFamily="mono"
+                        color={mutedTextColor}
+                      >
                         {position.pool.poolAddress}
                       </Text>
                       <IconButton
                         size="sm"
                         icon={<CopyIcon />}
                         aria-label="Copy pool address"
-                        onClick={() => copyToClipboard(position.pool.poolAddress, "Pool address")}
+                        onClick={() =>
+                          copyToClipboard(
+                            position.pool.poolAddress,
+                            "Pool address"
+                          )
+                        }
                       />
                     </HStack>
                   </Box>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Token ID</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Token ID
+                    </Text>
                     <Text fontSize="sm" color={mutedTextColor}>
                       {position.tokenId}
                     </Text>
                   </Box>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Liquidity</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Liquidity
+                    </Text>
                     <Text fontSize="sm" color={mutedTextColor}>
-                      {Formatter.formatNumber(parseFloat(position.liquidity), 0)}
+                      {Formatter.formatNumber(
+                        parseFloat(position.liquidity),
+                        0
+                      )}
                     </Text>
                   </Box>
                 </VStack>
@@ -431,8 +568,10 @@ export default function PositionDetailsPage() {
               <GridItem>
                 <VStack align="start" spacing={4}>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Price Range</Text>
-                    <PriceRangeDisplay 
+                    <Text fontWeight="medium" mb={2}>
+                      Price Range
+                    </Text>
+                    <PriceRangeDisplay
                       minPrice={position.minPrice}
                       maxPrice={position.maxPrice}
                       currentPrice={getCurrentPrice}
@@ -441,25 +580,35 @@ export default function PositionDetailsPage() {
                     />
                   </Box>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Opened Time</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Opened Time
+                    </Text>
                     <Text fontSize="sm" color={mutedTextColor}>
                       {Formatter.formatAge(position.openedTime)}
                     </Text>
                   </Box>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Last Update Block</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Last Update Block
+                    </Text>
                     <Text fontSize="sm" color={mutedTextColor}>
                       {position.lastUpdateBlock.toLocaleString()}
                     </Text>
                   </Box>
                   <Box>
-                    <Text fontWeight="medium" mb={2}>Status</Text>
+                    <Text fontWeight="medium" mb={2}>
+                      Status
+                    </Text>
                     <HStack>
                       <DotIndicator status={position.status} size="md" />
                       <Text fontSize="sm" color={mutedTextColor}>
-                        {position.status === 'IN_RANGE' ? 'In Range' : 
-                         position.status === 'OUT_OF_RANGE' ? 'Out of Range' : 
-                         position.status === 'CLOSED' ? 'Closed' : position.status}
+                        {position.status === "IN_RANGE"
+                          ? "In Range"
+                          : position.status === "OUT_OF_RANGE"
+                            ? "Out of Range"
+                            : position.status === "CLOSED"
+                              ? "Closed"
+                              : position.status}
                       </Text>
                     </HStack>
                   </Box>
@@ -480,4 +629,4 @@ export default function PositionDetailsPage() {
       </Container>
     </Box>
   );
-} 
+}

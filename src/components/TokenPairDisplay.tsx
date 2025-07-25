@@ -1,30 +1,30 @@
-import React from 'react';
-import { HStack, Image, Text, TextProps } from '@chakra-ui/react';
-import { IAToken } from '../services/apiTypes';
+import React from "react";
+import { HStack, Image, Text, TextProps } from "@chakra-ui/react";
+import { IAToken } from "../services/apiTypes";
 
 interface TokenPairDisplayProps {
   token0: IAToken;
   token1: IAToken;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showSymbols?: boolean;
   textProps?: TextProps;
 }
 
-export const TokenPairDisplay: React.FC<TokenPairDisplayProps> = ({ 
-  token0, 
-  token1, 
-  size = 'md', 
+export const TokenPairDisplay: React.FC<TokenPairDisplayProps> = ({
+  token0,
+  token1,
+  size = "md",
   showSymbols = true,
-  textProps = {}
+  textProps = {},
 }) => {
   const getSize = () => {
     switch (size) {
-      case 'sm':
-        return '16px';
-      case 'lg':
-        return '32px';
+      case "sm":
+        return "16px";
+      case "lg":
+        return "32px";
       default:
-        return '20px';
+        return "20px";
     }
   };
 
@@ -57,4 +57,4 @@ export const TokenPairDisplay: React.FC<TokenPairDisplayProps> = ({
       )}
     </HStack>
   );
-}; 
+};

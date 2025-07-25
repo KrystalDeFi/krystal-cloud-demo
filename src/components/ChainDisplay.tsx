@@ -1,28 +1,28 @@
-import React from 'react';
-import { HStack, Image, Text, TextProps } from '@chakra-ui/react';
-import { IAChain } from '../services/apiTypes';
+import React from "react";
+import { HStack, Image, Text, TextProps } from "@chakra-ui/react";
+import { IAChain } from "../services/apiTypes";
 
 interface ChainDisplayProps {
   chain: IAChain;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showName?: boolean;
   textProps?: TextProps;
 }
 
-export const ChainDisplay: React.FC<ChainDisplayProps> = ({ 
-  chain, 
-  size = 'md', 
+export const ChainDisplay: React.FC<ChainDisplayProps> = ({
+  chain,
+  size = "md",
   showName = true,
-  textProps = {}
+  textProps = {},
 }) => {
   const getSize = () => {
     switch (size) {
-      case 'sm':
-        return '16px';
-      case 'lg':
-        return '24px';
+      case "sm":
+        return "16px";
+      case "lg":
+        return "24px";
       default:
-        return '20px';
+        return "20px";
     }
   };
 
@@ -42,4 +42,4 @@ export const ChainDisplay: React.FC<ChainDisplayProps> = ({
       )}
     </HStack>
   );
-}; 
+};

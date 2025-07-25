@@ -8,33 +8,33 @@ interface CacheData<T> {
 // Generic cache service for localStorage
 export class CacheService {
   private static getCachedData<T>(key: string): T | null {
-    if (typeof window === 'undefined') return null;
-    
+    if (typeof window === "undefined") return null;
+
     try {
       const cached = localStorage.getItem(key);
       if (!cached) return null;
-      
+
       const cacheData: CacheData<T> = JSON.parse(cached);
       const now = Date.now();
-      
+
       // Check if cache is still valid
       if (now - cacheData.timestamp < CACHE_DURATION) {
         return cacheData.data;
       }
-      
+
       // Cache expired, remove it
       localStorage.removeItem(key);
       return null;
     } catch (error) {
-      console.error('Error reading cache:', error);
+      console.error("Error reading cache:", error);
       localStorage.removeItem(key);
       return null;
     }
   }
 
   private static setCachedData<T>(key: string, data: T): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     try {
       const cacheData: CacheData<T> = {
         data,
@@ -42,13 +42,13 @@ export class CacheService {
       };
       localStorage.setItem(key, JSON.stringify(cacheData));
     } catch (error) {
-      console.error('Error setting cache:', error);
+      console.error("Error setting cache:", error);
     }
   }
 
   // Get data from cache or execute fallback function
   static async getOrFetch<T>(
-    key: string, 
+    key: string,
     fallbackFn: () => Promise<T>,
     defaultData?: T
   ): Promise<T> {
@@ -68,14 +68,14 @@ export class CacheService {
       return data;
     } catch (error) {
       console.error(`Error fetching data for key: ${key}:`, error);
-      
+
       // Return default data if provided
       if (defaultData !== undefined) {
         console.log(`Using default data for key: ${key}`);
         this.setCachedData(key, defaultData);
         return defaultData;
       }
-      
+
       throw error;
     }
   }
@@ -92,8 +92,8 @@ export class CacheService {
 
   // Remove specific cache entry
   static remove(key: string): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.removeItem(key);
       console.log(`Cache removed for key: ${key}`);
@@ -104,8 +104,8 @@ export class CacheService {
 
   // Clear all cache entries with a specific prefix
   static clearByPrefix(prefix: string): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     try {
       const keysToRemove: string[] = [];
       for (let i = 0; i < localStorage.length; i++) {
@@ -114,9 +114,11 @@ export class CacheService {
           keysToRemove.push(key);
         }
       }
-      
+
       keysToRemove.forEach(key => localStorage.removeItem(key));
-      console.log(`Cleared ${keysToRemove.length} cache entries with prefix: ${prefix}`);
+      console.log(
+        `Cleared ${keysToRemove.length} cache entries with prefix: ${prefix}`
+      );
     } catch (error) {
       console.error(`Error clearing cache with prefix ${prefix}:`, error);
     }
@@ -124,13 +126,13 @@ export class CacheService {
 
   // Clear all cache entries
   static clearAll(): void {
-    if (typeof window === 'undefined') return;
-    
+    if (typeof window === "undefined") return;
+
     try {
       localStorage.clear();
-      console.log('All cache entries cleared');
+      console.log("All cache entries cleared");
     } catch (error) {
-      console.error('Error clearing all cache:', error);
+      console.error("Error clearing all cache:", error);
     }
   }
 
@@ -141,16 +143,16 @@ export class CacheService {
 
   // Get cache age in milliseconds
   static getAge(key: string): number | null {
-    if (typeof window === 'undefined') return null;
-    
+    if (typeof window === "undefined") return null;
+
     try {
       const cached = localStorage.getItem(key);
       if (!cached) return null;
-      
+
       const cacheData: CacheData<any> = JSON.parse(cached);
       return Date.now() - cacheData.timestamp;
     } catch (error) {
-      console.error('Error getting cache age:', error);
+      console.error("Error getting cache age:", error);
       return null;
     }
   }
@@ -160,4 +162,4 @@ export class CacheService {
     const age = this.getAge(key);
     return age === null || age >= CACHE_DURATION;
   }
-} 
+}

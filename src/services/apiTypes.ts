@@ -4,13 +4,13 @@
 
 // Token interface used across the application
 export interface IAToken {
-    address: string;
-    symbol: string;
-    name: string;
-    decimals: number;
-    logo?: string;
-  }
-  
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logo?: string;
+}
+
 // Chain information
 export interface IAChain {
   name: string;
@@ -19,21 +19,21 @@ export interface IAChain {
   explorer: string;
   supportedProtocols: string[];
 }
-  
+
 // Protocol information
 export interface IAProtocol {
   key: string;
   name: string;
-  logo: string
+  logo: string;
 }
-  
+
 // Statistics for different time periods
 export interface IStats {
   volume: number;
   fee: number;
   apr?: number;
 }
-  
+
 // ============================================================================
 // POOL INTERFACES
 // ============================================================================
@@ -90,7 +90,6 @@ export interface IAPoolHistorical {
   tvlUsd: number;
   poolPrice: number;
 }
-
 
 // ============================================================================
 // POSITION INTERFACES
@@ -175,4 +174,3 @@ export interface IAPositionDetails {
   feesEarned: number;
   apr: number;
 }
-

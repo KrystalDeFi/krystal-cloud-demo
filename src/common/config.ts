@@ -1,4 +1,3 @@
-
 // ============================================================================
 // STATISTICS INTERFACES
 // ============================================================================
@@ -15,7 +14,13 @@ export interface IPoolsStats {
 // SORTING & FILTERING INTERFACES
 // ============================================================================
 
-export type ISortField = "tvl" | "volume24h" | "fees24h" | "apr" | "name" | "createdAt";
+export type ISortField =
+  | "tvl"
+  | "volume24h"
+  | "fees24h"
+  | "apr"
+  | "name"
+  | "createdAt";
 export type ISortOrder = "asc" | "desc";
 
 // ============================================================================
@@ -37,17 +42,17 @@ export interface IEmbedConfig {
 
 // Sort options for pools API (matching swagger specification)
 export const SORT_OPTIONS = {
-  APR: 0,        // Sort by APR
-  TVL: 1,        // Sort by TVL
+  APR: 0, // Sort by APR
+  TVL: 1, // Sort by TVL
   VOLUME_24H: 2, // Sort by Volume 24h
-  FEE: 3,        // Sort by Fee
+  FEE: 3, // Sort by Fee
 };
 
 // Position status options
 export const POSITION_STATUS = {
-  OPEN: 'OPEN',
-  CLOSED: 'CLOSED',
-} as const; 
+  OPEN: "OPEN",
+  CLOSED: "CLOSED",
+} as const;
 
 export const CHAIN_CONFIGS: Record<any, { dexscreener_key: string }> = {
   1: {
@@ -191,4 +196,4 @@ export const CHAIN_CONFIGS: Record<any, { dexscreener_key: string }> = {
   15551: {
     dexscreener_key: "tenet",
   },
-}
+};
