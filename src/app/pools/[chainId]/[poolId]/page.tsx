@@ -257,6 +257,11 @@ export default function PoolDetailsPage() {
     // Use all data points from API (API already filters by time range)
     const displayData = data;
     
+    // Theme-aware colors for charts
+    const gridColor = useColorModeValue("gray.200", "gray.700");
+    const axisColor = useColorModeValue("gray.600", "white");
+    const textColor = useColorModeValue("gray.800", "white");
+    
     // Extract values for the selected chart type
     const getValue = (item: ChartDataPoint) => {
       switch (selectedChart) {
@@ -281,10 +286,33 @@ export default function PoolDetailsPage() {
     };
 
     return (
-      <Box h="400px" w="full" overflow="hidden">
-        {selectedChart === 'volFee' ? (
-          /* Combined Volume/Fee Chart */
-          <ResponsiveContainer width="100%" height={400}>
+      <Box 
+        h="400px" 
+        w="full" 
+        overflow="hidden" 
+        position="relative"
+        _before={{
+          content: '""',
+          position: 'absolute',
+          top: '40%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '250px',
+          height: '250px',
+          backgroundImage: "url('/images/krystal_logo.svg')",
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'contain',
+          opacity: useColorModeValue(0.15, 0.08),
+          filter: useColorModeValue('none', 'brightness(0) invert(1)'),
+          zIndex: 0,
+          pointerEvents: 'none'
+        }}
+      >
+        <Box position="relative" zIndex={1} h="full">
+          {selectedChart === 'volFee' ? (
+            /* Combined Volume/Fee Chart */
+            <ResponsiveContainer width="100%" height={400}>
             <ComposedChart data={displayData}>
               <defs>
                 <linearGradient id="volumeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -292,27 +320,27 @@ export default function PoolDetailsPage() {
                   <stop offset="95%" stopColor="#3182CE" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="gray.200" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis 
                 dataKey="date" 
-                stroke="gray.600"
+                stroke={axisColor}
                 fontSize={12}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: axisColor }}
               />
               <YAxis 
                 yAxisId="left"
-                stroke="gray.600"
+                stroke={axisColor}
                 fontSize={12}
                 tickFormatter={(value) => formatCurrency(value)}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: axisColor }}
               />
               <YAxis 
                 yAxisId="right"
                 orientation="right"
-                stroke="gray.600"
+                stroke={axisColor}
                 fontSize={12}
                 tickFormatter={(value) => formatCurrency(value)}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: axisColor }}
                 domain={[0, dataMax => (dataMax * 1.7)]}
               />
               <RechartsTooltip 
@@ -329,6 +357,7 @@ export default function PoolDetailsPage() {
                   backgroundColor: cardBg,
                   border: `1px solid ${borderColor}`,
                   borderRadius: '8px',
+                  color: textColor,
                 }}
               />
               <Area 
@@ -359,18 +388,18 @@ export default function PoolDetailsPage() {
                   <stop offset="95%" stopColor="#3182CE" stopOpacity={0.1}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="gray.200" />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
               <XAxis 
                 dataKey="date" 
-                stroke="gray.600"
+                stroke={axisColor}
                 fontSize={12}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: axisColor }}
               />
               <YAxis 
-                stroke="gray.600"
+                stroke={axisColor}
                 fontSize={12}
                 tickFormatter={formatYAxis}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10, fill: axisColor }}
               />
               <RechartsTooltip 
                 formatter={(value: any) => [formatTooltip(value), selectedChart.toUpperCase()]}
@@ -379,6 +408,7 @@ export default function PoolDetailsPage() {
                   backgroundColor: cardBg,
                   border: `1px solid ${borderColor}`,
                   borderRadius: '8px',
+                  color: textColor,
                 }}
               />
               <Area 
@@ -390,7 +420,8 @@ export default function PoolDetailsPage() {
               />
             </AreaChart>
           </ResponsiveContainer>
-        )}
+          )}
+        </Box>
       </Box>
     );
   };

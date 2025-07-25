@@ -231,14 +231,6 @@ export default function WalletPositionsPage() {
     }).format(value);
   };
 
-  const getChainColor = (chainId: string) => {
-    return CHAIN_CONFIGS[chainId]?.color || "gray";
-  };
-
-  const getStatusColor = (status: string) => {
-    return status === "OPEN" ? "green" : "red";
-  };
-
   const formatAge = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
