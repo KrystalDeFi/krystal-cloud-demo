@@ -82,8 +82,7 @@ jobs:
       - run: |
           git status
           git --no-pager diff
-          # cat next.config.ts
-          cat next.config.js
+                    
 
       - name: run
         run: |
