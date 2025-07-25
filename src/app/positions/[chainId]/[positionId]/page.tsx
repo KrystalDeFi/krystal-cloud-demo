@@ -63,8 +63,7 @@ function PositionDetailsPageContent() {
   const textColor = useColorModeValue("gray.800", "white");
   const mutedTextColor = useColorModeValue("gray.600", "gray.300");
 
-  const isEmbedMode = searchParams.get("embed") === "true";
-  const showFooter = searchParams.get("showFooter") !== "false";
+  const isEmbedMode = searchParams.get("embed") === "1";
 
   useEffect(() => {
     fetchPositionDetails();
@@ -147,41 +146,43 @@ function PositionDetailsPageContent() {
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
       <Container maxW="7xl" py={6}>
         {/* Header */}
-        <VStack spacing={6} mb={8}>
-          <HStack w="full" justify="space-between" align="start">
-            <VStack align="start" spacing={2}>
-              <Button
-                leftIcon={<ArrowBackIcon />}
-                variant="ghost"
-                onClick={() =>
-                  router.push(`/wallets/${position?.ownerAddress}/positions`)
-                }
-                size="sm"
+        {!isEmbedMode && (
+          <VStack spacing={6} mb={8}>
+            <HStack w="full" justify="space-between" align="start">
+              <VStack align="start" spacing={2}>
+                <Button
+                  leftIcon={<ArrowBackIcon />}
+                  variant="ghost"
+                  onClick={() =>
+                    router.push(`/wallets/${position?.ownerAddress}/positions`)
+                  }
+                  size="sm"
+                >
+                  Back to Wallet
+                </Button>
+                <HStack spacing={4} align="center">
+                  <Heading size="2xl" color="chakra-title">
+                    Position Details
+                  </Heading>
+                  <ChainDisplay chain={position.chain} size="lg" />
+                  <ProtocolDisplay protocol={position.pool.protocol} size="lg" />
+                  <DotIndicator status={position.status} size="lg" />
+                </HStack>
+                <Text fontSize="lg" color={mutedTextColor}>
+                  Position ID: {position.id}
+                </Text>
+              </VStack>
+              <Link
+                href={`${position.chain.explorer}/address/${position.pool.poolAddress}`}
+                isExternal
               >
-                Back to Wallet
-              </Button>
-              <HStack spacing={4} align="center">
-                <Heading size="2xl" color={textColor}>
-                  Position Details
-                </Heading>
-                <ChainDisplay chain={position.chain} size="lg" />
-                <ProtocolDisplay protocol={position.pool.protocol} size="lg" />
-                <DotIndicator status={position.status} size="lg" />
-              </HStack>
-              <Text fontSize="lg" color={mutedTextColor}>
-                Position ID: {position.id}
-              </Text>
-            </VStack>
-            <Link
-              href={`${position.chain.explorer}/address/${position.pool.poolAddress}`}
-              isExternal
-            >
-              <Button rightIcon={<ExternalLinkIcon />} colorScheme="blue">
-                View on Explorer
-              </Button>
-            </Link>
-          </HStack>
-        </VStack>
+                <Button rightIcon={<ExternalLinkIcon />} colorScheme="blue">
+                  View on Explorer
+                </Button>
+              </Link>
+            </HStack>
+          </VStack>
+        )}
 
         {/* Key Stats */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mb={8}>
@@ -218,7 +219,7 @@ function PositionDetailsPageContent() {
                 <StatNumber
                   fontSize="2xl"
                   color={
-                    position.performance.pnl >= 0 ? "green.500" : "red.500"
+                    position.performance.pnl >= 0 ? "chakra-metrics" : "red.500"
                   }
                 >
                   {Formatter.formatCurrency(position.performance.pnl)}
@@ -237,7 +238,7 @@ function PositionDetailsPageContent() {
             <CardBody>
               <Stat>
                 <StatLabel>Total APR</StatLabel>
-                <StatNumber fontSize="2xl" color="green.500">
+                <StatNumber fontSize="2xl" color="chakra-metrics">
                   {Formatter.formatAPR(position.performance.apr.totalApr)}
                 </StatNumber>
                 <StatHelpText>Annual percentage rate</StatHelpText>
@@ -249,7 +250,7 @@ function PositionDetailsPageContent() {
         {/* Performance Metrics */}
         <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
           <CardBody>
-            <Heading size="md" mb={6} color={textColor}>
+            <Heading size="md" mb={6} color="chakra-title">
               Performance Metrics
             </Heading>
             <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
@@ -612,7 +613,7 @@ function PositionDetailsPageContent() {
         </Card>
 
         {/* Footer */}
-        {showFooter && (
+        {!isEmbedMode && (
           <Box textAlign="center" mt={8}>
             <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
               Built with Next.js and Chakra UI • Powered by Krystal Cloud API

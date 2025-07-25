@@ -200,8 +200,7 @@ function WalletPositionsPageContent() {
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  const isEmbedMode = searchParams.get("embed") === "true";
-  const showFooter = searchParams.get("showFooter") !== "false";
+  const isEmbedMode = searchParams.get("embed") === "1";
 
   // Memoized filtered positions
   const memoizedFilteredPositions = useMemo(() => {
@@ -460,44 +459,46 @@ function WalletPositionsPageContent() {
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
       <Container maxW="7xl" py={6}>
         {/* Header */}
-        <VStack spacing={6} mb={8}>
-          <HStack w="full" justify="space-between" align="start">
-            <VStack align="start" spacing={2}>
-              <Button
-                leftIcon={<ArrowBackIcon />}
-                variant="ghost"
-                onClick={() => router.push("/")}
-                size="sm"
-              >
-                Back to Home
-              </Button>
-              <Heading size="2xl">Wallet Positions</Heading>
-              <Text
-                fontSize="lg"
-                color="gray.600"
-                _dark={{ color: "gray.300" }}
-              >
-                {walletAddress}
-              </Text>
-            </VStack>
+        {!isEmbedMode && (
+          <VStack spacing={6} mb={8}>
+            <HStack w="full" justify="space-between" align="start">
+              <VStack align="start" spacing={2}>
+                <Button
+                  leftIcon={<ArrowBackIcon />}
+                  variant="ghost"
+                  onClick={() => router.push("/")}
+                  size="sm"
+                >
+                  Back to Home
+                </Button>
+                <Heading size="2xl" color="chakra-title">Wallet Positions</Heading>
+                <Text
+                  fontSize="lg"
+                  color="gray.600"
+                  _dark={{ color: "gray.300" }}
+                >
+                  {walletAddress}
+                </Text>
+              </VStack>
 
-            {/* Wallet Address Input */}
-            <VStack align="end" spacing={2}>
-              <InputGroup maxW="400px">
-                <Input
-                  placeholder="Enter wallet address"
-                  value={newWalletAddress}
-                  onChange={e => setNewWalletAddress(e.target.value)}
-                  onKeyPress={handleWalletAddressKeyPress}
-                  onBlur={handleWalletAddressChange}
-                />
-                <InputLeftElement>
-                  <SearchIcon color="gray.400" />
-                </InputLeftElement>
-              </InputGroup>
-            </VStack>
-          </HStack>
-        </VStack>
+              {/* Wallet Address Input */}
+              <VStack align="end" spacing={2}>
+                <InputGroup maxW="400px">
+                  <Input
+                    placeholder="Enter wallet address"
+                    value={newWalletAddress}
+                    onChange={e => setNewWalletAddress(e.target.value)}
+                    onKeyPress={handleWalletAddressKeyPress}
+                    onBlur={handleWalletAddressChange}
+                  />
+                  <InputLeftElement>
+                    <SearchIcon color="gray.400" />
+                  </InputLeftElement>
+                </InputGroup>
+              </VStack>
+            </HStack>
+          </VStack>
+        )}
 
         {/* Stats */}
         {memoizedStats && (
@@ -507,7 +508,7 @@ function WalletPositionsPageContent() {
                 <Text fontSize="sm" color="gray.500">
                   Total Value
                 </Text>
-                <Text fontSize="2xl" fontWeight="bold">
+                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
                   {Formatter.formatCurrency(memoizedStats.totalValue)}
                 </Text>
               </VStack>
@@ -515,7 +516,7 @@ function WalletPositionsPageContent() {
                 <Text fontSize="sm" color="gray.500">
                   Active Positions
                 </Text>
-                <Text fontSize="2xl" fontWeight="bold">
+                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
                   {memoizedStats.activePositions}
                 </Text>
               </VStack>
@@ -523,7 +524,7 @@ function WalletPositionsPageContent() {
                 <Text fontSize="sm" color="gray.500">
                   Total Fees Earned
                 </Text>
-                <Text fontSize="2xl" fontWeight="bold">
+                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
                   {Formatter.formatCurrency(memoizedStats.totalFeesEarned)}
                 </Text>
               </VStack>
@@ -531,7 +532,7 @@ function WalletPositionsPageContent() {
                 <Text fontSize="sm" color="gray.500">
                   Average APR
                 </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="green.500">
+                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
                   {Formatter.formatAPR(memoizedStats.averageApr)}
                 </Text>
               </VStack>
@@ -787,7 +788,7 @@ function WalletPositionsPageContent() {
         )}
 
         {/* Footer */}
-        {showFooter && (
+        {!isEmbedMode && (
           <Box textAlign="center" mt={8}>
             <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
               Built with Next.js and Chakra UI • Powered by Krystal Cloud API

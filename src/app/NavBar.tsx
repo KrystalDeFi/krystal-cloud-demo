@@ -24,8 +24,7 @@ export default function NavBar() {
   const { colorMode, toggleColorMode } = useColorMode();
   const searchParams = useSearchParams();
 
-  const isEmbedMode = searchParams.get("embed") === "true";
-  const showHeader = searchParams.get("showHeader") !== "false";
+  const isEmbedMode = searchParams.get("embed") === "1";
 
   useEffect(() => {
     const stored = KrystalApi.getApiKey();
@@ -47,11 +46,6 @@ export default function NavBar() {
     setInputValue("");
     localStorage.removeItem(KrystalApi.API_KEY_STORAGE);
   };
-
-  // Don't render navbar in embed mode if showHeader is false
-  if (isEmbedMode && !showHeader) {
-    return null;
-  }
 
   return (
     <Box

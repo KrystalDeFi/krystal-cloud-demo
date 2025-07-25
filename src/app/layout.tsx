@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 import NavBar from "./NavBar";
 import ThemeProvider from "./ThemeProvider";
 import EmbedButton from "../components/EmbedButton";
+import EmbedWrapper from "../components/EmbedWrapper";
 import ApiKeyHandler from "../components/ApiKeyHandler";
 import { ChainsProtocolsProvider } from "../contexts/ChainsProtocolsContext";
 
@@ -25,7 +26,9 @@ export default function RootLayout({
         <ThemeProvider>
           <ChainsProtocolsProvider>
             <ApiKeyHandler />
-            <NavBar />
+            <EmbedWrapper showInEmbed={false}>
+              <NavBar />
+            </EmbedWrapper>
             {children}
             <EmbedButton />
           </ChainsProtocolsProvider>

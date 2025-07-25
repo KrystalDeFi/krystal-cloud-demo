@@ -78,8 +78,7 @@ export default function Home() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const isEmbedMode = searchParams.get("embed") === "true";
-  const showFooter = searchParams.get("showFooter") !== "false";
+  const isEmbedMode = searchParams.get("embed") === "1";
 
   const handleCardClick = (path: string) => {
     router.push(path);
@@ -96,67 +95,73 @@ export default function Home() {
       >
       <Container maxW="7xl" py={6}>
         {/* Header */}
-        <VStack spacing={6} mb={10} textAlign="center">
-          <Heading
-            size="2xl"
-            bgGradient="linear(to-r, brand.400, purple.500)"
-            bgClip="text"
-            fontWeight="bold"
-          >
-            Krystal Cloud Demo
-          </Heading>
-          <Text
-            fontSize="lg"
-            color="gray.600"
-            _dark={{ color: "gray.300" }}
-            maxW="2xl"
-          >
-            Explore DeFi pools and positions with the Krystal Cloud API. This
-            embeddable interface provides comprehensive data and analytics.
-          </Text>
-        </VStack>
-
-        {/* Guidelines */}
-        <Box
-          bg={cardBg}
-          _dark={{ bg: "gray.800" }}
-          borderRadius="xl"
-          p={6}
-          mb={8}
-          boxShadow="lg"
-          border="1px"
-          borderColor={borderColor}
-        >
-          <Heading
-            size="md"
-            mb={4}
-            color="brand.600"
-            _dark={{ color: "brand.400" }}
-          >
-            🚀 Getting Started
-          </Heading>
-          <VStack align="start" spacing={3}>
-            <Text>
-              <strong>Embedding:</strong> Use the embed button (bottom right) to
-              customize and embed any page in your application.
-            </Text>
-            <Text>
-              <strong>API Integration:</strong> All data is fetched from the
-              Krystal Cloud API. Make sure to set your API key in the navigation
-              bar.
-            </Text>
-            <Text>
-              <strong>Customization:</strong> In embed mode, you can customize
-              colors, themes, and display options through the right panel.
+        {!isEmbedMode && (
+          <VStack spacing={6} mb={10} textAlign="center">
+            <Heading
+              size="2xl"
+              bgGradient="linear(to-r, brand.400, purple.500)"
+              bgClip="text"
+              fontWeight="bold"
+            >
+              Krystal Cloud Demo
+            </Heading>
+            <Text
+              fontSize="lg"
+              color="gray.600"
+              _dark={{ color: "gray.300" }}
+              maxW="2xl"
+            >
+              Explore DeFi pools and positions with the Krystal Cloud API. This
+              embeddable interface provides comprehensive data and analytics.
             </Text>
           </VStack>
-        </Box>
+        )}
+
+        {/* Guidelines */}
+        {!isEmbedMode && (
+          <Box
+            bg={cardBg}
+            _dark={{ bg: "gray.800" }}
+            borderRadius="xl"
+            p={6}
+            mb={8}
+            boxShadow="lg"
+            border="1px"
+            borderColor={borderColor}
+          >
+            <Heading
+              size="md"
+              mb={4}
+              color="brand.600"
+              _dark={{ color: "brand.400" }}
+            >
+              🚀 Getting Started
+            </Heading>
+            <VStack align="start" spacing={3}>
+              <Text>
+                <strong>Embedding:</strong> Use the embed button (bottom right) to
+                customize and embed any page in your application.
+              </Text>
+              <Text>
+                <strong>API Integration:</strong> All data is fetched from the
+                Krystal Cloud API. Make sure to set your API key in the navigation
+                bar.
+              </Text>
+              <Text>
+                <strong>Customization:</strong> In embed mode, you can customize
+                colors, themes, and display options through the right panel.
+              </Text>
+            </VStack>
+          </Box>
+        )}
 
         {/* Available Pages */}
         <Box mb={8}>
-          <Heading size="lg" mb={6} textAlign="center">
-            Available Pages
-          </Heading>
+          {!isEmbedMode && (
+            <Heading size="lg" mb={6} textAlign="center">
+              Available Pages
+            </Heading>
+          )}
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
             {pages.map((page, index) => (
               <Card
@@ -236,7 +241,7 @@ export default function Home() {
         </Box>
 
         {/* Footer */}
-        {showFooter && (
+        {!isEmbedMode && (
           <Box textAlign="center" mt={8}>
             <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
               Built with Next.js and Chakra UI • Powered by Krystal Cloud API

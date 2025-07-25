@@ -18,6 +18,8 @@ import {
   Collapse,
   Flex,
   CloseButton,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -30,14 +32,11 @@ export default function EmbedButton() {
   const pathname = usePathname();
   const toast = useToast();
 
-  const isEmbedMode = searchParams.get("embed") === "true";
+  const isEmbedMode = searchParams.get("embed") === "1";
+  const isConfigMode = searchParams.get("config") === "1";
   const [config, setConfig] = useState<IEmbedConfig>({
     theme: "auto",
-    primaryColor: "blue",
-    showHeader: true,
-    showFooter: true,
-    height: "600px",
-    width: "100%",
+    primaryColor: "#3b82f6", // Default blue
   });
   const [mounted, setMounted] = useState(false);
 
@@ -52,52 +51,55 @@ export default function EmbedButton() {
     // Load config from URL params
     const theme =
       (searchParams.get("theme") as "light" | "dark" | "auto") || "auto";
-    const primaryColor = searchParams.get("primaryColor") || "blue";
-    const showHeader = searchParams.get("showHeader") !== "false";
-    const showFooter = searchParams.get("showFooter") !== "false";
-    const height = searchParams.get("height") || "600px";
-    const width = searchParams.get("width") || "100%";
+    const primaryColor = searchParams.get("primaryColor") || "#3b82f6";
 
     setConfig({
       theme,
       primaryColor,
-      showHeader,
-      showFooter,
-      height,
-      width,
     });
-  }, [searchParams]);
 
-  const updateConfig = (key: keyof IEmbedConfig, value: string | boolean) => {
+    // Auto-open config panel if we're in config mode
+    if (isConfigMode && !isOpen) {
+      onOpen();
+    }
+  }, [searchParams, isConfigMode, isOpen, onOpen]);
+
+  const updateConfig = (key: keyof IEmbedConfig, value: string) => {
     const newConfig = { ...config, [key]: value };
     setConfig(newConfig);
 
     // Update URL params without page reload
     const params = new URLSearchParams(searchParams.toString());
     params.set(key.toString(), value.toString());
+    params.set("embed", "1"); // Always add embed=1 when updating config
 
     // Use replace to update URL without navigation
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const handleOpenEmbedConfig = () => {
+    // Add embed=1 and config=1 to URL and open config panel
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("embed", "1");
+    params.set("config", "1");
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    onOpen();
   };
 
   const generateEmbedCode = () => {
     if (!mounted) return "";
 
     const params = new URLSearchParams();
-    params.set("embed", "true");
+    params.set("embed", "1");
     params.set("theme", config.theme);
     params.set("primaryColor", config.primaryColor);
-    params.set("showHeader", config.showHeader.toString());
-    params.set("showFooter", config.showFooter.toString());
-    params.set("height", config.height);
-    params.set("width", config.width);
 
     const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
 
     return `<iframe 
   src="${embedUrl}"
-  width="${config.width}"
-  height="${config.height}"
+  width="100%"
+  height="600px"
   frameborder="0"
   style="border: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
 ></iframe>`;
@@ -125,8 +127,9 @@ export default function EmbedButton() {
     }
   };
 
-  if (isEmbedMode) {
-    return null; // Don't show embed button in embed mode
+  // Don't show embed button in embed mode unless we're in config mode
+  if (isEmbedMode && !isConfigMode) {
+    return null;
   }
 
   return (
@@ -134,7 +137,7 @@ export default function EmbedButton() {
       {/* Fixed Embed Button */}
       <Box position="fixed" bottom={4} right={4} zIndex={998}>
         <Button
-          onClick={onOpen}
+          onClick={handleOpenEmbedConfig}
           colorScheme="gray"
           size="sm"
           borderRadius="md"
@@ -177,11 +180,37 @@ export default function EmbedButton() {
                 <SettingsIcon />
                 <Text fontWeight="medium">Embed Configuration</Text>
               </HStack>
-              <CloseButton onClick={onClose} size="sm" />
+              <HStack spacing={2}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    // Remove all embed-related params to exit embed mode
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.delete("embed");
+                    params.delete("config");
+                    params.delete("theme");
+                    params.delete("primaryColor");
+                    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+                  }}
+                >
+                  Exit Embed Mode
+                </Button>
+                <CloseButton 
+                  onClick={() => {
+                    onClose();
+                    // Remove config=1 from URL when closing
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.delete("config");
+                    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+                  }} 
+                  size="sm" 
+                />
+              </HStack>
             </Flex>
 
             {/* Content */}
-            <Box p={6}>
+            <Box p={6} h="calc(100vh - 80px)" overflowY="auto">
               <VStack spacing={6} align="stretch">
                 {/* Current Page Info */}
                 <Box
@@ -211,96 +240,64 @@ export default function EmbedButton() {
                   <VStack spacing={4} align="stretch">
                     <FormControl>
                       <FormLabel fontSize="sm">Theme</FormLabel>
-                      <Select
-                        value={config.theme}
-                        onChange={e => updateConfig("theme", e.target.value)}
-                        size="sm"
-                      >
-                        <option value="auto">Auto (System)</option>
-                        <option value="light">Light</option>
-                        <option value="dark">Dark</option>
-                      </Select>
+                      <HStack spacing={2}>
+                        <Button
+                          size="sm"
+                          variant={config.theme === "auto" ? "solid" : "outline"}
+                          colorScheme="brand"
+                          onClick={() => updateConfig("theme", "auto")}
+                          flex={1}
+                        >
+                          Auto
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={config.theme === "light" ? "solid" : "outline"}
+                          colorScheme="brand"
+                          onClick={() => updateConfig("theme", "light")}
+                          flex={1}
+                        >
+                          Light
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={config.theme === "dark" ? "solid" : "outline"}
+                          colorScheme="brand"
+                          onClick={() => updateConfig("theme", "dark")}
+                          flex={1}
+                        >
+                          Dark
+                        </Button>
+                      </HStack>
+                      <Text fontSize="xs" color="gray.500" mt={1}>
+                        Current: {config.theme === "auto" ? "System" : config.theme}
+                      </Text>
                     </FormControl>
 
                     <FormControl>
                       <FormLabel fontSize="sm">Primary Color</FormLabel>
-                      <Select
-                        value={config.primaryColor}
-                        onChange={e =>
-                          updateConfig("primaryColor", e.target.value)
-                        }
-                        size="sm"
-                      >
-                        <option value="blue">Blue</option>
-                        <option value="green">Green</option>
-                        <option value="purple">Purple</option>
-                        <option value="red">Red</option>
-                        <option value="orange">Orange</option>
-                      </Select>
-                    </FormControl>
-                  </VStack>
-                </Box>
-
-                <Divider />
-
-                {/* Display Options */}
-                <Box>
-                  <Text fontSize="md" fontWeight="medium" mb={3}>
-                    Display Options
-                  </Text>
-                  <VStack spacing={4} align="stretch">
-                    <FormControl display="flex" alignItems="center">
-                      <FormLabel fontSize="sm" mb="0">
-                        Show Header
-                      </FormLabel>
-                      <Switch
-                        isChecked={config.showHeader}
-                        onChange={e =>
-                          updateConfig("showHeader", e.target.checked)
-                        }
-                      />
-                    </FormControl>
-
-                    <FormControl display="flex" alignItems="center">
-                      <FormLabel fontSize="sm" mb="0">
-                        Show Footer
-                      </FormLabel>
-                      <Switch
-                        isChecked={config.showFooter}
-                        onChange={e =>
-                          updateConfig("showFooter", e.target.checked)
-                        }
-                      />
-                    </FormControl>
-                  </VStack>
-                </Box>
-
-                <Divider />
-
-                {/* Size Configuration */}
-                <Box>
-                  <Text fontSize="md" fontWeight="medium" mb={3}>
-                    Size Configuration
-                  </Text>
-                  <VStack spacing={4} align="stretch">
-                    <FormControl>
-                      <FormLabel fontSize="sm">Width</FormLabel>
-                      <Input
-                        value={config.width}
-                        onChange={e => updateConfig("width", e.target.value)}
-                        size="sm"
-                        placeholder="e.g., 100%, 800px"
-                      />
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel fontSize="sm">Height</FormLabel>
-                      <Input
-                        value={config.height}
-                        onChange={e => updateConfig("height", e.target.value)}
-                        size="sm"
-                        placeholder="e.g., 600px, 100vh"
-                      />
+                      <InputGroup size="sm">
+                        <InputLeftElement>
+                          <Box
+                            w="4"
+                            h="4"
+                            borderRadius="sm"
+                            bg={config.primaryColor}
+                            border="1px"
+                            borderColor="gray.300"
+                            _dark={{ borderColor: "gray.600" }}
+                          />
+                        </InputLeftElement>
+                        <Input
+                          type="color"
+                          value={config.primaryColor}
+                          onChange={e => updateConfig("primaryColor", e.target.value)}
+                          placeholder="Select primary color"
+                        />
+                      </InputGroup>
+                      <Text fontSize="xs" color="gray.500" mt={1}>
+                        This color will be blended throughout the design
+                      </Text>
                     </FormControl>
                   </VStack>
                 </Box>
@@ -342,6 +339,80 @@ export default function EmbedButton() {
                   </Box>
                 </Box>
 
+                {/* Shareable Link */}
+                <Box>
+                  <HStack justify="space-between" mb={3}>
+                    <Text fontSize="md" fontWeight="medium">
+                      Shareable Link
+                    </Text>
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        const params = new URLSearchParams();
+                        params.set("embed", "1");
+                        params.set("theme", config.theme);
+                        params.set("primaryColor", config.primaryColor);
+                        // Include API key in shareable link
+                        const apiKey = localStorage.getItem("krystal-api-key");
+                        if (apiKey) {
+                          params.set("apiKey", apiKey);
+                        }
+                        const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
+                        try {
+                          await navigator.clipboard.writeText(shareableUrl);
+                          toast({
+                            title: "Link copied!",
+                            description: "The shareable link has been copied to your clipboard.",
+                            status: "success",
+                            duration: 3000,
+                            isClosable: true,
+                          });
+                        } catch (err) {
+                          toast({
+                            title: "Failed to copy",
+                            description: "Please copy the link manually.",
+                            status: "error",
+                            duration: 3000,
+                            isClosable: true,
+                          });
+                        }
+                      }}
+                      colorScheme="green"
+                    >
+                      Copy Link
+                    </Button>
+                  </HStack>
+                  <Box
+                    p={3}
+                    bg="green.50"
+                    _dark={{ bg: "green.900" }}
+                    borderRadius="md"
+                    border="1px"
+                    borderColor="green.200"
+                    _dark={{ borderColor: "green.700" }}
+                  >
+                    <Text
+                      fontSize="xs"
+                      fontFamily="mono"
+                      color="green.700"
+                      _dark={{ color: "green.200" }}
+                    >
+                      {(() => {
+                        const params = new URLSearchParams();
+                        params.set("embed", "1");
+                        params.set("theme", config.theme);
+                        params.set("primaryColor", config.primaryColor);
+                        // Include API key in shareable link display
+                        const apiKey = localStorage.getItem("krystal-api-key");
+                        if (apiKey) {
+                          params.set("apiKey", apiKey);
+                        }
+                        return `${window.location.origin}${pathname}?${params.toString()}`;
+                      })()}
+                    </Text>
+                  </Box>
+                </Box>
+
                 {/* Live Preview Note */}
                 <Box
                   p={3}
@@ -358,6 +429,21 @@ export default function EmbedButton() {
                     use this configuration in other applications.
                   </Text>
                 </Box>
+
+                {/* Done Button */}
+                <Button
+                  colorScheme="brand"
+                  size="lg"
+                  onClick={() => {
+                    onClose();
+                    // Remove config=1 from URL when closing
+                    const params = new URLSearchParams(searchParams.toString());
+                    params.delete("config");
+                    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+                  }}
+                >
+                  Done
+                </Button>
               </VStack>
             </Box>
           </Box>
@@ -374,7 +460,13 @@ export default function EmbedButton() {
           bottom={0}
           bg="blackAlpha.300"
           zIndex={998}
-          onClick={onClose}
+          onClick={() => {
+            onClose();
+            // Remove config=1 from URL when closing
+            const params = new URLSearchParams(searchParams.toString());
+            params.delete("config");
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+          }}
           display={{ base: "block", md: "none" }}
         />
       )}

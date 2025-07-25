@@ -29,11 +29,7 @@ export type ISortOrder = "asc" | "desc";
 
 export interface IEmbedConfig {
   theme: "light" | "dark" | "auto";
-  primaryColor: string;
-  showHeader: boolean;
-  showFooter: boolean;
-  height: string;
-  width: string;
+  primaryColor: string; // Hex color for primary color
 }
 
 // ============================================================================

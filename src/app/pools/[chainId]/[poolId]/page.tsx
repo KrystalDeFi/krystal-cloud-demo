@@ -96,8 +96,7 @@ function PoolDetailsPageContent() {
     "1h" | "24h" | "7d" | "30d"
   >("24h");
 
-  const isEmbedMode = searchParams.get("embed") === "true";
-  const showFooter = searchParams.get("showFooter") !== "false";
+  const isEmbedMode = searchParams.get("embed") === "1";
 
   // Color mode values
   const bgColor = useColorModeValue("gray.50", "gray.900");
@@ -275,10 +274,10 @@ function PoolDetailsPageContent() {
     // Use all data points from API (API already filters by time range)
     const displayData = data;
 
-    // Theme-aware colors for charts
-    const gridColor = useColorModeValue("gray.200", "gray.700");
-    const axisColor = useColorModeValue("gray.600", "white");
-    const textColor = useColorModeValue("gray.800", "white");
+    // Theme-aware colors for charts using primary color
+    const gridColor = useColorModeValue("brand.200", "brand.700");
+    const axisColor = useColorModeValue("brand.600", "white");
+    const textColor = useColorModeValue("brand.800", "white");
 
     // Extract values for the selected chart type
     const getValue = (item: ChartDataPoint) => {
@@ -345,8 +344,8 @@ function PoolDetailsPageContent() {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="5%" stopColor="#3182CE" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3182CE" stopOpacity={0.1} />
+                    <stop offset="5%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -355,6 +354,7 @@ function PoolDetailsPageContent() {
                   stroke={axisColor}
                   fontSize={12}
                   tick={{ fontSize: 10, fill: axisColor }}
+                  axisLine={{ stroke: axisColor }}
                 />
                 <YAxis
                   yAxisId="left"
@@ -362,6 +362,7 @@ function PoolDetailsPageContent() {
                   fontSize={12}
                   tickFormatter={value => formatCurrency(value)}
                   tick={{ fontSize: 10, fill: axisColor }}
+                  axisLine={{ stroke: axisColor }}
                 />
                 <YAxis
                   yAxisId="right"
@@ -370,6 +371,7 @@ function PoolDetailsPageContent() {
                   fontSize={12}
                   tickFormatter={value => formatCurrency(value)}
                   tick={{ fontSize: 10, fill: axisColor }}
+                  axisLine={{ stroke: axisColor }}
                   domain={[0, dataMax => dataMax * 1.7]}
                 />
                 <RechartsTooltip
@@ -392,7 +394,7 @@ function PoolDetailsPageContent() {
                 <Area
                   type="monotone"
                   dataKey="volume"
-                  stroke="#3182CE"
+                  stroke="var(--chakra-colors-brand-500)"
                   fill="url(#volumeGradient)"
                   strokeWidth={2}
                   yAxisId="left"
@@ -400,7 +402,7 @@ function PoolDetailsPageContent() {
                 />
                 <Bar
                   dataKey="fee"
-                  fill="#3182CE"
+                  fill="var(--chakra-colors-brand-600)"
                   radius={[2, 2, 0, 0]}
                   yAxisId="right"
                   name="fee"
@@ -413,8 +415,8 @@ function PoolDetailsPageContent() {
               <AreaChart data={displayData}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3182CE" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#3182CE" stopOpacity={0.1} />
+                    <stop offset="5%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -423,12 +425,14 @@ function PoolDetailsPageContent() {
                   stroke={axisColor}
                   fontSize={12}
                   tick={{ fontSize: 10, fill: axisColor }}
+                  axisLine={{ stroke: axisColor }}
                 />
                 <YAxis
                   stroke={axisColor}
                   fontSize={12}
                   tickFormatter={formatYAxis}
                   tick={{ fontSize: 10, fill: axisColor }}
+                  axisLine={{ stroke: axisColor }}
                 />
                 <RechartsTooltip
                   formatter={(value: any) => [
@@ -446,7 +450,7 @@ function PoolDetailsPageContent() {
                 <Area
                   type="monotone"
                   dataKey={selectedChart}
-                  stroke="#3182CE"
+                  stroke="var(--chakra-colors-brand-500)"
                   fill="url(#colorValue)"
                   strokeWidth={2}
                 />
@@ -528,76 +532,78 @@ function PoolDetailsPageContent() {
     <Box minH="100vh" bg={bgColor}>
       <Container maxW="7xl" py={6}>
         {/* Header */}
-        <Box>
-          <VStack spacing={6} mb={8}>
-            <HStack w="full" justify="space-between" align="start">
-              <VStack align="start" spacing={2}>
-                <Button
-                  leftIcon={<ArrowBackIcon />}
-                  variant="ghost"
-                  onClick={() => router.push("/pools")}
-                  size="sm"
-                >
-                  Back to Pools
-                </Button>
-                <VStack align="start" spacing={3}>
-                  <HStack spacing={4} align="center">
-                    <HStack spacing={2}>
-                      <Image
-                        src={pool.token0.logo || `/images/token-fallback.png`}
-                        alt={pool.token0.symbol}
-                        boxSize="32px"
-                        borderRadius="full"
-                        fallbackSrc="/images/token-fallback.png"
-                      />
-                      <Image
-                        src={pool.token1.logo || `/images/token-fallback.png`}
-                        alt={pool.token1.symbol}
-                        boxSize="32px"
-                        borderRadius="full"
-                        fallbackSrc="/images/token-fallback.png"
-                      />
-                    </HStack>
-                    <Heading size="lg" color={textColor}>
-                      {pool.token0.symbol}/{pool.token1.symbol}
-                    </Heading>
-                  </HStack>
-
-                  <HStack spacing={4} align="center">
-                    <HStack spacing={1}>
-                      <Image
-                        src={pool.chain.logo}
-                        fallbackSrc="/images/token-fallback.png"
-                        boxSize="20px"
-                        borderRadius="full"
-                      />
-                      <Text fontSize="sm" color={mutedTextColor}>
-                        {pool.chain.name}
-                      </Text>
+        {!isEmbedMode && (
+          <Box>
+            <VStack spacing={6} mb={8}>
+              <HStack w="full" justify="space-between" align="start">
+                <VStack align="start" spacing={2}>
+                  <Button
+                    leftIcon={<ArrowBackIcon />}
+                    variant="ghost"
+                    onClick={() => router.push("/pools")}
+                    size="sm"
+                  >
+                    Back to Pools
+                  </Button>
+                  <VStack align="start" spacing={3}>
+                    <HStack spacing={4} align="center">
+                      <HStack spacing={2}>
+                        <Image
+                          src={pool.token0.logo || `/images/token-fallback.png`}
+                          alt={pool.token0.symbol}
+                          boxSize="32px"
+                          borderRadius="full"
+                          fallbackSrc="/images/token-fallback.png"
+                        />
+                        <Image
+                          src={pool.token1.logo || `/images/token-fallback.png`}
+                          alt={pool.token1.symbol}
+                          boxSize="32px"
+                          borderRadius="full"
+                          fallbackSrc="/images/token-fallback.png"
+                        />
+                      </HStack>
+                      <Heading size="lg" color={textColor}>
+                        {pool.token0.symbol}/{pool.token1.symbol}
+                      </Heading>
                     </HStack>
 
-                    <HStack spacing={1}>
-                      <Image
-                        src={pool.protocol.logo || `/images/token-fallback.png`}
-                        alt={pool.protocol.name}
-                        boxSize="20px"
-                        borderRadius="full"
-                        fallbackSrc="/images/token-fallback.png"
-                      />
-                      <Text fontSize="sm" color={mutedTextColor}>
-                        {pool.protocol.name}
-                      </Text>
-                    </HStack>
+                    <HStack spacing={4} align="center">
+                      <HStack spacing={1}>
+                        <Image
+                          src={pool.chain.logo}
+                          fallbackSrc="/images/token-fallback.png"
+                          boxSize="20px"
+                          borderRadius="full"
+                        />
+                        <Text fontSize="sm" color={mutedTextColor}>
+                          {pool.chain.name}
+                        </Text>
+                      </HStack>
 
-                    <Badge size="xs">
-                      Fee {(pool.feeTier / 10000).toFixed(3)}%
-                    </Badge>
-                  </HStack>
+                      <HStack spacing={1}>
+                        <Image
+                          src={pool.protocol.logo || `/images/token-fallback.png`}
+                          alt={pool.protocol.name}
+                          boxSize="20px"
+                          borderRadius="full"
+                          fallbackSrc="/images/token-fallback.png"
+                        />
+                        <Text fontSize="sm" color={mutedTextColor}>
+                          {pool.protocol.name}
+                        </Text>
+                      </HStack>
+
+                      <Badge size="xs">
+                        Fee {(pool.feeTier / 10000).toFixed(3)}%
+                      </Badge>
+                    </HStack>
+                  </VStack>
                 </VStack>
-              </VStack>
-            </HStack>
-          </VStack>
-        </Box>
+              </HStack>
+            </VStack>
+          </Box>
+        )}
 
         {/* Key Metrics */}
         <Box>
@@ -644,6 +650,7 @@ function PoolDetailsPageContent() {
                                   ? "solid"
                                   : "outline"
                               }
+                              colorScheme="brand"
                               onClick={() => setSelectedTimeframe(timeframe)}
                             >
                               {timeframe}
@@ -700,7 +707,7 @@ function PoolDetailsPageContent() {
               <CardBody w="full" overflow="hidden">
                 <HStack justify="space-between" mb={6}>
                   <VStack align="start" spacing={1}>
-                    <Text fontSize="lg" fontWeight="semibold" color={textColor}>
+                    <Text fontSize="lg" fontWeight="semibold" color="chakra-metrics">
                       Current price: {parseFloat(pool.poolPrice).toFixed(5)}{" "}
                       {pool.token1.symbol}/{pool.token0.symbol}
                     </Text>
@@ -709,6 +716,7 @@ function PoolDetailsPageContent() {
                     <Button
                       size="sm"
                       variant={timeRange === "7d" ? "solid" : "outline"}
+                      colorScheme="brand"
                       onClick={() => setTimeRange("7d")}
                     >
                       7D
@@ -716,6 +724,7 @@ function PoolDetailsPageContent() {
                     <Button
                       size="sm"
                       variant={timeRange === "30d" ? "solid" : "outline"}
+                      colorScheme="brand"
                       onClick={() => setTimeRange("30d")}
                     >
                       30D
@@ -723,6 +732,7 @@ function PoolDetailsPageContent() {
                     <Button
                       size="sm"
                       variant={timeRange === "90d" ? "solid" : "outline"}
+                      colorScheme="brand"
                       onClick={() => setTimeRange("90d")}
                     >
                       90D
@@ -732,7 +742,7 @@ function PoolDetailsPageContent() {
 
                 <Tabs
                   variant="soft-rounded"
-                  colorScheme="blue"
+                  colorScheme="brand"
                   onChange={index => {
                     const charts = ["price", "apr", "tvl", "volFee"] as const;
                     setSelectedChart(charts[index]);
@@ -759,7 +769,7 @@ function PoolDetailsPageContent() {
           <GridItem>
             <Card bg={cardBg} border="1px" borderColor={borderColor} w="full">
               <CardBody>
-                <Heading size="md" mb={6} color={textColor}>
+                <Heading size="md" mb={6} color="chakra-title">
                   Information
                 </Heading>
                 <VStack spacing={4} align="stretch">
@@ -773,7 +783,7 @@ function PoolDetailsPageContent() {
                         alt={pool.chain.name}
                         boxSize="20px"
                       />
-                      <Text fontSize="sm" color={textColor}>
+                      <Text fontSize="sm" color="chakra-metrics">
                         {pool.chain.name}
                       </Text>
                     </HStack>
@@ -788,7 +798,7 @@ function PoolDetailsPageContent() {
                         alt={pool.protocol.name}
                         boxSize="20px"
                       />
-                      <Text fontSize="sm" color={textColor}>
+                      <Text fontSize="sm" color="chakra-metrics">
                         {pool.protocol.name}
                       </Text>
                     </HStack>
@@ -806,7 +816,7 @@ function PoolDetailsPageContent() {
                     <Text fontSize="sm" color={mutedTextColor}>
                       Fee-tier
                     </Text>
-                    <Text fontSize="sm" color={textColor}>
+                    <Text fontSize="sm" color="chakra-metrics">
                       {pool.feeTier / 10000}%
                     </Text>
                   </HStack>
@@ -821,7 +831,7 @@ function PoolDetailsPageContent() {
                           alt={pool.token0.symbol}
                           boxSize="20px"
                         />
-                        <Text fontSize="sm" color={textColor}>
+                        <Text fontSize="sm" color="chakra-metrics">
                           {pool.token0.symbol} ({pool.token0.name})
                         </Text>
                       </HStack>
@@ -844,7 +854,7 @@ function PoolDetailsPageContent() {
                           alt={pool.token1.symbol}
                           boxSize="20px"
                         />
-                        <Text fontSize="sm" color={textColor}>
+                        <Text fontSize="sm" color="chakra-metrics">
                           {pool.token1.symbol} ({pool.token1.name})
                         </Text>
                       </HStack>
@@ -894,15 +904,6 @@ function PoolDetailsPageContent() {
             </Card>
           </GridItem>
         </Grid>
-
-        {/* Footer */}
-        {showFooter && (
-          <Box textAlign="center" mt={8}>
-            <Text fontSize="sm" color={mutedTextColor}>
-              Built with Next.js and Chakra UI • Powered by Krystal Cloud API
-            </Text>
-          </Box>
-        )}
       </Container>
     </Box>
   );

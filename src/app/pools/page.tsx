@@ -74,6 +74,7 @@ function PoolsPageContent() {
 
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
+  const isEmbedMode = searchParams.get("embed") === "1";
 
   // Update URL params when filters change
   const updateUrlParams = (updates: Record<string, string>) => {
@@ -271,28 +272,30 @@ function PoolsPageContent() {
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
       <Container maxW="7xl" py={6}>
         {/* Header */}
-        <VStack spacing={6} mb={8}>
-          <HStack w="full" justify="space-between" align="start">
-            <VStack align="start" spacing={2}>
-              <Button
-                leftIcon={<ArrowBackIcon />}
-                variant="ghost"
-                onClick={() => router.push("/")}
-                size="sm"
-              >
-                Back to Home
-              </Button>
-              <Heading size="2xl">DeFi Pools</Heading>
-              <Text
-                fontSize="lg"
-                color="gray.600"
-                _dark={{ color: "gray.300" }}
-              >
-                Browse and filter DeFi pools across different chains
-              </Text>
-            </VStack>
-          </HStack>
-        </VStack>
+        {!isEmbedMode && (
+          <VStack spacing={6} mb={8}>
+            <HStack w="full" justify="space-between" align="start">
+              <VStack align="start" spacing={2}>
+                <Button
+                  leftIcon={<ArrowBackIcon />}
+                  variant="ghost"
+                  onClick={() => router.push("/")}
+                  size="sm"
+                >
+                  Back to Home
+                </Button>
+                <Heading size="2xl" color="chakra-title">DeFi Pools</Heading>
+                <Text
+                  fontSize="lg"
+                  color="gray.600"
+                  _dark={{ color: "gray.300" }}
+                >
+                  Browse and filter DeFi pools across different chains
+                </Text>
+              </VStack>
+            </HStack>
+          </VStack>
+        )}
 
         {/* Filters */}
 
