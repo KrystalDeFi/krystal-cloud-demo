@@ -1,9 +1,12 @@
 import React from "react";
 import type { Metadata } from "next";
-import { ChakraProvider } from "@chakra-ui/react";
+
+export const dynamic = 'force-dynamic';
+
 import NavBar from "./NavBar";
 import ThemeProvider from "./ThemeProvider";
 import EmbedButton from "../components/EmbedButton";
+import ApiKeyHandler from "../components/ApiKeyHandler";
 import { ChainsProtocolsProvider } from "../contexts/ChainsProtocolsContext";
 
 export const metadata: Metadata = {
@@ -21,6 +24,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <ChainsProtocolsProvider>
+            <ApiKeyHandler />
             <NavBar />
             {children}
             <EmbedButton />

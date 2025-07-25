@@ -19,21 +19,6 @@ export type ISortField = "tvl" | "volume24h" | "fees24h" | "apr" | "name" | "cre
 export type ISortOrder = "asc" | "desc";
 
 // ============================================================================
-// PAGINATION INTERFACES
-// ============================================================================
-
-export interface IPaginationProps {
-  currentPage: number;
-  totalItems: number;
-  pageSize: number;
-  onPageChange: (page: number) => void;
-  onPageSizeChange: (size: number) => void;
-  pageSizeOptions?: number[];
-  showPageSizeSelector?: boolean;
-  showFirstLastButtons?: boolean;
-}
-
-// ============================================================================
 // EMBED CONFIGURATION INTERFACES
 // ============================================================================
 
@@ -141,7 +126,7 @@ export const SORT_OPTIONS = {
   TVL: 1,        // Sort by TVL
   VOLUME_24H: 2, // Sort by Volume 24h
   FEE: 3,        // Sort by Fee
-} as const;
+};
 
 // Position status options
 export const POSITION_STATUS = {
