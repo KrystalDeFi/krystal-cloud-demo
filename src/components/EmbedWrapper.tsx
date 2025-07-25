@@ -8,7 +8,10 @@ interface EmbedWrapperProps {
   showInEmbed?: boolean;
 }
 
-export function EmbedWrapper({ children, showInEmbed = true }: EmbedWrapperProps) {
+export function EmbedWrapper({
+  children,
+  showInEmbed = true,
+}: EmbedWrapperProps) {
   const searchParams = useSearchParams();
   const isEmbedMode = searchParams.get("embed") === "1";
   const showHeader = searchParams.get("showHeader") !== "false";
@@ -21,4 +24,4 @@ export function EmbedWrapper({ children, showInEmbed = true }: EmbedWrapperProps
   return <>{children}</>;
 }
 
-export default EmbedWrapper; 
+export default EmbedWrapper;

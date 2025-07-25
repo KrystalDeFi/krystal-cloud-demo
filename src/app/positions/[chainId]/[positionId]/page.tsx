@@ -42,7 +42,10 @@ import { ChainDisplay } from "../../../../components/ChainDisplay";
 import { ProtocolDisplay } from "../../../../components/ProtocolDisplay";
 import { TokenPairDisplay } from "../../../../components/TokenPairDisplay";
 import { PriceRangeDisplay } from "../../../../components/PriceRangeDisplay";
-import { useApiError, useApiKeyValidation } from "../../../../hooks/useApiError";
+import {
+  useApiError,
+  useApiKeyValidation,
+} from "../../../../hooks/useApiError";
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 
@@ -134,8 +137,8 @@ function PositionDetailsPageContent() {
 
   if (error || !position) {
     return (
-      <ErrorDisplay 
-        error={error || "Position not found"} 
+      <ErrorDisplay
+        error={error || "Position not found"}
         onRetry={fetchPositionDetails}
         title="Failed to Load Position Details"
       />
@@ -165,7 +168,10 @@ function PositionDetailsPageContent() {
                     Position Details
                   </Heading>
                   <ChainDisplay chain={position.chain} size="lg" />
-                  <ProtocolDisplay protocol={position.pool.protocol} size="lg" />
+                  <ProtocolDisplay
+                    protocol={position.pool.protocol}
+                    size="lg"
+                  />
                   <DotIndicator status={position.status} size="lg" />
                 </HStack>
                 <Text fontSize="lg" color={mutedTextColor}>

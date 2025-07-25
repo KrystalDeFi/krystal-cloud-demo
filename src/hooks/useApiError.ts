@@ -31,13 +31,17 @@ export function useApiError(): UseApiErrorReturn {
     setError(errorMessage);
   }, []);
 
-  const isApiKeyError = Boolean(error?.includes("API key") || 
-                       error?.includes("No API key") ||
-                       error?.includes("API key not found"));
+  const isApiKeyError = Boolean(
+    error?.includes("API key") ||
+      error?.includes("No API key") ||
+      error?.includes("API key not found")
+  );
 
-  const isNetworkError = Boolean(error?.includes("fetch") ||
-                        error?.includes("network") ||
-                        error?.includes("Failed to fetch"));
+  const isNetworkError = Boolean(
+    error?.includes("fetch") ||
+      error?.includes("network") ||
+      error?.includes("Failed to fetch")
+  );
 
   return {
     error,
@@ -53,10 +57,12 @@ export function useApiKeyValidation() {
   const validateApiKey = useCallback(() => {
     const apiKey = KrystalApi.getApiKey();
     if (!apiKey) {
-      throw new Error("API key not found. Please set your API key in the navigation bar.");
+      throw new Error(
+        "API key not found. Please set your API key in the navigation bar."
+      );
     }
     return apiKey;
   }, []);
 
   return { validateApiKey };
-} 
+}

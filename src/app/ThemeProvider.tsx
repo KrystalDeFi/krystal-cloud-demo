@@ -1,6 +1,11 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { ChakraProvider, extendTheme, ColorModeScript, useColorMode } from "@chakra-ui/react";
+import {
+  ChakraProvider,
+  extendTheme,
+  ColorModeScript,
+  useColorMode,
+} from "@chakra-ui/react";
 import { useSearchParams } from "next/navigation";
 
 const createTheme = (primaryColorHex: string = "#3b82f6") => {
@@ -9,11 +14,13 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
     // Convert hex to HSL for better color manipulation
     const hexToRgb = (hex: string) => {
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-      return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-      } : { r: 59, g: 130, b: 246 }; // Default blue
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : { r: 59, g: 130, b: 246 }; // Default blue
     };
 
     const rgbToHsl = (r: number, g: number, b: number) => {
@@ -22,15 +29,23 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       b /= 255;
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
-      let h = 0, s = 0, l = (max + min) / 2;
+      let h = 0,
+        s = 0,
+        l = (max + min) / 2;
 
       if (max !== min) {
         const d = max - min;
         s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
         switch (max) {
-          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-          case g: h = (b - r) / d + 2; break;
-          case b: h = (r - g) / d + 4; break;
+          case r:
+            h = (g - b) / d + (g < b ? 6 : 0);
+            break;
+          case g:
+            h = (b - r) / d + 2;
+            break;
+          case b:
+            h = (r - g) / d + 4;
+            break;
         }
         h /= 6;
       }
@@ -42,36 +57,55 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       s /= 100;
       l /= 100;
       const c = (1 - Math.abs(2 * l - 1)) * s;
-      const x = c * (1 - Math.abs((h * 6) % 2 - 1));
+      const x = c * (1 - Math.abs(((h * 6) % 2) - 1));
       const m = l - c / 2;
-      let r = 0, g = 0, b = 0;
+      let r = 0,
+        g = 0,
+        b = 0;
 
-      if (0 <= h && h < 1/6) {
-        r = c; g = x; b = 0;
-      } else if (1/6 <= h && h < 2/6) {
-        r = x; g = c; b = 0;
-      } else if (2/6 <= h && h < 3/6) {
-        r = 0; g = c; b = x;
-      } else if (3/6 <= h && h < 4/6) {
-        r = 0; g = x; b = c;
-      } else if (4/6 <= h && h < 5/6) {
-        r = x; g = 0; b = c;
-      } else if (5/6 <= h && h < 1) {
-        r = c; g = 0; b = x;
+      if (0 <= h && h < 1 / 6) {
+        r = c;
+        g = x;
+        b = 0;
+      } else if (1 / 6 <= h && h < 2 / 6) {
+        r = x;
+        g = c;
+        b = 0;
+      } else if (2 / 6 <= h && h < 3 / 6) {
+        r = 0;
+        g = c;
+        b = x;
+      } else if (3 / 6 <= h && h < 4 / 6) {
+        r = 0;
+        g = x;
+        b = c;
+      } else if (4 / 6 <= h && h < 5 / 6) {
+        r = x;
+        g = 0;
+        b = c;
+      } else if (5 / 6 <= h && h < 1) {
+        r = c;
+        g = 0;
+        b = x;
       }
 
       return {
         r: Math.round((r + m) * 255),
         g: Math.round((g + m) * 255),
-        b: Math.round((b + m) * 255)
+        b: Math.round((b + m) * 255),
       };
     };
 
     const rgbToHex = (r: number, g: number, b: number) => {
-      return "#" + [r, g, b].map(x => {
-        const hex = x.toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      }).join("");
+      return (
+        "#" +
+        [r, g, b]
+          .map(x => {
+            const hex = x.toString(16);
+            return hex.length === 1 ? "0" + hex : hex;
+          })
+          .join("")
+      );
     };
 
     const baseRgb = hexToRgb(primaryColorHex);
@@ -79,16 +113,56 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
 
     // Generate color variations
     const colors = {
-      50: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 95).r, hslToRgb(baseHsl.h, baseHsl.s, 95).g, hslToRgb(baseHsl.h, baseHsl.s, 95).b),
-      100: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 90).r, hslToRgb(baseHsl.h, baseHsl.s, 90).g, hslToRgb(baseHsl.h, baseHsl.s, 90).b),
-      200: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 80).r, hslToRgb(baseHsl.h, baseHsl.s, 80).g, hslToRgb(baseHsl.h, baseHsl.s, 80).b),
-      300: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 70).r, hslToRgb(baseHsl.h, baseHsl.s, 70).g, hslToRgb(baseHsl.h, baseHsl.s, 70).b),
-      400: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 60).r, hslToRgb(baseHsl.h, baseHsl.s, 60).g, hslToRgb(baseHsl.h, baseHsl.s, 60).b),
-      500: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 50).r, hslToRgb(baseHsl.h, baseHsl.s, 50).g, hslToRgb(baseHsl.h, baseHsl.s, 50).b),
-      600: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 40).r, hslToRgb(baseHsl.h, baseHsl.s, 40).g, hslToRgb(baseHsl.h, baseHsl.s, 40).b),
-      700: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 30).r, hslToRgb(baseHsl.h, baseHsl.s, 30).g, hslToRgb(baseHsl.h, baseHsl.s, 30).b),
-      800: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 20).r, hslToRgb(baseHsl.h, baseHsl.s, 20).g, hslToRgb(baseHsl.h, baseHsl.s, 20).b),
-      900: rgbToHex(hslToRgb(baseHsl.h, baseHsl.s, 10).r, hslToRgb(baseHsl.h, baseHsl.s, 10).g, hslToRgb(baseHsl.h, baseHsl.s, 10).b),
+      50: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 95).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 95).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 95).b
+      ),
+      100: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 90).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 90).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 90).b
+      ),
+      200: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 80).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 80).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 80).b
+      ),
+      300: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 70).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 70).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 70).b
+      ),
+      400: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 60).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 60).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 60).b
+      ),
+      500: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 50).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 50).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 50).b
+      ),
+      600: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 40).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 40).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 40).b
+      ),
+      700: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 30).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 30).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 30).b
+      ),
+      800: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 20).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 20).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 20).b
+      ),
+      900: rgbToHex(
+        hslToRgb(baseHsl.h, baseHsl.s, 10).r,
+        hslToRgb(baseHsl.h, baseHsl.s, 10).g,
+        hslToRgb(baseHsl.h, baseHsl.s, 10).b
+      ),
     };
 
     return colors;
@@ -108,7 +182,7 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
     const rgb = hexToRgb(hex);
     const opacity1 = isDark ? 0.06 : 0.03;
     const opacity2 = isDark ? 0.03 : 0.01;
-    
+
     return `linear-gradient(135deg, 
       rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity1}) 0%, 
       rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity2}) 100%)`;
@@ -116,11 +190,13 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
 
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : { r: 59, g: 130, b: 246 };
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : { r: 59, g: 130, b: 246 };
   };
 
   return extendTheme({
@@ -146,22 +222,22 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
     semanticTokens: {
       colors: {
         // Heading colors using brand color (important text)
-        'chakra-heading': {
+        "chakra-heading": {
           _light: brandColors[900],
           _dark: brandColors[100],
         },
         // Highlight colors using brand color (important text)
-        'chakra-highlight': {
+        "chakra-highlight": {
           _light: brandColors[600],
           _dark: brandColors[300],
         },
         // Key numbers and metrics using brand color
-        'chakra-metrics': {
+        "chakra-metrics": {
           _light: brandColors[800],
           _dark: brandColors[200],
         },
         // Title and header text using brand color
-        'chakra-title': {
+        "chakra-title": {
           _light: brandColors[900],
           _dark: brandColors[100],
         },
@@ -223,10 +299,10 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       },
       Stat: {
         baseStyle: {
-          '.chakra-stat__label': {
+          ".chakra-stat__label": {
             color: "chakra-highlight",
           },
-          '.chakra-stat__number': {
+          ".chakra-stat__number": {
             color: "chakra-metrics",
           },
         },
@@ -252,8 +328,13 @@ function ColorModeManager() {
 
   useEffect(() => {
     const embedTheme = searchParams.get("theme");
-    console.log("ColorModeManager: embedTheme =", embedTheme, "current colorMode =", colorMode);
-    
+    console.log(
+      "ColorModeManager: embedTheme =",
+      embedTheme,
+      "current colorMode =",
+      colorMode
+    );
+
     if (embedTheme && embedTheme !== "auto") {
       console.log("Setting color mode to:", embedTheme);
       // Force the color mode change by updating localStorage and then setting
@@ -278,7 +359,12 @@ export default function ThemeProvider({
     const embedTheme = searchParams.get("theme");
     const apiKey = searchParams.get("apiKey");
 
-    console.log("ThemeProvider: primaryColor =", primaryColor, "embedTheme =", embedTheme);
+    console.log(
+      "ThemeProvider: primaryColor =",
+      primaryColor,
+      "embedTheme =",
+      embedTheme
+    );
 
     // Set API key from URL if provided
     if (apiKey) {
@@ -293,7 +379,11 @@ export default function ThemeProvider({
       // Force light or dark mode based on embed parameter
       newTheme.config.initialColorMode = embedTheme as "light" | "dark";
       newTheme.config.useSystemColorMode = false;
-      console.log("ThemeProvider: Setting theme config to", embedTheme, "useSystemColorMode = false");
+      console.log(
+        "ThemeProvider: Setting theme config to",
+        embedTheme,
+        "useSystemColorMode = false"
+      );
     } else {
       // Use system color mode if theme is auto or not specified
       newTheme.config.useSystemColorMode = true;

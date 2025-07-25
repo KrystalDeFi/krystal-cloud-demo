@@ -93,163 +93,169 @@ export default function Home() {
           bgGradient: "linear(to-br, gray.900, brand.900, purple.900)",
         }}
       >
-      <Container maxW="7xl" py={6}>
-        {/* Header */}
-        {!isEmbedMode && (
-          <VStack spacing={6} mb={10} textAlign="center">
-            <Heading
-              size="2xl"
-              bgGradient="linear(to-r, brand.400, purple.500)"
-              bgClip="text"
-              fontWeight="bold"
-            >
-              Krystal Cloud Demo
-            </Heading>
-            <Text
-              fontSize="lg"
-              color="gray.600"
-              _dark={{ color: "gray.300" }}
-              maxW="2xl"
-            >
-              Explore DeFi pools and positions with the Krystal Cloud API. This
-              embeddable interface provides comprehensive data and analytics.
-            </Text>
-          </VStack>
-        )}
-
-        {/* Guidelines */}
-        {!isEmbedMode && (
-          <Box
-            bg={cardBg}
-            _dark={{ bg: "gray.800" }}
-            borderRadius="xl"
-            p={6}
-            mb={8}
-            boxShadow="lg"
-            border="1px"
-            borderColor={borderColor}
-          >
-            <Heading
-              size="md"
-              mb={4}
-              color="brand.600"
-              _dark={{ color: "brand.400" }}
-            >
-              🚀 Getting Started
-            </Heading>
-            <VStack align="start" spacing={3}>
-              <Text>
-                <strong>Embedding:</strong> Use the embed button (bottom right) to
-                customize and embed any page in your application.
-              </Text>
-              <Text>
-                <strong>API Integration:</strong> All data is fetched from the
-                Krystal Cloud API. Make sure to set your API key in the navigation
-                bar.
-              </Text>
-              <Text>
-                <strong>Customization:</strong> In embed mode, you can customize
-                colors, themes, and display options through the right panel.
+        <Container maxW="7xl" py={6}>
+          {/* Header */}
+          {!isEmbedMode && (
+            <VStack spacing={6} mb={10} textAlign="center">
+              <Heading
+                size="2xl"
+                bgGradient="linear(to-r, brand.400, purple.500)"
+                bgClip="text"
+                fontWeight="bold"
+              >
+                Krystal Cloud Demo
+              </Heading>
+              <Text
+                fontSize="lg"
+                color="gray.600"
+                _dark={{ color: "gray.300" }}
+                maxW="2xl"
+              >
+                Explore DeFi pools and positions with the Krystal Cloud API.
+                This embeddable interface provides comprehensive data and
+                analytics.
               </Text>
             </VStack>
-          </Box>
-        )}
-
-        {/* Available Pages */}
-        <Box mb={8}>
-          {!isEmbedMode && (
-            <Heading size="lg" mb={6} textAlign="center">
-              Available Pages
-            </Heading>
           )}
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-            {pages.map((page, index) => (
-              <Card
-                key={index}
-                bg={cardBg}
-                _dark={{ bg: "gray.800" }}
-                border="1px"
-                borderColor={borderColor}
-                _hover={{
-                  transform: "translateY(-2px)",
-                  boxShadow: "xl",
-                  borderColor: "brand.300",
-                }}
-                transition="all 0.2s"
-                cursor="pointer"
-                onClick={() => handleCardClick(page.defaultLink)}
-              >
-                <CardHeader>
-                  <HStack justify="space-between" align="start">
-                    <HStack spacing={3}>
-                      <Icon as={page.icon} color="brand.500" boxSize={5} />
-                      <VStack align="start" spacing={1}>
-                        <Heading size="md">{page.title}</Heading>
-                        <Badge colorScheme="brand" variant="subtle">
-                          {page.badge}
-                        </Badge>
-                      </VStack>
-                    </HStack>
-                  </HStack>
-                </CardHeader>
-                <CardBody pt={0}>
-                  <Text color="gray.600" _dark={{ color: "gray.300" }} mb={4}>
-                    {page.description}
-                  </Text>
-                  <VStack align="start" spacing={2}>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="medium"
-                      color="gray.700"
-                      _dark={{ color: "gray.200" }}
-                    >
-                      Features:
-                    </Text>
-                    {page.features.map((feature, idx) => (
-                      <Text
-                        key={idx}
-                        fontSize="sm"
-                        color="gray.600"
-                        _dark={{ color: "gray.400" }}
-                      >
-                        • {feature}
-                      </Text>
-                    ))}
-                  </VStack>
-                  {page.example && (
-                    <Box
-                      mt={4}
-                      p={3}
-                      bg="gray.50"
-                      _dark={{ bg: "gray.700" }}
-                      borderRadius="md"
-                    >
-                      <Text
-                        fontSize="xs"
-                        fontFamily="mono"
-                        color="gray.600"
-                        _dark={{ color: "gray.300" }}
-                      >
-                        Example: {page.example}
-                      </Text>
-                    </Box>
-                  )}
-                </CardBody>
-              </Card>
-            ))}
-          </SimpleGrid>
-        </Box>
 
-        {/* Footer */}
-        {!isEmbedMode && (
-          <Box textAlign="center" mt={8}>
-            <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
-              Built with Next.js and Chakra UI • Powered by Krystal Cloud API
-            </Text>
+          {/* Guidelines */}
+          {!isEmbedMode && (
+            <Box
+              bg={cardBg}
+              _dark={{ bg: "gray.800" }}
+              borderRadius="xl"
+              p={6}
+              mb={8}
+              boxShadow="lg"
+              border="1px"
+              borderColor={borderColor}
+            >
+              <Heading
+                size="md"
+                mb={4}
+                color="brand.600"
+                _dark={{ color: "brand.400" }}
+              >
+                🚀 Getting Started
+              </Heading>
+              <VStack align="start" spacing={3}>
+                <Text>
+                  <strong>Embedding:</strong> Use the embed button (bottom
+                  right) to customize and embed any page in your application.
+                </Text>
+                <Text>
+                  <strong>API Integration:</strong> All data is fetched from the
+                  Krystal Cloud API. Make sure to set your API key in the
+                  navigation bar.
+                </Text>
+                <Text>
+                  <strong>Customization:</strong> In embed mode, you can
+                  customize colors, themes, and display options through the
+                  right panel.
+                </Text>
+              </VStack>
+            </Box>
+          )}
+
+          {/* Available Pages */}
+          <Box mb={8}>
+            {!isEmbedMode && (
+              <Heading size="lg" mb={6} textAlign="center">
+                Available Pages
+              </Heading>
+            )}
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+              {pages.map((page, index) => (
+                <Card
+                  key={index}
+                  bg={cardBg}
+                  _dark={{ bg: "gray.800" }}
+                  border="1px"
+                  borderColor={borderColor}
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    boxShadow: "xl",
+                    borderColor: "brand.300",
+                  }}
+                  transition="all 0.2s"
+                  cursor="pointer"
+                  onClick={() => handleCardClick(page.defaultLink)}
+                >
+                  <CardHeader>
+                    <HStack justify="space-between" align="start">
+                      <HStack spacing={3}>
+                        <Icon as={page.icon} color="brand.500" boxSize={5} />
+                        <VStack align="start" spacing={1}>
+                          <Heading size="md">{page.title}</Heading>
+                          <Badge colorScheme="brand" variant="subtle">
+                            {page.badge}
+                          </Badge>
+                        </VStack>
+                      </HStack>
+                    </HStack>
+                  </CardHeader>
+                  <CardBody pt={0}>
+                    <Text color="gray.600" _dark={{ color: "gray.300" }} mb={4}>
+                      {page.description}
+                    </Text>
+                    <VStack align="start" spacing={2}>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="medium"
+                        color="gray.700"
+                        _dark={{ color: "gray.200" }}
+                      >
+                        Features:
+                      </Text>
+                      {page.features.map((feature, idx) => (
+                        <Text
+                          key={idx}
+                          fontSize="sm"
+                          color="gray.600"
+                          _dark={{ color: "gray.400" }}
+                        >
+                          • {feature}
+                        </Text>
+                      ))}
+                    </VStack>
+                    {page.example && (
+                      <Box
+                        mt={4}
+                        p={3}
+                        bg="gray.50"
+                        _dark={{ bg: "gray.700" }}
+                        borderRadius="md"
+                      >
+                        <Text
+                          fontSize="xs"
+                          fontFamily="mono"
+                          color="gray.600"
+                          _dark={{ color: "gray.300" }}
+                        >
+                          Example: {page.example}
+                        </Text>
+                      </Box>
+                    )}
+                  </CardBody>
+                </Card>
+              ))}
+            </SimpleGrid>
           </Box>
-        )}
-      </Container>
-    </Box>
+
+          {/* Footer */}
+          {!isEmbedMode && (
+            <Box textAlign="center" mt={8}>
+              <Text
+                fontSize="sm"
+                color="gray.600"
+                _dark={{ color: "gray.300" }}
+              >
+                Built with Next.js and Chakra UI • Powered by Krystal Cloud API
+              </Text>
+            </Box>
+          )}
+        </Container>
+      </Box>
     </ErrorBoundary>
   );
 }

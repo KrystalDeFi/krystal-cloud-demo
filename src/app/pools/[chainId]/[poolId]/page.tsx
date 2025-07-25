@@ -44,7 +44,10 @@ import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
 import { Formatter } from "@/common/formatter";
 import { FallbackImg } from "@/components/FallbackImg";
 import { Address } from "@/components/Address";
-import { useApiError, useApiKeyValidation } from "../../../../hooks/useApiError";
+import {
+  useApiError,
+  useApiKeyValidation,
+} from "../../../../hooks/useApiError";
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import {
@@ -344,8 +347,16 @@ function PoolDetailsPageContent() {
                     x2="0"
                     y2="1"
                   >
-                    <stop offset="5%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.1} />
+                    <stop
+                      offset="5%"
+                      stopColor="var(--chakra-colors-brand-500)"
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--chakra-colors-brand-500)"
+                      stopOpacity={0.1}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -415,8 +426,16 @@ function PoolDetailsPageContent() {
               <AreaChart data={displayData}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="var(--chakra-colors-brand-500)" stopOpacity={0.1} />
+                    <stop
+                      offset="5%"
+                      stopColor="var(--chakra-colors-brand-500)"
+                      stopOpacity={0.3}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--chakra-colors-brand-500)"
+                      stopOpacity={0.1}
+                    />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -518,8 +537,8 @@ function PoolDetailsPageContent() {
 
   if (error || !pool) {
     return (
-      <ErrorDisplay 
-        error={error || "Pool not found"} 
+      <ErrorDisplay
+        error={error || "Pool not found"}
         onRetry={fetchPoolDetails}
         title="Failed to Load Pool Details"
       />
@@ -583,7 +602,9 @@ function PoolDetailsPageContent() {
 
                       <HStack spacing={1}>
                         <Image
-                          src={pool.protocol.logo || `/images/token-fallback.png`}
+                          src={
+                            pool.protocol.logo || `/images/token-fallback.png`
+                          }
                           alt={pool.protocol.name}
                           boxSize="20px"
                           borderRadius="full"
@@ -707,7 +728,11 @@ function PoolDetailsPageContent() {
               <CardBody w="full" overflow="hidden">
                 <HStack justify="space-between" mb={6}>
                   <VStack align="start" spacing={1}>
-                    <Text fontSize="lg" fontWeight="semibold" color="chakra-metrics">
+                    <Text
+                      fontSize="lg"
+                      fontWeight="semibold"
+                      color="chakra-metrics"
+                    >
                       Current price: {parseFloat(pool.poolPrice).toFixed(5)}{" "}
                       {pool.token1.symbol}/{pool.token0.symbol}
                     </Text>

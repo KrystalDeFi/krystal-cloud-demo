@@ -144,8 +144,8 @@ function PoolsPageContent() {
 
   if (error) {
     return (
-      <ErrorDisplay 
-        error={error} 
+      <ErrorDisplay
+        error={error}
         onRetry={fetchPools}
         title="Failed to Load Pools"
       />
@@ -284,7 +284,9 @@ function PoolsPageContent() {
                 >
                   Back to Home
                 </Button>
-                <Heading size="2xl" color="chakra-title">DeFi Pools</Heading>
+                <Heading size="2xl" color="chakra-title">
+                  DeFi Pools
+                </Heading>
                 <Text
                   fontSize="lg"
                   color="gray.600"

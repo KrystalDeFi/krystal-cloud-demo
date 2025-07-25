@@ -191,20 +191,24 @@ export default function EmbedButton() {
                     params.delete("config");
                     params.delete("theme");
                     params.delete("primaryColor");
-                    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+                    router.replace(`${pathname}?${params.toString()}`, {
+                      scroll: false,
+                    });
                   }}
                 >
                   Exit Embed Mode
                 </Button>
-                <CloseButton 
+                <CloseButton
                   onClick={() => {
                     onClose();
                     // Remove config=1 from URL when closing
                     const params = new URLSearchParams(searchParams.toString());
                     params.delete("config");
-                    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-                  }} 
-                  size="sm" 
+                    router.replace(`${pathname}?${params.toString()}`, {
+                      scroll: false,
+                    });
+                  }}
+                  size="sm"
                 />
               </HStack>
             </Flex>
@@ -243,7 +247,9 @@ export default function EmbedButton() {
                       <HStack spacing={2}>
                         <Button
                           size="sm"
-                          variant={config.theme === "auto" ? "solid" : "outline"}
+                          variant={
+                            config.theme === "auto" ? "solid" : "outline"
+                          }
                           colorScheme="brand"
                           onClick={() => updateConfig("theme", "auto")}
                           flex={1}
@@ -252,7 +258,9 @@ export default function EmbedButton() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={config.theme === "light" ? "solid" : "outline"}
+                          variant={
+                            config.theme === "light" ? "solid" : "outline"
+                          }
                           colorScheme="brand"
                           onClick={() => updateConfig("theme", "light")}
                           flex={1}
@@ -261,7 +269,9 @@ export default function EmbedButton() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={config.theme === "dark" ? "solid" : "outline"}
+                          variant={
+                            config.theme === "dark" ? "solid" : "outline"
+                          }
                           colorScheme="brand"
                           onClick={() => updateConfig("theme", "dark")}
                           flex={1}
@@ -270,7 +280,8 @@ export default function EmbedButton() {
                         </Button>
                       </HStack>
                       <Text fontSize="xs" color="gray.500" mt={1}>
-                        Current: {config.theme === "auto" ? "System" : config.theme}
+                        Current:{" "}
+                        {config.theme === "auto" ? "System" : config.theme}
                       </Text>
                     </FormControl>
 
@@ -291,7 +302,9 @@ export default function EmbedButton() {
                         <Input
                           type="color"
                           value={config.primaryColor}
-                          onChange={e => updateConfig("primaryColor", e.target.value)}
+                          onChange={e =>
+                            updateConfig("primaryColor", e.target.value)
+                          }
                           placeholder="Select primary color"
                         />
                       </InputGroup>
@@ -362,7 +375,8 @@ export default function EmbedButton() {
                           await navigator.clipboard.writeText(shareableUrl);
                           toast({
                             title: "Link copied!",
-                            description: "The shareable link has been copied to your clipboard.",
+                            description:
+                              "The shareable link has been copied to your clipboard.",
                             status: "success",
                             duration: 3000,
                             isClosable: true,
@@ -439,7 +453,9 @@ export default function EmbedButton() {
                     // Remove config=1 from URL when closing
                     const params = new URLSearchParams(searchParams.toString());
                     params.delete("config");
-                    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+                    router.replace(`${pathname}?${params.toString()}`, {
+                      scroll: false,
+                    });
                   }}
                 >
                   Done
@@ -465,7 +481,9 @@ export default function EmbedButton() {
             // Remove config=1 from URL when closing
             const params = new URLSearchParams(searchParams.toString());
             params.delete("config");
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            router.replace(`${pathname}?${params.toString()}`, {
+              scroll: false,
+            });
           }}
           display={{ base: "block", md: "none" }}
         />

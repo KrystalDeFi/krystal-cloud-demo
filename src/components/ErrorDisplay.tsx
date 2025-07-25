@@ -35,13 +35,15 @@ export function ErrorDisplay({
 
   if (!error) return null;
 
-  const isApiKeyError = error.includes("API key") || 
-                       error.includes("No API key") ||
-                       error.includes("API key not found");
+  const isApiKeyError =
+    error.includes("API key") ||
+    error.includes("No API key") ||
+    error.includes("API key not found");
 
-  const isNetworkError = error.includes("fetch") ||
-                        error.includes("network") ||
-                        error.includes("Failed to fetch");
+  const isNetworkError =
+    error.includes("fetch") ||
+    error.includes("network") ||
+    error.includes("Failed to fetch");
 
   const getErrorTitle = () => {
     if (title) return title;
@@ -96,7 +98,13 @@ export function ErrorDisplay({
   }
 
   return (
-    <Box pt={20} bg={bgColor} display="flex" alignItems="center" justifyContent="center">
+    <Box
+      pt={20}
+      bg={bgColor}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Container maxW="md">
         <VStack spacing={6} textAlign="center">
           <Alert status="error" borderRadius="lg">
@@ -143,4 +151,4 @@ export function ErrorDisplay({
   );
 }
 
-export default ErrorDisplay; 
+export default ErrorDisplay;

@@ -61,13 +61,15 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
-  const isApiKeyError = error?.message?.includes("API key") || 
-                       error?.message?.includes("No API key") ||
-                       error?.message?.includes("API key not found");
+  const isApiKeyError =
+    error?.message?.includes("API key") ||
+    error?.message?.includes("No API key") ||
+    error?.message?.includes("API key not found");
 
-  const isNetworkError = error?.message?.includes("fetch") ||
-                        error?.message?.includes("network") ||
-                        error?.message?.includes("Failed to fetch");
+  const isNetworkError =
+    error?.message?.includes("fetch") ||
+    error?.message?.includes("network") ||
+    error?.message?.includes("Failed to fetch");
 
   const getErrorTitle = () => {
     if (isApiKeyError) return "API Key Required";
@@ -86,7 +88,13 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
   };
 
   return (
-    <Box minH="100vh" bg={bgColor} display="flex" alignItems="center" justifyContent="center">
+    <Box
+      minH="100vh"
+      bg={bgColor}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+    >
       <Container maxW="md">
         <VStack spacing={6} textAlign="center">
           <Alert status="error" borderRadius="lg">
@@ -133,4 +141,4 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
   );
 }
 
-export default ErrorBoundary; 
+export default ErrorBoundary;

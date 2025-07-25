@@ -56,7 +56,10 @@ import { ChainDisplay } from "../../../../components/ChainDisplay";
 import { ProtocolDisplay } from "../../../../components/ProtocolDisplay";
 import { TokenPairDisplay } from "../../../../components/TokenPairDisplay";
 import { PriceRangeDisplay } from "../../../../components/PriceRangeDisplay";
-import { useApiError, useApiKeyValidation } from "../../../../hooks/useApiError";
+import {
+  useApiError,
+  useApiKeyValidation,
+} from "../../../../hooks/useApiError";
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 
@@ -447,8 +450,8 @@ function WalletPositionsPageContent() {
 
   if (error) {
     return (
-      <ErrorDisplay 
-        error={error} 
+      <ErrorDisplay
+        error={error}
         onRetry={fetchAllPositions}
         title="Failed to Load Wallet Positions"
       />
@@ -471,7 +474,9 @@ function WalletPositionsPageContent() {
                 >
                   Back to Home
                 </Button>
-                <Heading size="2xl" color="chakra-title">Wallet Positions</Heading>
+                <Heading size="2xl" color="chakra-title">
+                  Wallet Positions
+                </Heading>
                 <Text
                   fontSize="lg"
                   color="gray.600"
