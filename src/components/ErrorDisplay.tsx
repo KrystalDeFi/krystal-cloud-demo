@@ -99,7 +99,7 @@ export function ErrorDisplay({
 
   return (
     <Box
-      pt={20}
+      py={20}
       bg={bgColor}
       display="flex"
       alignItems="center"

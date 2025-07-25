@@ -142,16 +142,6 @@ function PoolsPageContent() {
     updateUrlParams({ [key]: value?.toString() || "" });
   };
 
-  if (error) {
-    return (
-      <ErrorDisplay
-        error={error}
-        onRetry={fetchPools}
-        title="Failed to Load Pools"
-      />
-    );
-  }
-
   const tableColumns = useMemo(
     () => [
       {
@@ -267,6 +257,16 @@ function PoolsPageContent() {
     ],
     []
   );
+
+  if (error) {
+    return (
+      <ErrorDisplay
+        error={error}
+        onRetry={fetchPools}
+        title="Failed to Load Pools"
+      />
+    );
+  }
 
   return (
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
