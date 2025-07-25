@@ -84,7 +84,7 @@ jobs:
           node --version
           npm --version
           npm install
-          npm run build
+          npm run build:ci
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
