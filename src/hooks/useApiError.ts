@@ -58,7 +58,7 @@ export function useApiKeyValidation() {
     const apiKey = KrystalApi.getApiKey();
     if (!apiKey) {
       throw new Error(
-        "API key not found. Please set your API key in the navigation bar."
+        "API key not configured. Please check the CLOUD_API_KEY in config.ts."
       );
     }
     return apiKey;

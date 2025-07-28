@@ -38,6 +38,7 @@ import { Formatter } from "@/common/formatter";
 import { useApiError, useApiKeyValidation } from "../../hooks/useApiError";
 import { ErrorDisplay } from "../../components/ErrorDisplay";
 import ErrorBoundary from "../../components/ErrorBoundary";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 interface FilterParams extends IPoolsParams {}
 
@@ -276,21 +277,12 @@ function PoolsPageContent() {
           <VStack spacing={6} mb={8}>
             <HStack w="full" justify="space-between" align="start">
               <VStack align="start" spacing={2}>
-                <Button
-                  leftIcon={<ArrowBackIcon />}
-                  variant="ghost"
-                  onClick={() => router.push("/")}
-                  size="sm"
-                >
-                  Back to Home
-                </Button>
                 <Heading size="2xl" color="chakra-title">
                   DeFi Pools
                 </Heading>
                 <Text
                   fontSize="lg"
-                  color="gray.600"
-                  _dark={{ color: "gray.300" }}
+                  color="text.secondary"
                 >
                   Browse and filter DeFi pools across different chains
                 </Text>
@@ -299,8 +291,10 @@ function PoolsPageContent() {
           </VStack>
         )}
 
-        {/* Filters */}
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pools" }]} />
 
+        {/* Filters */}
         <VStack spacing={4} align="stretch">
           {/* Search and Basic Filters */}
           <Flex
@@ -462,9 +456,9 @@ function PoolsPageContent() {
 
         {pools.length === 0 && !loading && (
           <Box textAlign="center" py={12}>
-            <Text color="gray.500" _dark={{ color: "gray.400" }}>
-              No pools found matching your criteria.
-            </Text>
+                            <Text color="text.muted">
+                  No pools found matching your criteria.
+                </Text>
           </Box>
         )}
 
@@ -477,7 +471,7 @@ function PoolsPageContent() {
 
         {/* Footer */}
         <Box textAlign="center" mt={8}>
-          <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
+          <Text fontSize="sm" color="text.secondary">
             Built with Next.js and Chakra UI • Powered by Krystal Cloud API
           </Text>
         </Box>

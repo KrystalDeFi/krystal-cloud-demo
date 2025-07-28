@@ -221,22 +221,67 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
     },
     semanticTokens: {
       colors: {
+        // Text colors - semantic naming
+        "text": {
+          // Primary text color
+          "primary": {
+            _light: "gray.900",
+            _dark: "gray.100",
+          },
+          // Secondary/subtle text color
+          "secondary": {
+            _light: "gray.600",
+            _dark: "gray.400",
+          },
+          // Muted/disabled text color
+          "muted": {
+            _light: "gray.500",
+            _dark: "gray.500",
+          },
+          // Common text (default)
+          "common": {
+            _light: "gray.800",
+            _dark: "gray.200",
+          },
+          // Link text color
+          "link": {
+            _light: "brand.600",
+            _dark: "brand.400",
+          },
+        },
         // Heading colors using brand color (important text)
-        "chakra-heading": {
+        "heading": {
           _light: brandColors[900],
           _dark: brandColors[100],
         },
         // Highlight colors using brand color (important text)
-        "chakra-highlight": {
+        "highlight": {
           _light: brandColors[600],
           _dark: brandColors[300],
         },
         // Key numbers and metrics using brand color
-        "chakra-metrics": {
+        "metrics": {
           _light: brandColors[800],
           _dark: brandColors[200],
         },
         // Title and header text using brand color
+        "title": {
+          _light: brandColors[900],
+          _dark: brandColors[100],
+        },
+        // Legacy tokens for backward compatibility
+        "chakra-heading": {
+          _light: brandColors[900],
+          _dark: brandColors[100],
+        },
+        "chakra-highlight": {
+          _light: brandColors[600],
+          _dark: brandColors[300],
+        },
+        "chakra-metrics": {
+          _light: brandColors[800],
+          _dark: brandColors[200],
+        },
         "chakra-title": {
           _light: brandColors[900],
           _dark: brandColors[100],
@@ -263,30 +308,21 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       },
       Link: {
         baseStyle: {
-          color: "brand.600",
-          _dark: {
-            color: "brand.400",
-          },
+          color: "text.link",
           _hover: {
-            color: "brand.700",
-            _dark: {
-              color: "brand.300",
-            },
+            color: "highlight",
           },
         },
       },
       Text: {
         baseStyle: {
-          // Keep regular text in standard colors, only blend important text
-          color: "gray.800",
-          _dark: {
-            color: "gray.200",
-          },
+          // Use semantic text color
+          color: "text.common",
         },
       },
       Heading: {
         baseStyle: {
-          color: "chakra-heading",
+          color: "heading",
         },
       },
       Card: {
@@ -300,10 +336,10 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       Stat: {
         baseStyle: {
           ".chakra-stat__label": {
-            color: "chakra-highlight",
+            color: "highlight",
           },
           ".chakra-stat__number": {
-            color: "chakra-metrics",
+            color: "metrics",
           },
         },
       },
@@ -366,9 +402,9 @@ export default function ThemeProvider({
       embedTheme
     );
 
-    // Set API key from URL if provided
+    // API key is now configured in config.ts, no longer stored in localStorage
     if (apiKey) {
-      localStorage.setItem("krystal-api-key", apiKey);
+      console.warn("API key from URL is deprecated. API key is now configured in config.ts");
     }
 
     // Create theme with primary color

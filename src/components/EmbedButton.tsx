@@ -23,7 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { IEmbedConfig } from "../common/config";
+import { IEmbedConfig, CLOUD_API_KEY } from "../common/config";
 
 export default function EmbedButton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -39,6 +39,7 @@ export default function EmbedButton() {
     primaryColor: "#3b82f6", // Default blue
   });
   const [mounted, setMounted] = useState(false);
+  const [isValidHex, setIsValidHex] = useState(true);
 
   const bg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
@@ -58,6 +59,10 @@ export default function EmbedButton() {
       primaryColor,
     });
 
+    // Validate hex color
+    const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+    setIsValidHex(hexRegex.test(primaryColor));
+
     // Auto-open config panel if we're in config mode
     if (isConfigMode && !isOpen) {
       onOpen();
@@ -65,6 +70,18 @@ export default function EmbedButton() {
   }, [searchParams, isConfigMode, isOpen, onOpen]);
 
   const updateConfig = (key: keyof IEmbedConfig, value: string) => {
+    // Validate hex color format for primaryColor
+    if (key === "primaryColor") {
+      const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
+      const isValid = hexRegex.test(value);
+      setIsValidHex(isValid);
+      
+      if (!isValid) {
+        // If invalid hex, don't update the config
+        return;
+      }
+    }
+
     const newConfig = { ...config, [key]: value };
     setConfig(newConfig);
 
@@ -300,16 +317,28 @@ export default function EmbedButton() {
                           />
                         </InputLeftElement>
                         <Input
-                          type="color"
+                          type="text"
                           value={config.primaryColor}
                           onChange={e =>
                             updateConfig("primaryColor", e.target.value)
                           }
-                          placeholder="Select primary color"
+                          placeholder="#3b82f6"
+                          fontFamily="mono"
+                          fontSize="xs"
+                          borderColor={isValidHex ? undefined : "red.500"}
+                          _focus={{
+                            borderColor: isValidHex ? "brand.500" : "red.500",
+                            boxShadow: isValidHex 
+                              ? "0 0 0 1px var(--chakra-colors-brand-500)" 
+                              : "0 0 0 1px var(--chakra-colors-red-500)"
+                          }}
                         />
                       </InputGroup>
-                      <Text fontSize="xs" color="gray.500" mt={1}>
-                        This color will be blended throughout the design
+                      <Text fontSize="xs" color={isValidHex ? "gray.500" : "red.500"} mt={1}>
+                        {isValidHex 
+                          ? "Enter hex color (e.g., #3b82f6) - this color will be blended throughout the design"
+                          : "Invalid hex color format. Please use # followed by 3 or 6 characters (e.g., #3b82f6)"
+                        }
                       </Text>
                     </FormControl>
                   </VStack>
@@ -365,11 +394,8 @@ export default function EmbedButton() {
                         params.set("embed", "1");
                         params.set("theme", config.theme);
                         params.set("primaryColor", config.primaryColor);
-                        // Include API key in shareable link
-                        const apiKey = localStorage.getItem("krystal-api-key");
-                        if (apiKey) {
-                          params.set("apiKey", apiKey);
-                        }
+                        // Include API key in shareable link (now from config)
+                        params.set("apiKey", CLOUD_API_KEY);
                         const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
                         try {
                           await navigator.clipboard.writeText(shareableUrl);
@@ -415,11 +441,8 @@ export default function EmbedButton() {
                         params.set("embed", "1");
                         params.set("theme", config.theme);
                         params.set("primaryColor", config.primaryColor);
-                        // Include API key in shareable link display
-                        const apiKey = localStorage.getItem("krystal-api-key");
-                        if (apiKey) {
-                          params.set("apiKey", apiKey);
-                        }
+                        // Include API key in shareable link display (now from config)
+                        params.set("apiKey", CLOUD_API_KEY);
                         return `${window.location.origin}${pathname}?${params.toString()}`;
                       })()}
                     </Text>

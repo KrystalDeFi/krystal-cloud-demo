@@ -7,11 +7,10 @@ import NavBar from "./NavBar";
 import ThemeProvider from "./ThemeProvider";
 import EmbedButton from "../components/EmbedButton";
 import EmbedWrapper from "../components/EmbedWrapper";
-import ApiKeyHandler from "../components/ApiKeyHandler";
 import { ChainsProtocolsProvider } from "../contexts/ChainsProtocolsContext";
 
 export const metadata: Metadata = {
-  title: "Krystal Cloud Demo",
+  title: "Krystal Cloud: Embeddable UI",
   description: "Demo application for cloud.krystal.app",
 };
 
@@ -25,7 +24,6 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <ChainsProtocolsProvider>
-            <ApiKeyHandler />
             <EmbedWrapper showInEmbed={false}>
               <NavBar />
             </EmbedWrapper>

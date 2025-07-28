@@ -1,6 +1,7 @@
+import { CLOUD_API_KEY } from "../common/config";
+
 const BASE_URL =
   process.env.NEXT_PUBLIC_KRYSTAL_API_URL || "https://cloud-api.krystal.app";
-const API_KEY_STORAGE = "krystal_api_key";
 
 // Import types from centralized apiObjects file
 import {
@@ -83,16 +84,15 @@ export interface IApiError {
   code?: string;
 }
 
-// Helper function to get API key from localStorage
+// Helper function to get API key from config
 const getApiKey = (): string => {
-  if (typeof window === "undefined") return "";
-  return localStorage.getItem(API_KEY_STORAGE) || "";
+  return CLOUD_API_KEY;
 };
 
-// Helper function to set API key in localStorage
+// Helper function to set API key (no longer needed, kept for compatibility)
 const setApiKey = (key: string): void => {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(API_KEY_STORAGE, key);
+  // API key is now configured in config.ts, no longer stored in localStorage
+  console.warn("setApiKey is deprecated. API key is now configured in config.ts");
 };
 
 // Generic API request function
@@ -262,5 +262,4 @@ export const KrystalApi = {
   positions: positionsApi,
   getApiKey,
   setApiKey,
-  API_KEY_STORAGE,
 };
