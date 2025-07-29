@@ -22,7 +22,7 @@ export function EmbedWrapper({
 
   // Use cached values from embedConfig, with fallbacks
   // Note: This will be updated immediately when local state changes in EmbedButton
-  const showNavigation = embedConfig?.showNavigation ?? false;
+  const showNavigation = embedConfig?.showNavigation ?? true;
   const showBreadcrumbs = embedConfig?.showBreadcrumbs ?? true;
 
   // Memoize the visibility decision to prevent unnecessary re-renders

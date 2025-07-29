@@ -27,7 +27,7 @@ export function EmbedConfigProvider({
       defaultValue: {
         theme: "auto",
         primaryColor: "#3b82f6",
-        showNavigation: false,
+        showNavigation: true,
         showBreadcrumbs: true,
       },
       // Disable URL param sync to avoid loops - we'll handle URL params manually
