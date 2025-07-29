@@ -94,6 +94,12 @@ export default function EmbedButton() {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
 
+  const handleColorPickerChange = (color: string) => {
+    // Convert color picker value to hex format
+    const hexColor = color.startsWith('#') ? color : `#${color}`;
+    updateConfig("primaryColor", hexColor);
+  };
+
   const handleOpenEmbedConfig = () => {
     // Add embed=1 and config=1 to URL and open config panel
     const params = new URLSearchParams(searchParams.toString());
@@ -304,42 +310,63 @@ export default function EmbedButton() {
 
                     <FormControl>
                       <FormLabel fontSize="sm">Primary Color</FormLabel>
-                      <InputGroup size="sm">
-                        <InputLeftElement>
-                          <Box
-                            w="4"
-                            h="4"
-                            borderRadius="sm"
-                            bg={config.primaryColor}
-                            border="1px"
-                            borderColor="gray.300"
-                            _dark={{ borderColor: "gray.600" }}
+                      <VStack spacing={2} align="stretch">
+                        {/* Color Picker */}
+                        <HStack spacing={2}>
+                          <Input
+                            type="color"
+                            value={config.primaryColor}
+                            onChange={e => handleColorPickerChange(e.target.value)}
+                            size="sm"
+                            w="60px"
+                            h="40px"
+                            p={1}
+                            borderRadius="md"
+                            cursor="pointer"
                           />
-                        </InputLeftElement>
-                        <Input
-                          type="text"
-                          value={config.primaryColor}
-                          onChange={e =>
-                            updateConfig("primaryColor", e.target.value)
+                          <Text fontSize="xs" color="gray.500" flex={1}>
+                            Click to pick a color
+                          </Text>
+                        </HStack>
+                        
+                        {/* Hex Input */}
+                        <InputGroup size="sm">
+                          <InputLeftElement>
+                            <Box
+                              w="4"
+                              h="4"
+                              borderRadius="sm"
+                              bg={config.primaryColor}
+                              border="1px"
+                              borderColor="gray.300"
+                              _dark={{ borderColor: "gray.600" }}
+                            />
+                          </InputLeftElement>
+                          <Input
+                            type="text"
+                            value={config.primaryColor}
+                            onChange={e =>
+                              updateConfig("primaryColor", e.target.value)
+                            }
+                            placeholder="#3b82f6"
+                            fontFamily="mono"
+                            fontSize="xs"
+                            borderColor={isValidHex ? undefined : "red.500"}
+                            _focus={{
+                              borderColor: isValidHex ? "brand.500" : "red.500",
+                              boxShadow: isValidHex 
+                                ? "0 0 0 1px var(--chakra-colors-brand-500)" 
+                                : "0 0 0 1px var(--chakra-colors-red-500)"
+                            }}
+                          />
+                        </InputGroup>
+                        <Text fontSize="xs" color={isValidHex ? "gray.500" : "red.500"} mt={1}>
+                          {isValidHex 
+                            ? "Use the color picker above or enter a hex color manually (e.g., #3b82f6)"
+                            : "Invalid hex color format. Please use # followed by 3 or 6 characters (e.g., #3b82f6)"
                           }
-                          placeholder="#3b82f6"
-                          fontFamily="mono"
-                          fontSize="xs"
-                          borderColor={isValidHex ? undefined : "red.500"}
-                          _focus={{
-                            borderColor: isValidHex ? "brand.500" : "red.500",
-                            boxShadow: isValidHex 
-                              ? "0 0 0 1px var(--chakra-colors-brand-500)" 
-                              : "0 0 0 1px var(--chakra-colors-red-500)"
-                          }}
-                        />
-                      </InputGroup>
-                      <Text fontSize="xs" color={isValidHex ? "gray.500" : "red.500"} mt={1}>
-                        {isValidHex 
-                          ? "Enter hex color (e.g., #3b82f6) - this color will be blended throughout the design"
-                          : "Invalid hex color format. Please use # followed by 3 or 6 characters (e.g., #3b82f6)"
-                        }
-                      </Text>
+                        </Text>
+                      </VStack>
                     </FormControl>
                   </VStack>
                 </Box>

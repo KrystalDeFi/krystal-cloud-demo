@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Container,
@@ -51,11 +51,8 @@ import {
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import {
-  LineChart,
-  Line,
   AreaChart,
   Area,
-  BarChart,
   Bar,
   ComposedChart,
   XAxis,
@@ -65,6 +62,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { CHAIN_CONFIGS } from "@/common/config";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -185,21 +183,6 @@ function PoolDetailsPageContent() {
     return `$${value.toFixed(0)}`;
   };
 
-  const formatPercentage = (value: number) => {
-    return `${value > 0 ? "+" : ""}${value.toFixed(2)}%`;
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied!",
-      description: `${label} copied to clipboard`,
-      status: "success",
-      duration: 2000,
-      isClosable: true,
-    });
-  };
-
   const getChartData = (): ChartDataPoint[] => {
     if (!historicalData || historicalData.length === 0) {
       return [];
@@ -272,10 +255,12 @@ function PoolDetailsPageContent() {
           <Text color={mutedTextColor}>No historical data available</Text>
         </Box>
       );
-    }
-
+    }    
+    
     // Use all data points from API (API already filters by time range)
-    const displayData = data;
+    const displayData = (selectedChart !== "volFee") 
+        ? data.filter(item => item[selectedChart] != 0)
+        : data;
 
     // Theme-aware colors for charts using primary color
     const gridColor = useColorModeValue("brand.200", "brand.700");
@@ -551,80 +536,70 @@ function PoolDetailsPageContent() {
     <Box minH="100vh" bg={bgColor}>
       <Container maxW="7xl" py={6}>
         {/* Header */}
-        {!isEmbedMode && (
-          <Box>
-            <VStack spacing={6} mb={8}>
-              <HStack w="full" justify="space-between" align="start">
-                <VStack align="start" spacing={2}>
-                  <Button
-                    leftIcon={<ArrowBackIcon />}
-                    variant="ghost"
-                    onClick={() => router.push("/pools")}
-                    size="sm"
-                  >
-                    Back to Pools
-                  </Button>
-                  <VStack align="start" spacing={3}>
-                    <HStack spacing={4} align="center">
-                      <HStack spacing={2}>
-                        <Image
-                          src={pool.token0.logo || `/images/token-fallback.png`}
-                          alt={pool.token0.symbol}
-                          boxSize="32px"
-                          borderRadius="full"
-                          fallbackSrc="/images/token-fallback.png"
-                        />
-                        <Image
-                          src={pool.token1.logo || `/images/token-fallback.png`}
-                          alt={pool.token1.symbol}
-                          boxSize="32px"
-                          borderRadius="full"
-                          fallbackSrc="/images/token-fallback.png"
-                        />
-                      </HStack>
-                      <Heading size="lg" color={textColor}>
-                        {pool.token0.symbol}/{pool.token1.symbol}
-                      </Heading>
-                    </HStack>
 
-                    <HStack spacing={4} align="center">
-                      <HStack spacing={1}>
-                        <Image
-                          src={pool.chain.logo}
-                          fallbackSrc="/images/token-fallback.png"
-                          boxSize="20px"
-                          borderRadius="full"
-                        />
-                        <Text fontSize="sm" color={mutedTextColor}>
-                          {pool.chain.name}
-                        </Text>
-                      </HStack>
+        <Breadcrumbs
+          items={[
+            { label: "Pools", href: "/pools" },
+            { label: `#${Formatter.shortAddress(pool.poolAddress)}` },
+          ]}
+        />
 
-                      <HStack spacing={1}>
-                        <Image
-                          src={
-                            pool.protocol.logo || `/images/token-fallback.png`
-                          }
-                          alt={pool.protocol.name}
-                          boxSize="20px"
-                          borderRadius="full"
-                          fallbackSrc="/images/token-fallback.png"
-                        />
-                        <Text fontSize="sm" color={mutedTextColor}>
-                          {pool.protocol.name}
-                        </Text>
-                      </HStack>
+        <HStack align="center" spacing={3} mb={4} mt={4}>
+          <HStack spacing={4} align="center">
+            <HStack spacing={2}>
+              <Image
+                src={pool.token0.logo || `/images/token-fallback.png`}
+                alt={pool.token0.symbol}
+                boxSize="32px"
+                borderRadius="full"
+                fallbackSrc="/images/token-fallback.png"
+              />
+              <Image
+                src={pool.token1.logo || `/images/token-fallback.png`}
+                alt={pool.token1.symbol}
+                boxSize="32px"
+                borderRadius="full"
+                fallbackSrc="/images/token-fallback.png"
+              />
+            </HStack>
+            <Heading size="lg" color={textColor}>
+              {pool.token0.symbol}/{pool.token1.symbol}
+            </Heading>
+          </HStack>
 
-                      <Badge size="xs">
-                        Fee {(pool.feeTier / 10000).toFixed(3)}%
-                      </Badge>
-                    </HStack>
-                  </VStack>
-                </VStack>
-              </HStack>
-            </VStack>
-          </Box>
-        )}
+          <HStack spacing={4} align="center">
+            <HStack spacing={1}>
+              <Image
+                src={pool.chain.logo}
+                fallbackSrc="/images/token-fallback.png"
+                boxSize="20px"
+                borderRadius="full"
+              />
+              <Text fontSize="sm" color={mutedTextColor}>
+                {pool.chain.name}
+              </Text>
+            </HStack>
+
+            <HStack spacing={1}>
+              <Image
+                src={
+                  pool.protocol.logo || `/images/token-fallback.png`
+                }
+                alt={pool.protocol.name}
+                boxSize="20px"
+                borderRadius="full"
+                fallbackSrc="/images/token-fallback.png"
+              />
+              <Text fontSize="sm" color={mutedTextColor}>
+                {pool.protocol.name}
+              </Text>
+            </HStack>
+
+            <Badge size="xs">
+              Fee {Formatter.formatFeeTier(pool.feeTier)}
+            </Badge>
+          </HStack>
+        </HStack>
 
         {/* Key Metrics */}
         <Box>
@@ -842,7 +817,7 @@ function PoolDetailsPageContent() {
                       Fee-tier
                     </Text>
                     <Text fontSize="sm" color="chakra-metrics">
-                      {pool.feeTier / 10000}%
+                      {Formatter.formatFeeTier(pool.feeTier)}
                     </Text>
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">

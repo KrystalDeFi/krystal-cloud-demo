@@ -12,10 +12,7 @@ import {
   HStack,
   Card,
   Spinner,
-  Alert,
-  AlertIcon,
   useColorModeValue,
-  Button,
   Select,
   Table,
   Thead,
@@ -39,8 +36,12 @@ import { useApiError, useApiKeyValidation } from "../../hooks/useApiError";
 import { ErrorDisplay } from "../../components/ErrorDisplay";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { useCache, useFilterCache } from "../../hooks/useCache";
 
-interface FilterParams extends IPoolsParams {}
+// Create a type that extends IPoolsParams and adds the index signature for FilterOptions
+type FilterParams = IPoolsParams & {
+  [key: string]: string | number | undefined;
+};
 
 function PoolsPageContent() {
   const router = useRouter();
@@ -48,26 +49,22 @@ function PoolsPageContent() {
 
   const [pools, setPools] = useState<IAPool[]>([]);
   const [loading, setLoading] = useState(true);
-  const { error, setError, handleApiError, clearError } = useApiError();
+  const { error, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
 
-  const [filters, setFilters] = useState<FilterParams>({
-    token: searchParams?.get("token") || undefined,
-    chainId: searchParams?.get("chainId")
-      ? +searchParams.get("chainId")!
-      : undefined,
-    protocol: searchParams?.get("protocol") || undefined,
-    minTvl: searchParams?.get("minTvl")
-      ? parseInt(searchParams.get("minTvl")!)
-      : undefined,
-    minVolume24h: searchParams?.get("minVolume24h")
-      ? parseInt(searchParams.get("minVolume24h")!)
-      : undefined,
-    sortBy: parseInt(
-      searchParams?.get("sortBy") || SORT_OPTIONS.TVL.toString()
-    ),
-    limit: parseInt(searchParams?.get("limit") || "50"),
-    offset: parseInt(searchParams?.get("offset") || "0"),
+  // Use filter cache hook for managing filter options with URL sync
+  const { filters, updateFilters } = useFilterCache<FilterParams>({
+    cacheKey: "pools_filters",
+    defaultFilters: {
+      token: undefined,
+      chainId: undefined,
+      protocol: undefined,
+      minTvl: undefined,
+      minVolume24h: undefined,
+      sortBy: SORT_OPTIONS.TVL,
+      limit: 50,
+      offset: 0,
+    },
   });
 
   // Cache data
@@ -76,19 +73,6 @@ function PoolsPageContent() {
   const cardBg = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const isEmbedMode = searchParams.get("embed") === "1";
-
-  // Update URL params when filters change
-  const updateUrlParams = (updates: Record<string, string>) => {
-    const params = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-    });
-    router.replace(`/pools?${params.toString()}`);
-  };
 
   // Fetch pools from API
   const fetchPools = async () => {
@@ -126,7 +110,9 @@ function PoolsPageContent() {
 
   // Fetch pools whenever parameters change
   useEffect(() => {
-    fetchPools();
+    if (filters) {
+      fetchPools();
+    }
   }, [filters]);
 
   const handleFilterChange = (
@@ -134,13 +120,17 @@ function PoolsPageContent() {
     value: string | number | undefined
   ) => {
     // Only trigger when the value changes
-    if (filters[key] === value) {
+    if (filters?.[key] === value) {
       return;
     }
 
     // Always reset to 0 offset, unless offset param is present
-    setFilters({ ...filters, offset: 0, [key]: value });
-    updateUrlParams({ [key]: value?.toString() || "" });
+    const updates: Partial<FilterParams> = { [key]: value };
+    if (key !== 'offset') {
+      updates.offset = 0;
+    }
+    
+    updateFilters(updates);
   };
 
   const tableColumns = useMemo(
@@ -306,13 +296,13 @@ function PoolsPageContent() {
           >
             <TextInput
               placeholder="Search by token"
-              defaultValue={filters.token || ""}
+              defaultValue={filters?.token || ""}
               onInputFinalized={value => handleFilterChange("token", value)}
               size="sm"
             />
             <Select
               w="fit-content"
-              value={filters.chainId?.toString() || "all"}
+              value={filters?.chainId?.toString() || "all"}
               onChange={e =>
                 handleFilterChange(
                   "chainId",
@@ -332,7 +322,7 @@ function PoolsPageContent() {
             </Select>
             <Select
               w="fit-content"
-              value={filters.protocol || "all"}
+              value={filters?.protocol || "all"}
               onChange={e =>
                 handleFilterChange(
                   "protocol",
@@ -350,7 +340,7 @@ function PoolsPageContent() {
             </Select>
             <Select
               w="fit-content"
-              value={filters.sortBy ?? SORT_OPTIONS.TVL}
+              value={filters?.sortBy ?? SORT_OPTIONS.TVL}
               onChange={e => {
                 handleFilterChange("sortBy", +e.target.value);
               }}
@@ -367,7 +357,7 @@ function PoolsPageContent() {
               label="Min TVL (USD)"
               size="sm"
               placeholder="default: 1000"
-              defaultValue={filters.minTvl}
+              defaultValue={filters?.minTvl}
               onInputFinalized={value =>
                 handleFilterChange(
                   "minTvl",
@@ -380,7 +370,7 @@ function PoolsPageContent() {
               label="Min 24h Volume (USD)"
               size="sm"
               placeholder="default: 1000"
-              defaultValue={filters.minVolume24h}
+              defaultValue={filters?.minVolume24h}
               onInputFinalized={value =>
                 handleFilterChange(
                   "minVolume24h",
@@ -443,11 +433,11 @@ function PoolsPageContent() {
         {/* Pagination */}
         <Pagination
           currentPage={
-            filters.offset ? filters.offset / (filters.limit ?? 50) + 1 : 1
+            filters?.offset ? filters.offset / (filters?.limit ?? 50) + 1 : 1
           }
-          pageSize={filters.limit ?? 50}
+          pageSize={filters?.limit ?? 50}
           onPageChange={page => {
-            handleFilterChange("offset", (page - 1) * (filters.limit ?? 50));
+            handleFilterChange("offset", (page - 1) * (filters?.limit ?? 50));
           }}
           onPageSizeChange={size => {
             handleFilterChange("limit", size);

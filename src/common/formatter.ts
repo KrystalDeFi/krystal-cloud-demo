@@ -16,6 +16,13 @@ export class Formatter {
     }).format(isPercentage ? value / 100 : value);
   }
 
+  static formatFeeTier(value: number) {
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value / 10000) + "%";
+  }
+
   static formatPercentage(value: number, showSign: boolean = true) {
     const sign = showSign && value >= 0 ? "+" : "";
     return `${sign}${value.toFixed(2)}%`;
@@ -52,5 +59,9 @@ export class Formatter {
     } else {
       return "about 1 hour";
     }
+  }
+
+  static shortAddress(address: string) {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   }
 }

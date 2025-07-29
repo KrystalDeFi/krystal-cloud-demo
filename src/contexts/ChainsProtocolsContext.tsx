@@ -2,13 +2,12 @@
 import React, {
   createContext,
   useContext,
-  useState,
-  useEffect,
   ReactNode,
+  useCallback,
 } from "react";
 import { IAChain, IAProtocol } from "../services/apiTypes";
 import { KrystalApi } from "../services/krystalApi";
-import { CacheService } from "../services/cacheService";
+import { useCache } from "../hooks/useCache";
 
 const CHAINS_CACHE_KEY = "krystal_chains_cache";
 const PROTOCOLS_CACHE_KEY = "krystal_protocols_cache";
@@ -266,78 +265,57 @@ interface ChainsProtocolsProviderProps {
 export const ChainsProtocolsProvider: React.FC<
   ChainsProtocolsProviderProps
 > = ({ children }) => {
-  const [chains, setChains] = useState<IAChain[]>(
-    CacheService.get(CHAINS_CACHE_KEY) || DEFAULT_CHAINS
-  );
-  const [protocols, setProtocols] = useState<IAProtocol[]>(
-    CacheService.get(PROTOCOLS_CACHE_KEY) || Object.values(DEFAULT_PROTOCOLS)
-  );
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // Helper functions for fetching chains and protocols
-  const fetchChains = async (): Promise<IAChain[]> => {
+  // Helper functions for fetching chains and protocols - memoized to prevent re-renders
+  const fetchChains = useCallback(async (): Promise<IAChain[]> => {
     const apiKey = KrystalApi.getApiKey();
-    const response = await KrystalApi.chains.getAll(apiKey);
     if (!apiKey) {
       throw new Error("No API key available");
     }
+    const response = await KrystalApi.chains.getAll(apiKey);
     if (response && response.length > 0) {
       return response;
     } else {
       throw new Error("API returned empty chains data");
     }
-  };
+  }, []);
 
-  const fetchProtocols = async (): Promise<IAProtocol[]> => {
+  const fetchProtocols = useCallback(async (): Promise<IAProtocol[]> => {
     const apiKey = KrystalApi.getApiKey();
-    const response = await KrystalApi.protocols.getAll(apiKey);
     if (!apiKey) {
       throw new Error("No API key available");
     }
+    const response = await KrystalApi.protocols.getAll(apiKey);
     if (response && Object.keys(response).length > 0) {
       return Object.values(response);
     } else {
       throw new Error("API returned empty protocols data");
     }
-  };
-
-  // Load initial data
-  useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        console.log("Loading initial chains and protocols data...");
-        const [chainsData, protocolsData] = await Promise.all([
-          fetchChains(),
-          fetchProtocols(),
-        ]);
-
-        setChains(chainsData);
-        setProtocols(protocolsData);
-        console.log("Initial data loaded successfully");
-      } catch (err) {
-        console.error("Error loading initial data:", err);
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Failed to load chains and protocols"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadInitialData();
   }, []);
 
+  // Use cache hooks for chains and protocols
+  const {
+    data: chains = DEFAULT_CHAINS,
+    loading: chainsLoading,
+    error: chainsError,
+  } = useCache<IAChain[]>(CHAINS_CACHE_KEY, {
+    fetcher: fetchChains,
+    defaultData: DEFAULT_CHAINS,
+  });
+
+  const {
+    data: protocols = Object.values(DEFAULT_PROTOCOLS),
+    loading: protocolsLoading,
+    error: protocolsError,
+  } = useCache<IAProtocol[]>(PROTOCOLS_CACHE_KEY, {
+    fetcher: fetchProtocols,
+    defaultData: Object.values(DEFAULT_PROTOCOLS),
+  });
+
   const value: ChainsProtocolsContextType = {
-    chains,
-    protocols,
-    loading,
-    error,
+    chains: chains || DEFAULT_CHAINS,
+    protocols: protocols || Object.values(DEFAULT_PROTOCOLS),
+    loading: chainsLoading || protocolsLoading,
+    error: chainsError || protocolsError,
   };
 
   return (

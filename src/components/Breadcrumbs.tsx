@@ -16,7 +16,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, color }) => {
       spacing="2"
       separator={<ChevronRightIcon/>}
       fontSize="sm"
-      mb={2}
+      mb={4}
       color="text.secondary"
     >
       {(items ?? []).map((item, idx) => (

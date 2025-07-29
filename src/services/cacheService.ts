@@ -1,3 +1,26 @@
+/**
+ * @deprecated This class is deprecated. Please use the new useCache hook from '../hooks/useCache' instead.
+ * The hook provides better React integration, automatic re-renders, and improved TypeScript support.
+ * 
+ * Migration guide:
+ * - Replace CacheService.getOrFetch() with useCache()
+ * - Replace CacheService.get() with useCacheValue()
+ * - Replace CacheService.set() with the setData function from useCache()
+ * - Replace CacheService.remove() with the invalidate function from useCache()
+ * 
+ * Example migration:
+ * 
+ * Before:
+ * ```typescript
+ * const data = await CacheService.getOrFetch('key', fetchData);
+ * ```
+ * 
+ * After:
+ * ```typescript
+ * const { data, loading, error, refetch } = useCache('key', fetchData);
+ * ```
+ */
+
 const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 interface CacheData<T> {
@@ -8,6 +31,7 @@ interface CacheData<T> {
 // Generic cache service for localStorage
 export class CacheService {
   private static getCachedData<T>(key: string): T | null {
+    console.warn('CacheService is deprecated. Use useCache hook instead.');
     if (typeof window === "undefined") return null;
 
     try {
@@ -33,6 +57,7 @@ export class CacheService {
   }
 
   private static setCachedData<T>(key: string, data: T): void {
+    console.warn('CacheService is deprecated. Use useCache hook instead.');
     if (typeof window === "undefined") return;
 
     try {
@@ -52,6 +77,7 @@ export class CacheService {
     fallbackFn: () => Promise<T>,
     defaultData?: T
   ): Promise<T> {
+    console.warn('CacheService.getOrFetch is deprecated. Use useCache hook instead.');
     // Try to get from cache first
     const cachedData = this.getCachedData<T>(key);
     if (cachedData !== null) {
@@ -82,16 +108,19 @@ export class CacheService {
 
   // Get data from cache only (no fallback)
   static get<T>(key: string): T | null {
+    console.warn('CacheService.get is deprecated. Use useCacheValue hook instead.');
     return this.getCachedData<T>(key);
   }
 
   // Set data in cache
   static set<T>(key: string, data: T): void {
+    console.warn('CacheService.set is deprecated. Use useCache hook setData function instead.');
     this.setCachedData(key, data);
   }
 
   // Remove specific cache entry
   static remove(key: string): void {
+    console.warn('CacheService.remove is deprecated. Use useCache hook invalidate function instead.');
     if (typeof window === "undefined") return;
 
     try {
@@ -104,6 +133,7 @@ export class CacheService {
 
   // Clear all cache entries with a specific prefix
   static clearByPrefix(prefix: string): void {
+    console.warn('CacheService.clearByPrefix is deprecated. Use cacheUtils.clearByPrefix instead.');
     if (typeof window === "undefined") return;
 
     try {
@@ -126,6 +156,7 @@ export class CacheService {
 
   // Clear all cache entries
   static clearAll(): void {
+    console.warn('CacheService.clearAll is deprecated. Use cacheUtils.clearAll instead.');
     if (typeof window === "undefined") return;
 
     try {
@@ -138,11 +169,13 @@ export class CacheService {
 
   // Check if cache exists and is valid
   static has(key: string): boolean {
+    console.warn('CacheService.has is deprecated. Use cacheUtils.has instead.');
     return this.getCachedData(key) !== null;
   }
 
   // Get cache age in milliseconds
   static getAge(key: string): number | null {
+    console.warn('CacheService.getAge is deprecated. Use cacheUtils.getAge instead.');
     if (typeof window === "undefined") return null;
 
     try {
@@ -159,6 +192,7 @@ export class CacheService {
 
   // Check if cache is expired
   static isExpired(key: string): boolean {
+    console.warn('CacheService.isExpired is deprecated. Use cacheUtils.has instead and check the inverse.');
     const age = this.getAge(key);
     return age === null || age >= CACHE_DURATION;
   }
