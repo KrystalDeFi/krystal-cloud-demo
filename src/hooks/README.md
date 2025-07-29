@@ -17,7 +17,7 @@ The `useCache` hook provides a single, unified interface for caching data with t
 function useCache<T>(
   cacheKey: string,
   options: CacheOptions<T> = {}
-): CacheResult<T>
+): CacheResult<T>;
 
 interface CacheOptions<T> {
   defaultValue?: T;
@@ -39,42 +39,46 @@ interface CacheResult<T> {
 ### Usage Examples
 
 #### Simple Caching with Default Value
+
 ```typescript
-const { data, setData, invalidate } = useCache('user_preferences', {
-  defaultValue: { theme: 'light', language: 'en' }
+const { data, setData, invalidate } = useCache("user_preferences", {
+  defaultValue: { theme: "light", language: "en" },
 });
 ```
 
 #### Caching with URL Parameter Sync
+
 ```typescript
-const { data, setData } = useCache('selected_chain', {
-  defaultValue: 'ethereum',
-  paramKey: 'chain'
+const { data, setData } = useCache("selected_chain", {
+  defaultValue: "ethereum",
+  paramKey: "chain",
 });
 // URL: /pools?chain=polygon -> data = 'polygon'
 ```
 
 #### Caching with API Fetch
+
 ```typescript
-const { data, loading, error, refetch } = useCache('chains', {
+const { data, loading, error, refetch } = useCache("chains", {
   defaultValue: [],
   fetchData: async () => {
-    const response = await fetch('/api/chains');
+    const response = await fetch("/api/chains");
     return response.json();
-  }
+  },
 });
 ```
 
 #### Complete Example with All Features
+
 ```typescript
-const { data, loading, error, refetch, setData } = useCache('user_settings', {
-  defaultValue: { theme: 'light' },
-  paramKey: 'settings',
+const { data, loading, error, refetch, setData } = useCache("user_settings", {
+  defaultValue: { theme: "light" },
+  paramKey: "settings",
   fetchData: async () => {
-    const response = await fetch('/api/user/settings');
+    const response = await fetch("/api/user/settings");
     return response.json();
   },
-  duration: 3600000 // 1 hour expiry
+  duration: 3600000, // 1 hour expiry
 });
 ```
 
@@ -97,26 +101,26 @@ A specialized hook for managing filter state with URL synchronization:
 
 ```typescript
 const { filters, updateFilters, resetFilters, clearFilters } = useFilterCache({
-  cacheKey: 'pools_filters',
+  cacheKey: "pools_filters",
   defaultFilters: {
     token: undefined,
     chainId: undefined,
     protocol: undefined,
     minTvl: undefined,
     minVolume24h: undefined,
-    sortBy: 'tvl',
+    sortBy: "tvl",
     limit: 50,
     offset: 0,
   },
   paramToFilterMap: {
-    token: 'token',
-    chainId: 'chain',
-    protocol: 'protocol',
+    token: "token",
+    chainId: "chain",
+    protocol: "protocol",
   },
   filterToParamMap: {
-    token: 'token',
-    chainId: 'chain',
-    protocol: 'protocol',
+    token: "token",
+    chainId: "chain",
+    protocol: "protocol",
   },
 });
 ```
@@ -127,16 +131,16 @@ const { filters, updateFilters, resetFilters, clearFilters } = useFilterCache({
 
 ```typescript
 // Clear cache entries with specific prefix
-cacheUtils.clearByPrefix('user_');
+cacheUtils.clearByPrefix("user_");
 
 // Clear all cache entries
 cacheUtils.clearAll();
 
 // Check if cache exists and is valid
-const hasCache = cacheUtils.has('user_preferences');
+const hasCache = cacheUtils.has("user_preferences");
 
 // Get cache age in milliseconds
-const age = cacheUtils.getAge('user_preferences');
+const age = cacheUtils.getAge("user_preferences");
 ```
 
 ## Migration Guide
@@ -144,28 +148,30 @@ const age = cacheUtils.getAge('user_preferences');
 ### From Old API
 
 **Before:**
+
 ```typescript
 // Simple key-value cache
-const [data, setData, clearData] = useCache('key', defaultValue);
+const [data, setData, clearData] = useCache("key", defaultValue);
 
 // Fetcher-based cache
-const { data, loading, error, refetch } = useCache('key', {
+const { data, loading, error, refetch } = useCache("key", {
   fetcher: fetchData,
-  defaultData: defaultValue
+  defaultData: defaultValue,
 });
 ```
 
 **After:**
+
 ```typescript
 // Unified API
-const { data, setData, invalidate } = useCache('key', {
-  defaultValue: defaultValue
+const { data, setData, invalidate } = useCache("key", {
+  defaultValue: defaultValue,
 });
 
 // With fetch
-const { data, loading, error, refetch } = useCache('key', {
+const { data, loading, error, refetch } = useCache("key", {
   defaultValue: defaultValue,
-  fetchData: fetchData
+  fetchData: fetchData,
 });
 ```
 

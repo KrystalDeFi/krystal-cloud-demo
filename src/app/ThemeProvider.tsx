@@ -12,7 +12,7 @@ import { useEmbedConfig } from "../contexts/EmbedConfigContext";
 const createTheme = (primaryColorHex: string = "#3b82f6") => {
   // Generate color palette from primary color with better contrast
   const primaryColor = primaryColorHex;
-  
+
   // Create a more vibrant version for dark mode
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -28,17 +28,23 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
   const rgb = hexToRgb(primaryColor);
   const brightenColor = (r: number, g: number, b: number, factor: number) => {
     return `#${Math.round(Math.min(255, r + (255 - r) * factor))
-      .toString(16).padStart(2, '0')}${Math.round(Math.min(255, g + (255 - g) * factor))
-      .toString(16).padStart(2, '0')}${Math.round(Math.min(255, b + (255 - b) * factor))
-      .toString(16).padStart(2, '0')}`;
+      .toString(16)
+      .padStart(2, "0")}${Math.round(Math.min(255, g + (255 - g) * factor))
+      .toString(16)
+      .padStart(2, "0")}${Math.round(Math.min(255, b + (255 - b) * factor))
+      .toString(16)
+      .padStart(2, "0")}`;
   };
 
   // Create a darker version for light mode buttons
   const darkenColor = (r: number, g: number, b: number, factor: number) => {
     return `#${Math.round(r * (1 - factor))
-      .toString(16).padStart(2, '0')}${Math.round(g * (1 - factor))
-      .toString(16).padStart(2, '0')}${Math.round(b * (1 - factor))
-      .toString(16).padStart(2, '0')}`;
+      .toString(16)
+      .padStart(2, "0")}${Math.round(g * (1 - factor))
+      .toString(16)
+      .padStart(2, "0")}${Math.round(b * (1 - factor))
+      .toString(16)
+      .padStart(2, "0")}`;
   };
 
   const brandColors = {
@@ -188,6 +194,7 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
         baseStyle: {
           bg: "bg.primary",
           borderColor: "border.primary",
+          border: "1px",
         },
       },
       Badge: {
@@ -204,6 +211,9 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
             _focus: {
               borderColor: "brand.500",
               boxShadow: "0 0 0 1px var(--chakra-colors-brand-500)",
+            },
+            _placeholder: {
+              color: "text.muted",
             },
           },
         },
@@ -241,6 +251,15 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       Icon: {
         baseStyle: {
           color: "text.common",
+        },
+      },
+      Table: {
+        variants: {
+          simple: {
+            th: {
+              color: "brand.500",
+            },
+          },
         },
       },
     },
@@ -304,20 +323,27 @@ export default function ThemeProvider({
   useEffect(() => {
     if (!mounted) return; // Don't update theme until client is mounted
 
-    // Get primary color from embed config or URL params
-    const primaryColor = embedConfig?.primaryColor || searchParams.get("primaryColor") || "#3b82f6";
-    const embedTheme = embedConfig?.theme || searchParams.get("theme");
-    const apiKey = searchParams.get("apiKey");
+    // Get primary color from URL params first (for shareable links), then embed config
+    const urlPrimaryColor = searchParams.get("primaryColor");
+    const urlTheme = searchParams.get("theme");
+    const embedPrimaryColor = embedConfig?.primaryColor;
+    const embedTheme = embedConfig?.theme;
+    
+    const primaryColor = urlPrimaryColor || embedPrimaryColor || "#3b82f6";
+    const embedThemeFinal = urlTheme || embedTheme;
 
     console.log(
-      "ThemeProvider: primaryColor =",
-      primaryColor,
-      "embedTheme =",
-      embedTheme
+      "ThemeProvider Debug:",
+      "URL primaryColor =", urlPrimaryColor,
+      "URL theme =", urlTheme,
+      "Embed primaryColor =", embedPrimaryColor,
+      "Embed theme =", embedTheme,
+      "Final primaryColor =", primaryColor,
+      "Final theme =", embedThemeFinal
     );
 
     // API key is now configured in config.ts, no longer stored in localStorage
-    if (apiKey) {
+    if (typeof searchParams.get("apiKey") !== "undefined") {
       console.warn(
         "API key from URL is deprecated. API key is now configured in config.ts"
       );
@@ -327,13 +353,13 @@ export default function ThemeProvider({
     const newTheme = createTheme(primaryColor);
 
     // Handle embed theme mode
-    if (embedTheme && embedTheme !== "auto") {
+    if (embedThemeFinal && embedThemeFinal !== "auto") {
       // Force light or dark mode based on embed parameter
-      newTheme.config.initialColorMode = embedTheme as "light" | "dark";
+      newTheme.config.initialColorMode = embedThemeFinal as "light" | "dark";
       newTheme.config.useSystemColorMode = false;
       console.log(
         "ThemeProvider: Setting theme config to",
-        embedTheme,
+        embedThemeFinal,
         "useSystemColorMode = false"
       );
     } else {

@@ -26,7 +26,13 @@ import { IEmbedConfig } from "../common/config";
 import { useEmbedConfig } from "../contexts/EmbedConfigContext";
 
 export default function EmbedButton() {
-  const { embedConfig, setEmbedConfig, updateEmbedConfig, isEmbedMode, isConfigDisabled } = useEmbedConfig();
+  const {
+    embedConfig,
+    setEmbedConfig,
+    updateEmbedConfig,
+    isEmbedMode: contextIsEmbedMode,
+    isConfigDisabled: contextIsConfigDisabled,
+  } = useEmbedConfig();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -36,27 +42,56 @@ export default function EmbedButton() {
   const [mounted, setMounted] = useState(false);
   const [isValidHex, setIsValidHex] = useState(true);
 
+  // Determine embed mode and config disabled from URL params
+  const isEmbedMode = searchParams.get("embed") === "1";
+  const isConfigDisabled = searchParams.get("config") === "disabled";
+
+  console.log("EmbedButton Config State:", {
+    embed: searchParams.get("embed"),
+    config: searchParams.get("config"),
+    isEmbedMode,
+    isConfigDisabled,
+    willShowButton: !isConfigDisabled && embedConfig
+  });
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   // Load embed config from URL params on mount and when search params change
   useEffect(() => {
-    // Only load from URL params if we don't have cached config data and component is mounted
-    if (!embedConfig && mounted) {
-      const primaryColor = searchParams.get("primaryColor");
-      const theme = searchParams.get("theme");
-      const showNavigation = searchParams.get("showNavigation");
-      const showBreadcrumbs = searchParams.get("showBreadcrumbs");
+    if (!mounted) return;
 
-      if (primaryColor || theme || showNavigation !== null || showBreadcrumbs !== null) {
-        const newConfig: IEmbedConfig = {
-          theme: (theme as "light" | "dark" | "auto") || "auto",
-          primaryColor: primaryColor || "#3b82f6",
-          showNavigation: showNavigation === "true",
-          showBreadcrumbs: showBreadcrumbs !== "false", // Default to true
-        };
+    const primaryColor = searchParams.get("primaryColor");
+    const theme = searchParams.get("theme");
+    const showNavigation = searchParams.get("showNavigation");
+    const showBreadcrumbs = searchParams.get("showBreadcrumbs");
 
+    console.log("EmbedButton Debug:", {
+      urlPrimaryColor: primaryColor,
+      urlTheme: theme,
+      currentEmbedConfig: embedConfig,
+      mounted
+    });
+
+    // Flow: URL params > cached config > default values
+    if (
+      primaryColor ||
+      theme ||
+      showNavigation !== null ||
+      showBreadcrumbs !== null
+    ) {
+      const newConfig: IEmbedConfig = {
+        theme: (theme as "light" | "dark" | "auto") || embedConfig?.theme || "auto",
+        primaryColor: primaryColor || embedConfig?.primaryColor || "#3b82f6",
+        showNavigation: showNavigation === "true" || (embedConfig?.showNavigation ?? false),
+        showBreadcrumbs: showBreadcrumbs !== "false" && (embedConfig?.showBreadcrumbs ?? true),
+      };
+
+      console.log("EmbedButton: Updating config from URL params:", newConfig);
+
+      // Only update if config has changed
+      if (JSON.stringify(newConfig) !== JSON.stringify(embedConfig)) {
         setEmbedConfig(newConfig);
       }
     }
@@ -72,7 +107,10 @@ export default function EmbedButton() {
     updateEmbedConfig("primaryColor", hexColor);
   };
 
-  const handleConfigUpdate = (key: keyof IEmbedConfig, value: string | boolean) => {
+  const handleConfigUpdate = (
+    key: keyof IEmbedConfig,
+    value: string | boolean
+  ) => {
     // Validate hex color format for primaryColor
     if (key === "primaryColor") {
       const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
@@ -88,12 +126,19 @@ export default function EmbedButton() {
     // Update the embed config (this will be cached)
     updateEmbedConfig(key, value);
 
-    // Update URL parameters only when user explicitly changes settings
-    // Use a debounced approach to prevent excessive updates
+    // Sync URL parameters with the most updated value for shareable links
     const updateUrlParams = () => {
       const params = new URLSearchParams(searchParams.toString());
+      
+      // Update the specific parameter
       params.set(key.toString(), value.toString());
-      params.set("embed", "1"); // Always add embed=1 when updating config
+      
+      // Always add embed=1 when updating config
+      params.set("embed", "1");
+      
+      // Remove config=disabled if it exists (since user is actively configuring)
+      params.delete("config");
+      
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
@@ -132,7 +177,7 @@ export default function EmbedButton() {
 
   const generateShareableLink = () => {
     if (!embedConfig) return "";
-    
+
     const params = new URLSearchParams();
     params.set("embed", "1");
     params.set("config", "disabled");
@@ -140,13 +185,13 @@ export default function EmbedButton() {
     params.set("primaryColor", embedConfig.primaryColor);
     params.set("showNavigation", embedConfig.showNavigation.toString());
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
-    
+
     return `${window.location.origin}${pathname}?${params.toString()}`;
   };
 
   const generateEmbedCode = () => {
     if (!embedConfig) return "";
-    
+
     const params = new URLSearchParams();
     params.set("embed", "1");
     params.set("config", "disabled");
@@ -154,9 +199,9 @@ export default function EmbedButton() {
     params.set("primaryColor", embedConfig.primaryColor);
     params.set("showNavigation", embedConfig.showNavigation.toString());
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
-    
+
     const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
-    
+
     return `<iframe 
   src="${embedUrl}"
   width="100%"
@@ -168,12 +213,16 @@ export default function EmbedButton() {
 
   // Don't show embed button when config is disabled
   if (isConfigDisabled) {
+    console.log("EmbedButton: Hiding button because config is disabled");
     return null;
   }
 
   if (!embedConfig) {
+    console.log("EmbedButton: Hiding button because no embed config");
     return null;
   }
+
+  console.log("EmbedButton: Showing button - config disabled:", isConfigDisabled, "embed config:", !!embedConfig);
 
   return (
     <>
@@ -212,9 +261,9 @@ export default function EmbedButton() {
               justify="space-between"
               align="center"
               p={4}
-                              borderBottom="1px"
-                borderColor="border.primary"
-                bg="bg.primary"
+              borderBottom="1px"
+              borderColor="border.primary"
+              bg="bg.primary"
               position="sticky"
               top={0}
               zIndex={10}
@@ -243,7 +292,9 @@ export default function EmbedButton() {
                       </FormLabel>
                       <Switch
                         isChecked={embedConfig?.showNavigation}
-                        onChange={(e) => handleConfigUpdate("showNavigation", e.target.checked)}
+                        onChange={e =>
+                          handleConfigUpdate("showNavigation", e.target.checked)
+                        }
                         colorScheme="brand"
                       />
                     </FormControl>
@@ -254,7 +305,12 @@ export default function EmbedButton() {
                       </FormLabel>
                       <Switch
                         isChecked={embedConfig?.showBreadcrumbs}
-                        onChange={(e) => handleConfigUpdate("showBreadcrumbs", e.target.checked)}
+                        onChange={e =>
+                          handleConfigUpdate(
+                            "showBreadcrumbs",
+                            e.target.checked
+                          )
+                        }
                         colorScheme="brand"
                       />
                     </FormControl>
@@ -274,7 +330,9 @@ export default function EmbedButton() {
                       <HStack spacing={2}>
                         <Button
                           size="sm"
-                          variant={embedConfig?.theme === "auto" ? "solid" : "outline"}
+                          variant={
+                            embedConfig?.theme === "auto" ? "solid" : "outline"
+                          }
                           colorScheme="brand"
                           onClick={() => handleConfigUpdate("theme", "auto")}
                           flex={1}
@@ -283,7 +341,9 @@ export default function EmbedButton() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={embedConfig?.theme === "light" ? "solid" : "outline"}
+                          variant={
+                            embedConfig?.theme === "light" ? "solid" : "outline"
+                          }
                           colorScheme="brand"
                           onClick={() => handleConfigUpdate("theme", "light")}
                           flex={1}
@@ -292,7 +352,9 @@ export default function EmbedButton() {
                         </Button>
                         <Button
                           size="sm"
-                          variant={embedConfig?.theme === "dark" ? "solid" : "outline"}
+                          variant={
+                            embedConfig?.theme === "dark" ? "solid" : "outline"
+                          }
                           colorScheme="brand"
                           onClick={() => handleConfigUpdate("theme", "dark")}
                           flex={1}
@@ -310,7 +372,9 @@ export default function EmbedButton() {
                           <Input
                             type="color"
                             value={embedConfig?.primaryColor}
-                            onChange={e => handleColorPickerChange(e.target.value)}
+                            onChange={e =>
+                              handleColorPickerChange(e.target.value)
+                            }
                             size="sm"
                             w="60px"
                             h="40px"
@@ -338,13 +402,19 @@ export default function EmbedButton() {
                           <Input
                             type="text"
                             value={embedConfig?.primaryColor}
-                            onChange={e => handleConfigUpdate("primaryColor", e.target.value)}
+                            onChange={e =>
+                              handleConfigUpdate("primaryColor", e.target.value)
+                            }
                             placeholder="#3b82f6"
                             fontFamily="mono"
                             fontSize="xs"
-                            borderColor={isValidHex ? undefined : "status.error"}
+                            borderColor={
+                              isValidHex ? undefined : "status.error"
+                            }
                             _focus={{
-                              borderColor: isValidHex ? "brand.500" : "status.error",
+                              borderColor: isValidHex
+                                ? "brand.500"
+                                : "status.error",
                               boxShadow: isValidHex
                                 ? "0 0 0 1px var(--chakra-colors-brand-500)"
                                 : "0 0 0 1px var(--chakra-colors-red-500)",
@@ -375,7 +445,9 @@ export default function EmbedButton() {
                     </Text>
                     <Button
                       size="sm"
-                      onClick={() => copyToClipboard(generateEmbedCode(), "Embed code")}
+                      onClick={() =>
+                        copyToClipboard(generateEmbedCode(), "Embed code")
+                      }
                       colorScheme="brand"
                     >
                       Copy
@@ -390,11 +462,7 @@ export default function EmbedButton() {
                     maxH="200px"
                     overflowY="auto"
                   >
-                    <Text
-                      fontSize="xs"
-                      fontFamily="mono"
-                      color="text.muted"
-                    >
+                    <Text fontSize="xs" fontFamily="mono" color="text.muted">
                       {generateEmbedCode()}
                     </Text>
                   </Box>
@@ -408,7 +476,12 @@ export default function EmbedButton() {
                     </Text>
                     <Button
                       size="sm"
-                      onClick={() => copyToClipboard(generateShareableLink(), "Shareable link")}
+                      onClick={() =>
+                        copyToClipboard(
+                          generateShareableLink(),
+                          "Shareable link"
+                        )
+                      }
                       colorScheme="green"
                     >
                       Copy Link
@@ -432,15 +505,8 @@ export default function EmbedButton() {
                 </Box>
 
                 {/* Live Preview Note */}
-                <Box
-                  p={3}
-                  bg="bg.brand"
-                  borderRadius="md"
-                >
-                  <Text
-                    fontSize="sm"
-                    color="status.info"
-                  >
+                <Box p={3} bg="bg.brand" borderRadius="md">
+                  <Text fontSize="sm" color="status.info">
                     💡 Changes are applied immediately. Copy the embed code to
                     use this configuration in other applications.
                   </Text>

@@ -17,7 +17,7 @@ export function EmbedWrapper({
 }: EmbedWrapperProps) {
   const searchParams = useSearchParams();
   const { embedConfig } = useEmbedConfig();
-  
+
   const isEmbedMode = searchParams.get("embed") === "1";
   const showNavigation = embedConfig?.showNavigation ?? false;
   const showBreadcrumbs = embedConfig?.showBreadcrumbs ?? true;

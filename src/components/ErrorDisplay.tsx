@@ -21,7 +21,13 @@ interface ErrorDisplayProps {
   compact?: boolean;
 }
 
-export function ErrorDisplay({ error, onRetry, title, showApiKeyButton = true, compact = false }: ErrorDisplayProps) {
+export function ErrorDisplay({
+  error,
+  onRetry,
+  title,
+  showApiKeyButton = true,
+  compact = false,
+}: ErrorDisplayProps) {
   const isApiKeyError =
     error?.includes("API key") ||
     error?.includes("No API key") ||

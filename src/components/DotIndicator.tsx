@@ -68,7 +68,9 @@ export const DotIndicator: React.FC<DotIndicatorProps> = ({
       borderRadius="full"
       bg={getStatusColor(status)}
       display="inline-block"
-      animation={status === "IN_RANGE" ? `${pulse} 2s ease-in-out infinite` : undefined}
+      animation={
+        status === "IN_RANGE" ? `${pulse} 2s ease-in-out infinite` : undefined
+      }
     />
   );
 

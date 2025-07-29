@@ -36,8 +36,6 @@ export default function Pagination({
 }: IPaginationProps) {
   const totalPages = totalItems ? Math.ceil(totalItems / pageSize) : null;
 
-
-
   // Generate page numbers to display
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
@@ -79,10 +77,7 @@ export default function Pagination({
         >
           {showPageSizeSelector && (
             <HStack spacing={2}>
-              <Text
-                fontSize="sm"
-                color="text.secondary"
-              >
+              <Text fontSize="sm" color="text.secondary">
                 Show:
               </Text>
               <Select
@@ -99,10 +94,7 @@ export default function Pagination({
                   </option>
                 ))}
               </Select>
-              <Text
-                fontSize="sm"
-                color="text.secondary"
-              >
+              <Text fontSize="sm" color="text.secondary">
                 per page
               </Text>
             </HStack>
@@ -141,12 +133,7 @@ export default function Pagination({
           {getPageNumbers().map((page, index) => (
             <React.Fragment key={index}>
               {page === "..." ? (
-                <Text
-                  px={3}
-                  py={2}
-                  fontSize="sm"
-                  color="text.muted"
-                >
+                <Text px={3} py={2} fontSize="sm" color="text.muted">
                   ...
                 </Text>
               ) : (

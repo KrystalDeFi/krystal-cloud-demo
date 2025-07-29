@@ -30,7 +30,7 @@ interface CacheResult<T> {
 /**
  * Unified cache hook with priority flow:
  * fetchData (if present) > data from paramKey (if present) > data stored in localStorage (if present) > default value
- * 
+ *
  * If data is present in params or fetch data, it will be stored in localStorage for next time use
  */
 export function useCache<T>(
@@ -96,7 +96,7 @@ export function useCache<T>(
           data,
           timestamp: Date.now(),
         };
-        
+
         // Use requestIdleCallback for better performance if available
         if (window.requestIdleCallback) {
           window.requestIdleCallback(() => {
@@ -128,7 +128,9 @@ export function useCache<T>(
       // Try to parse as JSON first, then as primitive
       try {
         const parsed = JSON.parse(paramValue);
-        console.log(`Using param data for key: ${cacheKey} from param: ${paramKey}`);
+        console.log(
+          `Using param data for key: ${cacheKey} from param: ${paramKey}`
+        );
         return parsed;
       } catch {
         // If not JSON, try to convert to appropriate type based on defaultValue
@@ -160,10 +162,15 @@ export function useCache<T>(
 
           try {
             const params = new URLSearchParams(searchParams.toString());
-            const serializedData = typeof data === "object" ? JSON.stringify(data) : String(data);
+            const serializedData =
+              typeof data === "object" ? JSON.stringify(data) : String(data);
             params.set(paramKey, serializedData);
-            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-            console.log(`Set param data for key: ${cacheKey} in param: ${paramKey}`);
+            router.replace(`${pathname}?${params.toString()}`, {
+              scroll: false,
+            });
+            console.log(
+              `Set param data for key: ${cacheKey} in param: ${paramKey}`
+            );
           } catch (error) {
             console.error("Error setting param data:", error);
           }
@@ -177,7 +184,7 @@ export function useCache<T>(
   const setParamData = useCallback(
     async (data: T): Promise<void> => {
       if (!paramKey || !syncParams) return;
-      
+
       // Use requestIdleCallback for better performance if available
       if (window.requestIdleCallback) {
         window.requestIdleCallback(() => {
@@ -231,7 +238,7 @@ export function useCache<T>(
 
       console.log(`Fetched data for key: ${cacheKey} successfully`);
       setDataState(fetchedData);
-      
+
       // Store fetched data in cache and params asynchronously
       setCachedData(fetchedData).catch(error => {
         console.error("Error caching fetched data:", error);
@@ -270,19 +277,26 @@ export function useCache<T>(
         setLoading(false);
       }
     }
-  }, [cacheKey, fetchData, defaultValue, setCachedData, setParamData, paramKey]);
+  }, [
+    cacheKey,
+    fetchData,
+    defaultValue,
+    setCachedData,
+    setParamData,
+    paramKey,
+  ]);
 
   // Set data manually (useful for optimistic updates)
   const setData = useCallback(
     (newData: T) => {
       // Update state immediately for responsive UI
       setDataState(newData);
-      
+
       // Store data asynchronously to avoid blocking
       setCachedData(newData).catch(error => {
         console.error("Error caching data:", error);
       });
-      
+
       setParamData(newData).catch(error => {
         console.error("Error setting param data:", error);
       });
@@ -378,20 +392,17 @@ export function useFilterCache<T extends Record<string, any>>(options: {
   defaultFilters: T;
   filterToParamMap?: Record<string, string>;
 }) {
-  const {
-    cacheKey,
-    defaultFilters,
-    filterToParamMap = {},
-  } = options;
+  const { cacheKey, defaultFilters, filterToParamMap = {} } = options;
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   // Get cached filters using the unified useCache hook
-  const { data: cachedFilters, setData: setCachedFilters, invalidate: clearCachedFilters } = useCache<T>(
-    cacheKey,
-    { defaultValue: defaultFilters }
-  );
+  const {
+    data: cachedFilters,
+    setData: setCachedFilters,
+    invalidate: clearCachedFilters,
+  } = useCache<T>(cacheKey, { defaultValue: defaultFilters });
 
   // Initialize filters state
   const [filters, setFiltersState] = useState<T>(() => {

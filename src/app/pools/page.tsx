@@ -46,7 +46,6 @@ type FilterParams = IPoolsParams & {
 
 function PoolsPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   const [pools, setPools] = useState<IAPool[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,7 +70,9 @@ function PoolsPageContent() {
   // Cache data
   const { chains, protocols } = useChainsProtocols();
 
-  const isEmbedMode = searchParams.get("embed") === "1";
+  const selectedChain = useMemo(() => {
+    return chains.find(chain => chain.id == filters?.chainId);
+  }, [chains, filters?.chainId]);
 
   // Fetch pools from API
   const fetchPools = async () => {
@@ -82,9 +83,10 @@ function PoolsPageContent() {
       const apiKey = validateApiKey();
 
       // Prepare API parameters based on swagger specification
-      const apiParams: IPoolsParams = {
-        ...filters,
-      };
+      // Filter out undefined values to avoid sending them to the API
+      const apiParams: IPoolsParams = Object.fromEntries(
+        Object.entries(filters || {}).filter(([_, value]) => value !== undefined && value !== null && value !== "")
+      );
 
       console.log("API Parameters:", apiParams);
 
@@ -316,7 +318,7 @@ function PoolsPageContent() {
               size="sm"
             >
               <option value="all">All Protocols</option>
-              {protocols.map(protocol => (
+              {protocols.filter(protocol => selectedChain ? selectedChain?.supportedProtocols?.includes(protocol.key) : true).map(protocol => (
                 <option key={protocol.key} value={protocol.key}>
                   {protocol.name}
                 </option>
@@ -380,9 +382,7 @@ function PoolsPageContent() {
                   <Tr>
                     {tableColumns.map((col, idx) => (
                       <Th key={idx}>
-                        <HStack spacing={1}>
-                          <Text>{col.label}</Text>
-                        </HStack>
+                        {col.label}
                       </Th>
                     ))}
                   </Tr>

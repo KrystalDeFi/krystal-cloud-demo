@@ -57,7 +57,6 @@ interface ErrorFallbackProps {
 }
 
 export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
-
   const isApiKeyError =
     error?.message?.includes("API key") ||
     error?.message?.includes("No API key") ||

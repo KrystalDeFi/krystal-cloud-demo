@@ -39,10 +39,12 @@ export class Formatter {
 
   static formatTokenAmount(balance: string, decimals: number, symbol: string) {
     const amount = parseFloat(balance) / Math.pow(10, decimals);
-    return new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: decimals > 6 ? 6 : decimals,
-    }).format(amount) + ` ${symbol}`;
+    return (
+      new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: decimals > 6 ? 6 : decimals,
+      }).format(amount) + ` ${symbol}`
+    );
   }
 
   static formatPrice(value: number, decimals: number = 6) {

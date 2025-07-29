@@ -43,11 +43,7 @@ import {
   StatNumber,
   StatHelpText,
 } from "@chakra-ui/react";
-import {
-  SearchIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from "@chakra-ui/icons";
+import { SearchIcon, ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { KrystalApi, IPositionsParams } from "../../../../services/krystalApi";
 import { IAPosition } from "../../../../services/apiTypes";
@@ -122,7 +118,7 @@ const VirtualizedTableRow = React.memo(
                     src={t.token.logo || ""}
                     alt={t.token.symbol}
                     w="20px"
-                    h="20px"  
+                    h="20px"
                     borderRadius="full"
                     key={index}
                   />
@@ -152,12 +148,16 @@ const VirtualizedTableRow = React.memo(
           <Text
             fontSize="lg"
             fontWeight="bold"
-            color={position.performance.pnl >= 0 ? "status.success" : "status.error"}
+            color={
+              position.performance.pnl >= 0 ? "status.success" : "status.error"
+            }
           >
             {Formatter.formatCurrency(position.performance.pnl)}
           </Text>
           <Text color="status.success" fontWeight="medium">
-            {Formatter.formatPercentage(position.performance.returnOnInvestment)}
+            {Formatter.formatPercentage(
+              position.performance.returnOnInvestment
+            )}
           </Text>
         </Td>
         <Td>
@@ -328,7 +328,7 @@ function WalletPositionsPageContent() {
     );
     const activePositions = openPositions.length;
     const closedPositionsCount = closedPositions.length;
-    
+
     // Calculate fees
     const totalFeesEarned = allPositions.reduce((sum, pos) => {
       const pendingFees = pos.tradingFee.pending.reduce(
@@ -341,23 +341,23 @@ function WalletPositionsPageContent() {
       );
       return sum + pendingFees + claimedFees;
     }, 0);
-    
+
     const pendingFees = allPositions.reduce((sum, pos) => {
-      return sum + pos.tradingFee.pending.reduce(
-        (feeSum, fee) => feeSum + fee.value,
-        0
+      return (
+        sum +
+        pos.tradingFee.pending.reduce((feeSum, fee) => feeSum + fee.value, 0)
       );
     }, 0);
-    
+
     // Calculate PnL
     const totalPnL = allPositions.reduce((sum, pos) => {
       return sum + (pos.performance.pnl || 0);
     }, 0);
-    
+
     const activePnL = openPositions.reduce((sum, pos) => {
       return sum + (pos.performance.pnl || 0);
     }, 0);
-    
+
     const averageApr =
       allPositions.length > 0
         ? allPositions.reduce(
@@ -499,7 +499,7 @@ function WalletPositionsPageContent() {
     <Box minH="100vh" bg="bg.secondary">
       <Container maxW="7xl" py={6}>
         <EmbedWrapper type="breadcrumbs">
-          <Breadcrumbs 
+          <Breadcrumbs
             items={[
               { label: "Home", href: "/" },
               { label: `Wallet` },
@@ -510,8 +510,19 @@ function WalletPositionsPageContent() {
 
         {/* Stats */}
         {memoizedStats && (
-          <Card bg="bg.primary" p={6} mb={6} border="1px" borderColor="border.primary">
-            <HStack spacing={6} wrap="wrap" align="start" justifyContent={"space-between"}>
+          <Card
+            bg="bg.primary"
+            p={6}
+            mb={6}
+            border="1px"
+            borderColor="border.primary"
+          >
+            <HStack
+              spacing={6}
+              wrap="wrap"
+              align="start"
+              justifyContent={"space-between"}
+            >
               <Stat>
                 <StatLabel fontSize="sm" color="gray.500">
                   Total Value
@@ -520,7 +531,7 @@ function WalletPositionsPageContent() {
                   {Formatter.formatCurrency(memoizedStats.totalValue)}
                 </StatNumber>
               </Stat>
-              
+
               <Stat>
                 <StatLabel fontSize="sm" color="text.muted">
                   Active Positions
@@ -547,17 +558,22 @@ function WalletPositionsPageContent() {
                 <StatLabel fontSize="sm" color="text.muted">
                   Total PnL
                 </StatLabel>
-                <StatNumber 
-                  fontSize="2xl" 
-                  color={memoizedStats.totalPnL >= 0 ? "status.success" : "status.error"}
+                <StatNumber
+                  fontSize="2xl"
+                  color={
+                    memoizedStats.totalPnL >= 0
+                      ? "status.success"
+                      : "status.error"
+                  }
                 >
                   {Formatter.formatCurrency(memoizedStats.totalPnL)}
                 </StatNumber>
                 <StatHelpText fontSize="xs" color="text.muted">
-                  Active PnL: {Formatter.formatCurrency(memoizedStats.activePnL)}
+                  Active PnL:{" "}
+                  {Formatter.formatCurrency(memoizedStats.activePnL)}
                 </StatHelpText>
               </Stat>
-              
+
               <Stat>
                 <StatLabel fontSize="sm" color="gray.500">
                   Average APR
@@ -571,7 +587,7 @@ function WalletPositionsPageContent() {
         )}
 
         {/* Filters */}
-        <Card bg="bg.primary" border="1px" borderColor="border.primary">
+        <Card>
           <TableContainer>
             <Table variant="simple">
               <Thead>
@@ -591,33 +607,35 @@ function WalletPositionsPageContent() {
                       <Input
                         placeholder="Search positions..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={e => setSearchTerm(e.target.value)}
                       />
                     </InputGroup>
                   </Td>
                   <Td>
                     <Select
                       value={selectedChain}
-                      onChange={(e) => setSelectedChain(e.target.value)}
+                      onChange={e => setSelectedChain(e.target.value)}
                       maxW="200px"
                     >
                       <option value="all">All Chains</option>
-                      {Array.from(new Set(openPositions.map(p => p.chain.id))).map(
-                        chainId => (
-                          <option key={chainId} value={chainId}>
-                            {
-                              openPositions.find(p => p.chain.id === chainId)?.chain
-                                .name
-                            }
-                          </option>
-                        )
-                      )}
+                      {Array.from(
+                        new Set(openPositions.map(p => p.chain.id))
+                      ).map(chainId => (
+                        <option key={chainId} value={chainId}>
+                          {
+                            openPositions.find(p => p.chain.id === chainId)
+                              ?.chain.name
+                          }
+                        </option>
+                      ))}
                     </Select>
                   </Td>
                   <Td>
                     <Select
                       value={selectedStatus}
-                      onChange={(e) => setSelectedStatus(e.target.value as "OPEN" | "CLOSED")}
+                      onChange={e =>
+                        setSelectedStatus(e.target.value as "OPEN" | "CLOSED")
+                      }
                       maxW="200px"
                     >
                       <option value="OPEN">Open</option>
@@ -631,7 +649,7 @@ function WalletPositionsPageContent() {
         </Card>
 
         {/* Positions Table */}
-        <Card bg="bg.primary" border="1px" borderColor="border.primary">
+        <Card>
           <TableContainer>
             <Table variant="simple">
               <Thead>
@@ -722,8 +740,7 @@ function WalletPositionsPageContent() {
               size="lg"
             >
               Load More (
-              {memoizedFilteredPositions.length -
-                paginatedPositions.length}{" "}
+              {memoizedFilteredPositions.length - paginatedPositions.length}{" "}
               remaining)
             </Button>
           </Box>

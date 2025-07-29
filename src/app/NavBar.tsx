@@ -53,9 +53,9 @@ export default function NavBar() {
               />
             </Link>
             <HStack spacing={6}>
-              <Link 
-                href="/" 
-                fontSize="sm" 
+              <Link
+                href="/"
+                fontSize="sm"
                 fontWeight="medium"
                 color="text.common"
                 _hover={{ color: "text.primary" }}
@@ -94,9 +94,9 @@ export default function NavBar() {
             variant="ghost"
             size="md"
             color="text.common"
-            _hover={{ 
+            _hover={{
               bg: "bg.muted",
-              color: "text.primary"
+              color: "text.primary",
             }}
           />
         </Flex>

@@ -30,7 +30,7 @@ import {
   TabPanel,
   Image,
   useToast,
-  useColorModeValue,
+  useColorModeValue
 } from "@chakra-ui/react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
@@ -84,11 +84,19 @@ function PoolDetailsPageContent() {
   const [historicalData, setHistoricalData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [chartTimeRange, setChartTimeRange] = useState<"7D" | "30D" | "90D">("30D");
-  const [selectedData, setSelectedData] = useState<"price" | "apr" | "tvl" | "volFee">("price");
+  const [chartTimeRange, setChartTimeRange] = useState<"7D" | "30D" | "90D">(
+    "30D"
+  );
+  const [selectedData, setSelectedData] = useState<
+    "price" | "apr" | "tvl" | "volFee"
+  >("price");
   const [historicalLoading, setHistoricalLoading] = useState(false);
-  const [selectedChart, setSelectedChart] = useState<"price" | "apr" | "tvl" | "volFee">("price");
-  const [performanceTimeframe, setPerformanceTimeframe] = useState<"1h" | "24h" | "7d" | "30d">("24h");
+  const [selectedChart, setSelectedChart] = useState<
+    "price" | "apr" | "tvl" | "volFee"
+  >("price");
+  const [performanceTimeframe, setPerformanceTimeframe] = useState<
+    "1h" | "24h" | "7d" | "30d"
+  >("24h");
 
   const { error: apiError, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
@@ -152,18 +160,20 @@ function PoolDetailsPageContent() {
         endTime,
       });
 
-      setHistoricalData(response.map(item => ({
-        timestamp: item.timestamp,
-        date: new Date(item.timestamp * 1000).toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-        }),
-        price: Number(item.poolPrice) || 0,
-        volume: Number(item.volume24h) || 0,
-        fee: Number(item.fee24h) || 0,
-        tvl: Number(item.tvlUsd) || 0,
-        apr: Number(item.apr24h) || 0,
-      })));
+      setHistoricalData(
+        response.map(item => ({
+          timestamp: item.timestamp,
+          date: new Date(item.timestamp * 1000).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+          }),
+          price: Number(item.poolPrice) || 0,
+          volume: Number(item.volume24h) || 0,
+          fee: Number(item.fee24h) || 0,
+          tvl: Number(item.tvlUsd) || 0,
+          apr: Number(item.apr24h) || 0,
+        }))
+      );
     } catch (err) {
       console.error("Error fetching historical data:", err);
       toast({
@@ -254,7 +264,7 @@ function PoolDetailsPageContent() {
           alignItems="center"
           justifyContent="center"
         >
-          <Text color={useColorModeValue("brand.200", "brand.700")}>No historical data available</Text>
+          <Text>No historical data available</Text>
         </Box>
       );
     }
@@ -384,10 +394,10 @@ function PoolDetailsPageContent() {
                   }}
                   labelFormatter={(label: any) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: useColorModeValue("chakra-body-bg", "chakra-body-bg"),
-                    border: `1px solid ${useColorModeValue("chakra-border-color", "chakra-border-color")}`,
+                    backgroundColor: "bg.primary",
+                    border: "1px solid border.primary",
                     borderRadius: "8px",
-                    color: textColor,
+                    color: "text.common",
                   }}
                 />
                 <Area
@@ -448,10 +458,10 @@ function PoolDetailsPageContent() {
                   ]}
                   labelFormatter={(label: any) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: useColorModeValue("chakra-body-bg", "chakra-body-bg"),
-                    border: `1px solid ${useColorModeValue("chakra-border-color", "chakra-border-color")}`,
+                    backgroundColor: "bg.primary",
+                    border: "1px solid border.primary",
                     borderRadius: "8px",
-                    color: textColor,
+                    color: "text.common",
                   }}
                 />
                 <Area
@@ -513,7 +523,7 @@ function PoolDetailsPageContent() {
         display="flex"
         alignItems="center"
         justifyContent="center"
-        bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")}
+        bg="bg.secondary"
       >
         <VStack spacing={4}>
           <Spinner size="xl" color="highlight" />
@@ -536,7 +546,7 @@ function PoolDetailsPageContent() {
   const statsData = getStatsData();
 
   return (
-    <Box minH="100vh" bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")}>
+    <Box minH="100vh" bg="bg.secondary">
       <Container maxW="7xl" py={6}>
         {/* Header */}
 
@@ -567,7 +577,7 @@ function PoolDetailsPageContent() {
                 fallbackSrc="/images/token-fallback.png"
               />
             </HStack>
-            <Heading size="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
+            <Heading size="lg">
               {pool.token0.symbol}/{pool.token1.symbol}
             </Heading>
           </HStack>
@@ -580,9 +590,7 @@ function PoolDetailsPageContent() {
                 boxSize="20px"
                 borderRadius="full"
               />
-              <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                {pool.chain.name}
-              </Text>
+              <Text fontSize="sm">{pool.chain.name}</Text>
             </HStack>
 
             <HStack spacing={1}>
@@ -593,9 +601,7 @@ function PoolDetailsPageContent() {
                 borderRadius="full"
                 fallbackSrc="/images/token-fallback.png"
               />
-              <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                {pool.protocol.name}
-              </Text>
+              <Text fontSize="sm">{pool.protocol.name}</Text>
             </HStack>
 
             <Badge size="xs">Fee {Formatter.formatFeeTier(pool.feeTier)}</Badge>
@@ -606,16 +612,11 @@ function PoolDetailsPageContent() {
         <Box>
           <Grid templateColumns={{ base: "1fr", md: "1fr 2fr" }} gap={6} mb={8}>
             <GridItem>
-              <Card bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")} border="1px" borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")}>
+              <Card>
                 <CardBody>
                   <Stat>
-                    <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Total Value Locked
-                    </StatLabel>
-                    <StatNumber
-                      fontSize="2xl"
-                      fontWeight="bold"
-                    >
+                    <StatLabel>Total Value Locked</StatLabel>
+                    <StatNumber fontSize="2xl" fontWeight="bold">
                       {formatCurrency(pool.tvl)}
                     </StatNumber>
                     <StatHelpText>Current TVL</StatHelpText>
@@ -624,15 +625,12 @@ function PoolDetailsPageContent() {
               </Card>
             </GridItem>
             <GridItem>
-              <Card bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")} border="1px" borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")}>
+              <Card
+              >
                 <CardBody>
                   <VStack align="start" spacing={4}>
                     <HStack justify="space-between" w="full">
-                      <Text
-                        fontSize="sm"
-                        fontWeight="medium"
-                        color={useColorModeValue("chakra-metrics", "chakra-metrics")}
-                      >
+                      <Text fontSize="sm" fontWeight="medium">
                         Performance
                       </Text>
                       <HStack spacing={1}>
@@ -658,26 +656,26 @@ function PoolDetailsPageContent() {
 
                     <SimpleGrid columns={3} spacing={4} w="full">
                       <Stat>
-                        <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")} fontSize="xs">
+                        <StatLabel fontSize="xs">
                           Volume ({performanceTimeframe})
                         </StatLabel>
-                        <StatNumber fontSize="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
+                        <StatNumber fontSize="lg">
                           {Formatter.formatCurrency(statsData.volume)}
                         </StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")} fontSize="xs">
+                        <StatLabel fontSize="xs">
                           Fee ({performanceTimeframe})
                         </StatLabel>
-                        <StatNumber fontSize="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
+                        <StatNumber fontSize="lg">
                           {Formatter.formatCurrency(statsData.fee)}
                         </StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")} fontSize="xs">
+                        <StatLabel fontSize="xs">
                           APR ({performanceTimeframe})
                         </StatLabel>
-                        <StatNumber fontSize="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
+                        <StatNumber fontSize="lg">
                           {Formatter.formatAPR(statsData.apr)}
                         </StatNumber>
                       </Stat>
@@ -693,13 +691,7 @@ function PoolDetailsPageContent() {
         <Grid templateColumns={{ base: "1fr", md: "2fr 1fr" }} gap={8} mb={8}>
           {/* Historical Chart */}
           <GridItem w="full" overflow="hidden">
-            <Card
-              bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")}
-              border="1px"
-              borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")}
-              w="full"
-              overflow="hidden"
-            >
+            <Card w="full" overflow="hidden">
               <CardBody w="full" overflow="hidden">
                 <HStack justify="space-between" mb={6}>
                   <VStack align="start" spacing={1}>
@@ -767,16 +759,16 @@ function PoolDetailsPageContent() {
 
           {/* Information */}
           <GridItem>
-            <Card bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")} border="1px" borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")} w="full">
+            <Card
+              w="full"
+            >
               <CardBody>
-                <Heading size="md" mb={6} color="chakra-title">
+                <Heading size="md" mb={6}>
                   Information
                 </Heading>
                 <VStack spacing={4} align="stretch">
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Chain
-                    </Text>
+                    <Text fontSize="sm">Chain</Text>
                     <HStack spacing={2}>
                       <FallbackImg
                         src={pool.chain.logo}
@@ -789,41 +781,29 @@ function PoolDetailsPageContent() {
                     </HStack>
                   </HStack>
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Protocol
-                    </Text>
+                    <Text fontSize="sm">Protocol</Text>
                     <HStack spacing={2}>
                       <FallbackImg
                         src={pool.protocol.logo}
                         alt={pool.protocol.name}
                         boxSize="20px"
                       />
-                      <Text fontSize="sm" color="chakra-metrics">
-                        {pool.protocol.name}
-                      </Text>
+                      <Text fontSize="sm">{pool.protocol.name}</Text>
                     </HStack>
                   </HStack>
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Pool
-                    </Text>
+                    <Text fontSize="sm">Pool</Text>
                     <Address
                       address={pool.poolAddress}
                       explorerBaseUrl={pool.chain.explorer + "/address/"}
                     />
                   </HStack>
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Fee-tier
-                    </Text>
-                    <Text fontSize="sm" color="chakra-metrics">
-                      {Formatter.formatFeeTier(pool.feeTier)}
-                    </Text>
+                    <Text fontSize="sm">Fee-tier</Text>
+                    <Text fontSize="sm">{Formatter.formatFeeTier(pool.feeTier)}</Text>
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
-                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Token0
-                    </Text>
+                    <Text fontSize="sm">Token0</Text>
                     <VStack align="end" spacing={0}>
                       <HStack spacing={2}>
                         <FallbackImg
@@ -831,22 +811,19 @@ function PoolDetailsPageContent() {
                           alt={pool.token0.symbol}
                           boxSize="20px"
                         />
-                        <Text fontSize="sm" color="chakra-metrics">
+                        <Text fontSize="sm">
                           {pool.token0.symbol} ({pool.token0.name})
                         </Text>
                       </HStack>
                       <Address
                         address={pool.token0.address}
                         explorerBaseUrl={pool.chain.explorer + "/token/"}
-                        color={useColorModeValue("chakra-title", "chakra-title")}
                         fontSize="xs"
                       />
                     </VStack>
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
-                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
-                      Token1
-                    </Text>
+                    <Text fontSize="sm">Token1</Text>
                     <VStack align="end" spacing={0}>
                       <HStack spacing={2}>
                         <FallbackImg
@@ -854,14 +831,13 @@ function PoolDetailsPageContent() {
                           alt={pool.token1.symbol}
                           boxSize="20px"
                         />
-                        <Text fontSize="sm" color="chakra-metrics">
+                        <Text fontSize="sm">
                           {pool.token1.symbol} ({pool.token1.name})
                         </Text>
                       </HStack>
                       <Address
                         address={pool.token1.address}
                         explorerBaseUrl={pool.chain.explorer + "/token/"}
-                        color={useColorModeValue("chakra-title", "chakra-title")}
                         fontSize="xs"
                       />
                     </VStack>
@@ -917,4 +893,3 @@ export default function PoolDetailsPage() {
     </ErrorBoundary>
   );
 }
-

@@ -94,8 +94,12 @@ export default function Home() {
               </Heading>
               <VStack align="start" spacing={3}>
                 <Text fontWeight="medium">DeFi Pools</Text>
-                <Text>You can easily customize and embed any page in your application.</Text>
-                <Text>Leave us a message on{" "}
+                <Text>
+                  You can easily customize and embed any page in your
+                  application.
+                </Text>
+                <Text>
+                  Leave us a message on{" "}
                   <Link href="https://t.me/krystalapp" isExternal>
                     Telegram
                   </Link>
@@ -134,16 +138,8 @@ export default function Home() {
                   <CardBody pt={0}>
                     <Text mb={4}>{page.description}</Text>
                     {page.defaultLink && (
-                      <Box
-                        mt={4}
-                        p={3}
-                        bg="bg.secondary"
-                        borderRadius="md"
-                      >
-                        <Text
-                          fontSize="xs"
-                          fontFamily="mono"
-                        >
+                      <Box mt={4} p={3} bg="bg.secondary" borderRadius="md">
+                        <Text fontSize="xs" fontFamily="mono">
                           Example: {page.defaultLink}
                         </Text>
                       </Box>
