@@ -14,8 +14,8 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: [
           {
-            key: "X-Frame-Options",
-            value: "ALLOWALL", // Allow embedding in iframes
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self' *;", // Allow embedding in iframes
           },
           {
             key: "X-Content-Type-Options",
