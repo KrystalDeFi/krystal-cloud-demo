@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-import NavBar from "./NavBar";
 import ThemeProvider from "./ThemeProvider";
-import EmbedButton from "../components/EmbedButton";
-import EmbedWrapper from "../components/EmbedWrapper";
 import { ChainsProtocolsProvider } from "../contexts/ChainsProtocolsContext";
+import { EmbedConfigProvider } from "../contexts/EmbedConfigContext";
+import { EmbedWrapper } from "../components/EmbedWrapper";
+import EmbedButton from "../components/EmbedButton";
+import NavBar from "./NavBar";
 
 export const metadata: Metadata = {
   title: "Krystal Cloud: Embeddable UI",
@@ -22,15 +23,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ThemeProvider>
-          <ChainsProtocolsProvider>
-            <EmbedWrapper showInEmbed={false}>
-              <NavBar />
-            </EmbedWrapper>
-            {children}
-            <EmbedButton />
-          </ChainsProtocolsProvider>
-        </ThemeProvider>
+        <EmbedConfigProvider>
+          <ThemeProvider>
+            <ChainsProtocolsProvider>
+              <EmbedWrapper type="navigation">
+                <NavBar />
+              </EmbedWrapper>
+              {children}
+              <EmbedButton />
+            </ChainsProtocolsProvider>
+          </ThemeProvider>
+        </EmbedConfigProvider>
       </body>
     </html>
   );

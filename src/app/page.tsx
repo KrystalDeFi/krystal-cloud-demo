@@ -52,8 +52,6 @@ const pages = [
 ];
 
 export default function Home() {
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -75,38 +73,32 @@ export default function Home() {
         <Container maxW="7xl" py={6}>
           {!isEmbedMode && (
             <Box
-              bg={cardBg}
-              _dark={{ bg: "gray.800" }}
+              bgGradient="linear(to-br, bg.secondary, bg.brand, bg.secondary)"
               borderRadius="xl"
-              p={6}
+              p={8}
               mb={8}
-              boxShadow="lg"
-              border="1px"
-              borderColor={borderColor}
+              position="relative"
+              overflow="hidden"
             >
-              <Heading
-                size="md"
-                mb={4}
-                color="brand.600"
-                _dark={{ color: "brand.400" }}
-              >
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                bottom={0}
+                bgGradient="linear(to-br, bg.secondary, bg.brand, bg.secondary)"
+                opacity={0.1}
+              />
+              <Heading size="md" mb={4}>
                 Welcome Buidlers 👋
               </Heading>
               <VStack align="start" spacing={3}>
-                <Text>
-                  This page includes boilerplate UI which use Krystal's Cloud
-                  API under the hood.
-                </Text>
-                <Text>
-                  You can easily customize and embed any page in your
-                  application.
-                </Text>
-                <Text>
-                  Leave us a message on{" "}
-                  <Link href="https://discord.com/invite/VJZXyb9QfA" isExternal>
-                    Discord
-                  </Link>{" "}
-                  for any enquiries and requests.
+                <Text fontWeight="medium">DeFi Pools</Text>
+                <Text>You can easily customize and embed any page in your application.</Text>
+                <Text>Leave us a message on{" "}
+                  <Link href="https://t.me/krystalapp" isExternal>
+                    Telegram
+                  </Link>
                 </Text>
               </VStack>
             </Box>
@@ -117,24 +109,22 @@ export default function Home() {
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
               {pages.map((page, index) => (
                 <Card
-                  key={index}
-                  bg={cardBg}
-                  _dark={{ bg: "gray.800" }}
+                  key={page.title}
+                  bg="bg.primary"
                   border="1px"
-                  borderColor={borderColor}
+                  borderColor="border.primary"
                   _hover={{
                     transform: "translateY(-2px)",
-                    boxShadow: "xl",
-                    borderColor: "brand.300",
+                    boxShadow: "lg",
                   }}
                   transition="all 0.2s"
                   cursor="pointer"
-                  onClick={() => handleCardClick(page.defaultLink)}
+                  onClick={() => router.push(page.defaultLink)}
                 >
                   <CardHeader>
                     <HStack justify="space-between" align="start">
                       <HStack spacing={3}>
-                        <Icon as={page.icon} color="brand.500" boxSize={5} />
+                        <Icon as={page.icon} boxSize={5} />
                         <VStack align="start" spacing={1}>
                           <Heading size="md">{page.title}</Heading>
                         </VStack>
@@ -142,22 +132,17 @@ export default function Home() {
                     </HStack>
                   </CardHeader>
                   <CardBody pt={0}>
-                    <Text color="gray.600" _dark={{ color: "gray.300" }} mb={4}>
-                      {page.description}
-                    </Text>
+                    <Text mb={4}>{page.description}</Text>
                     {page.defaultLink && (
                       <Box
                         mt={4}
                         p={3}
-                        bg="gray.50"
-                        _dark={{ bg: "gray.700" }}
+                        bg="bg.secondary"
                         borderRadius="md"
                       >
                         <Text
                           fontSize="xs"
                           fontFamily="mono"
-                          color="gray.600"
-                          _dark={{ color: "gray.300" }}
                         >
                           Example: {page.defaultLink}
                         </Text>

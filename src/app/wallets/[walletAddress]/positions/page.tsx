@@ -65,6 +65,7 @@ import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { Footer } from "@/app/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { FallbackImg } from "@/components/FallbackImg";
+import { EmbedWrapper } from "@/components/EmbedWrapper";
 
 interface WalletStats {
   totalValue: number;
@@ -149,15 +150,14 @@ const VirtualizedTableRow = React.memo(
         </Td>
         <Td>
           <Text
-            color={position.performance.pnl >= 0 ? "green.500" : "red.500"}
-            fontWeight="medium"
+            fontSize="lg"
+            fontWeight="bold"
+            color={position.performance.pnl >= 0 ? "status.success" : "status.error"}
           >
             {Formatter.formatCurrency(position.performance.pnl)}
           </Text>
-          <Text fontSize="xs" color="gray.500">
-            {Formatter.formatPercentage(
-              position.performance.returnOnInvestment
-            )}
+          <Text color="status.success" fontWeight="medium">
+            {Formatter.formatPercentage(position.performance.returnOnInvestment)}
           </Text>
         </Td>
         <Td>
@@ -166,7 +166,7 @@ const VirtualizedTableRow = React.memo(
           </Text>
         </Td>
         <Td>
-          <Text color="green.500" fontWeight="medium">
+          <Text fontWeight="medium">
             {Formatter.formatAPR(position.performance.apr.totalApr)}
           </Text>
         </Td>
@@ -214,9 +214,6 @@ function WalletPositionsPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   const isEmbedMode = searchParams.get("embed") === "1";
 
@@ -475,13 +472,14 @@ function WalletPositionsPageContent() {
     return (
       <Box
         minH="100vh"
+        bg="bg.secondary"
         display="flex"
         alignItems="center"
         justifyContent="center"
       >
         <VStack spacing={4}>
-          <Spinner size="xl" color="brand.500" />
-          <Text>Loading positions...</Text>
+          <Spinner size="xl" />
+          <Text>Loading wallet data...</Text>
         </VStack>
       </Box>
     );
@@ -498,19 +496,21 @@ function WalletPositionsPageContent() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
+    <Box minH="100vh" bg="bg.secondary">
       <Container maxW="7xl" py={6}>
-        <Breadcrumbs 
-          items={[
-            { label: "Home", href: "/" },
-            { label: `Wallet` },
-            { label: `#${Formatter.shortAddress(walletAddress)}` },
-          ]}
-        />
+        <EmbedWrapper type="breadcrumbs">
+          <Breadcrumbs 
+            items={[
+              { label: "Home", href: "/" },
+              { label: `Wallet` },
+              { label: `#${Formatter.shortAddress(walletAddress)}` },
+            ]}
+          />
+        </EmbedWrapper>
 
         {/* Stats */}
         {memoizedStats && (
-          <Card bg={cardBg} p={6} mb={6} border="1px" borderColor={borderColor}>
+          <Card bg="bg.primary" p={6} mb={6} border="1px" borderColor="border.primary">
             <HStack spacing={6} wrap="wrap" align="start" justifyContent={"space-between"}>
               <Stat>
                 <StatLabel fontSize="sm" color="gray.500">
@@ -522,41 +522,39 @@ function WalletPositionsPageContent() {
               </Stat>
               
               <Stat>
-                <StatLabel fontSize="sm" color="gray.500">
+                <StatLabel fontSize="sm" color="text.muted">
                   Active Positions
                 </StatLabel>
-                <StatNumber fontSize="2xl" color="chakra-metrics">
+                <StatNumber fontSize="2xl" color="metrics">
                   {memoizedStats.activePositions}
                 </StatNumber>
-                <StatHelpText fontSize="xs" color="gray.500">
+                <StatHelpText fontSize="xs" color="text.muted">
                   Closed: {memoizedStats.closedPositions}
                 </StatHelpText>
               </Stat>
-              
               <Stat>
-                <StatLabel fontSize="sm" color="gray.500">
+                <StatLabel fontSize="sm" color="text.muted">
                   Total Fees Earned
                 </StatLabel>
-                <StatNumber fontSize="2xl" color="chakra-metrics">
+                <StatNumber fontSize="2xl" color="metrics">
                   {Formatter.formatCurrency(memoizedStats.totalFeesEarned)}
                 </StatNumber>
-                <StatHelpText fontSize="xs" color="gray.500">
+                <StatHelpText fontSize="xs" color="text.muted">
                   Pending: {Formatter.formatCurrency(memoizedStats.pendingFees)}
                 </StatHelpText>
               </Stat>
-              
               <Stat>
-                <StatLabel fontSize="sm" color="gray.500">
+                <StatLabel fontSize="sm" color="text.muted">
                   Total PnL
                 </StatLabel>
                 <StatNumber 
                   fontSize="2xl" 
-                  color={memoizedStats.totalPnL >= 0 ? "green.500" : "red.500"}
+                  color={memoizedStats.totalPnL >= 0 ? "status.success" : "status.error"}
                 >
                   {Formatter.formatCurrency(memoizedStats.totalPnL)}
                 </StatNumber>
-                <StatHelpText fontSize="xs" color="gray.500">
-                  Active: {Formatter.formatCurrency(memoizedStats.activePnL)}
+                <StatHelpText fontSize="xs" color="text.muted">
+                  Active PnL: {Formatter.formatCurrency(memoizedStats.activePnL)}
                 </StatHelpText>
               </Stat>
               
@@ -572,248 +570,176 @@ function WalletPositionsPageContent() {
           </Card>
         )}
 
-        {/* Tabs */}
-        <Tabs
-          defaultIndex={0}
-          onChange={index => setSelectedStatus(index === 0 ? "OPEN" : "CLOSED")}
-        >
-          <TabList>
-            <Tab>Open Positions ({openPositions.length})</Tab>
-            <Tab>Closed Positions ({closedPositions.length})</Tab>
-          </TabList>
+        {/* Filters */}
+        <Card bg="bg.primary" border="1px" borderColor="border.primary">
+          <TableContainer>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Search</Th>
+                  <Th>Chain</Th>
+                  <Th>Status</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                <Tr>
+                  <Td>
+                    <InputGroup maxW="300px">
+                      <InputLeftElement>
+                        <SearchIcon color="text.muted" />
+                      </InputLeftElement>
+                      <Input
+                        placeholder="Search positions..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </InputGroup>
+                  </Td>
+                  <Td>
+                    <Select
+                      value={selectedChain}
+                      onChange={(e) => setSelectedChain(e.target.value)}
+                      maxW="200px"
+                    >
+                      <option value="all">All Chains</option>
+                      {Array.from(new Set(openPositions.map(p => p.chain.id))).map(
+                        chainId => (
+                          <option key={chainId} value={chainId}>
+                            {
+                              openPositions.find(p => p.chain.id === chainId)?.chain
+                                .name
+                            }
+                          </option>
+                        )
+                      )}
+                    </Select>
+                  </Td>
+                  <Td>
+                    <Select
+                      value={selectedStatus}
+                      onChange={(e) => setSelectedStatus(e.target.value as "OPEN" | "CLOSED")}
+                      maxW="200px"
+                    >
+                      <option value="OPEN">Open</option>
+                      <option value="CLOSED">Closed</option>
+                    </Select>
+                  </Td>
+                </Tr>
+              </Tbody>
+            </Table>
+          </TableContainer>
+        </Card>
 
-          <TabPanels>
-            <TabPanel p={0} pt={6}>
-              {/* Filters */}
-              <HStack spacing={4} mb={6} wrap="wrap">
-                <InputGroup maxW="300px">
-                  <InputLeftElement pointerEvents="none">
-                    <SearchIcon color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    placeholder="Search positions..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                  />
-                </InputGroup>
-                <Select
-                  value={selectedChain}
-                  onChange={e => setSelectedChain(e.target.value)}
-                  maxW="150px"
-                >
-                  <option value="all">All Chains</option>
-                  {Array.from(new Set(openPositions.map(p => p.chain.id))).map(
-                    chainId => (
-                      <option key={chainId} value={chainId}>
-                        {
-                          openPositions.find(p => p.chain.id === chainId)?.chain
-                            .name
-                        }
-                      </option>
-                    )
-                  )}
-                </Select>
-              </HStack>
-
-              {/* Positions Table */}
-              <Card bg={cardBg} border="1px" borderColor={borderColor}>
-                <TableContainer>
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Pool</Th>
-                        <Th
-                          cursor="pointer"
-                          onClick={() => handleSort("currentPositionValue")}
-                        >
-                          <HStack spacing={1}>
-                            <Text>Position Value</Text>
-                            {sortField === "currentPositionValue" &&
-                              (sortOrder === "asc" ? (
-                                <ChevronUpIcon />
-                              ) : (
-                                <ChevronDownIcon />
-                              ))}
-                          </HStack>
-                        </Th>
-                        <Th cursor="pointer" onClick={() => handleSort("pnl")}>
-                          <HStack spacing={1}>
-                            <Text>P&L</Text>
-                            {sortField === "pnl" &&
-                              (sortOrder === "asc" ? (
-                                <ChevronUpIcon />
-                              ) : (
-                                <ChevronDownIcon />
-                              ))}
-                          </HStack>
-                        </Th>
-                        <Th cursor="pointer" onClick={() => handleSort("fees")}>
-                          <HStack spacing={1}>
-                            <Text>Pending Fees</Text>
-                            {sortField === "fees" &&
-                              (sortOrder === "asc" ? (
-                                <ChevronUpIcon />
-                              ) : (
-                                <ChevronDownIcon />
-                              ))}
-                          </HStack>
-                        </Th>
-                        <Th cursor="pointer" onClick={() => handleSort("apr")}>
-                          <HStack spacing={1}>
-                            <Text>APR</Text>
-                            {sortField === "apr" &&
-                              (sortOrder === "asc" ? (
-                                <ChevronUpIcon />
-                              ) : (
-                                <ChevronDownIcon />
-                              ))}
-                          </HStack>
-                        </Th>
-                        <Th>Price Range</Th>
-                        <Th cursor="pointer" onClick={() => handleSort("age")}>
-                          <HStack spacing={1}>
-                            <Text>Age</Text>
-                            {sortField === "age" &&
-                              (sortOrder === "asc" ? (
-                                <ChevronUpIcon />
-                              ) : (
-                                <ChevronDownIcon />
-                              ))}
-                          </HStack>
-                        </Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {paginatedPositions.map(position => (
-                        <VirtualizedTableRow
-                          key={position.id}
-                          position={position}
-                          onRowClick={handleRowClick}
-                        />
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </Card>
-
-              {/* Load More Button */}
-              {hasMore && (
-                <Box textAlign="center" mt={4}>
-                  <Button
-                    onClick={handleLoadMore}
-                    isLoading={isLoadingMore}
-                    loadingText="Loading..."
-                    variant="outline"
-                    size="lg"
+        {/* Positions Table */}
+        <Card bg="bg.primary" border="1px" borderColor="border.primary">
+          <TableContainer>
+            <Table variant="simple">
+              <Thead>
+                <Tr>
+                  <Th>Pool</Th>
+                  <Th
+                    cursor="pointer"
+                    onClick={() => handleSort("currentPositionValue")}
                   >
-                    Load More (
-                    {memoizedFilteredPositions.length -
-                      paginatedPositions.length}{" "}
-                    remaining)
-                  </Button>
-                </Box>
-              )}
-
-              {/* Results Summary */}
-              <Box textAlign="center" mt={4}>
-                <Text fontSize="sm" color="gray.500">
-                  Showing {paginatedPositions.length} of{" "}
-                  {memoizedFilteredPositions.length} positions
-                </Text>
-              </Box>
-            </TabPanel>
-
-            <TabPanel p={0} pt={6}>
-              {/* Same content for closed positions */}
-              <HStack spacing={4} mb={6} wrap="wrap">
-                <InputGroup maxW="300px">
-                  <InputLeftElement pointerEvents="none">
-                    <SearchIcon color="gray.400" />
-                  </InputLeftElement>
-                  <Input
-                    placeholder="Search positions..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
+                    <HStack spacing={1}>
+                      <Text>Position Value</Text>
+                      {sortField === "currentPositionValue" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUpIcon />
+                        ) : (
+                          <ChevronDownIcon />
+                        ))}
+                    </HStack>
+                  </Th>
+                  <Th cursor="pointer" onClick={() => handleSort("pnl")}>
+                    <HStack spacing={1}>
+                      <Text>P&L</Text>
+                      {sortField === "pnl" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUpIcon />
+                        ) : (
+                          <ChevronDownIcon />
+                        ))}
+                    </HStack>
+                  </Th>
+                  <Th cursor="pointer" onClick={() => handleSort("fees")}>
+                    <HStack spacing={1}>
+                      <Text>Pending Fees</Text>
+                      {sortField === "fees" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUpIcon />
+                        ) : (
+                          <ChevronDownIcon />
+                        ))}
+                    </HStack>
+                  </Th>
+                  <Th cursor="pointer" onClick={() => handleSort("apr")}>
+                    <HStack spacing={1}>
+                      <Text>APR</Text>
+                      {sortField === "apr" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUpIcon />
+                        ) : (
+                          <ChevronDownIcon />
+                        ))}
+                    </HStack>
+                  </Th>
+                  <Th>Price Range</Th>
+                  <Th cursor="pointer" onClick={() => handleSort("age")}>
+                    <HStack spacing={1}>
+                      <Text>Age</Text>
+                      {sortField === "age" &&
+                        (sortOrder === "asc" ? (
+                          <ChevronUpIcon />
+                        ) : (
+                          <ChevronDownIcon />
+                        ))}
+                    </HStack>
+                  </Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {paginatedPositions.map(position => (
+                  <VirtualizedTableRow
+                    key={position.id}
+                    position={position}
+                    onRowClick={handleRowClick}
                   />
-                </InputGroup>
-                <Select
-                  value={selectedChain}
-                  onChange={e => setSelectedChain(e.target.value)}
-                  maxW="150px"
-                >
-                  <option value="all">All Chains</option>
-                  {Array.from(
-                    new Set(closedPositions.map(p => p.chain.id))
-                  ).map(chainId => (
-                    <option key={chainId} value={chainId}>
-                      {
-                        closedPositions.find(p => p.chain.id === chainId)?.chain
-                          .name
-                      }
-                    </option>
-                  ))}
-                </Select>
-              </HStack>
+                ))}
+              </Tbody>
+            </Table>
+          </TableContainer>
+        </Card>
 
-              <Card bg={cardBg} border="1px" borderColor={borderColor}>
-                <TableContainer>
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Pool</Th>
-                        <Th>Position Value</Th>
-                        <Th>P&L</Th>
-                        <Th>Pending Fees</Th>
-                        <Th>APR</Th>
-                        <Th>Price Range</Th>
-                        <Th>Age</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {paginatedPositions.map(position => (
-                        <VirtualizedTableRow
-                          key={position.id}
-                          position={position}
-                          onRowClick={handleRowClick}
-                        />
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </Card>
+        {/* Load More Button */}
+        {hasMore && (
+          <Box textAlign="center" mt={4}>
+            <Button
+              onClick={handleLoadMore}
+              isLoading={isLoadingMore}
+              loadingText="Loading..."
+              variant="outline"
+              size="lg"
+            >
+              Load More (
+              {memoizedFilteredPositions.length -
+                paginatedPositions.length}{" "}
+              remaining)
+            </Button>
+          </Box>
+        )}
 
-              {/* Load More Button */}
-              {hasMore && (
-                <Box textAlign="center" mt={4}>
-                  <Button
-                    onClick={handleLoadMore}
-                    isLoading={isLoadingMore}
-                    loadingText="Loading..."
-                    variant="outline"
-                    size="lg"
-                  >
-                    Load More (
-                    {memoizedFilteredPositions.length -
-                      paginatedPositions.length}{" "}
-                    remaining)
-                  </Button>
-                </Box>
-              )}
-
-              {/* Results Summary */}
-              <Box textAlign="center" mt={4}>
-                <Text fontSize="sm" color="gray.500">
-                  Showing {paginatedPositions.length} of{" "}
-                  {memoizedFilteredPositions.length} positions
-                </Text>
-              </Box>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+        {/* Results Summary */}
+        <Box textAlign="center" mt={4}>
+          <Text fontSize="sm" color="text.muted">
+            Showing {paginatedPositions.length} of{" "}
+            {memoizedFilteredPositions.length} positions
+          </Text>
+        </Box>
 
         {memoizedFilteredPositions.length === 0 && (
           <Box textAlign="center" py={12}>
-            <Text color="gray.500" _dark={{ color: "gray.400" }}>
+            <Text fontSize="sm" color="text.muted">
               No positions found matching your criteria.
             </Text>
           </Box>

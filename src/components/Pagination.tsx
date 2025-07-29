@@ -36,12 +36,7 @@ export default function Pagination({
 }: IPaginationProps) {
   const totalPages = totalItems ? Math.ceil(totalItems / pageSize) : null;
 
-  const buttonBg = useColorModeValue("white", "gray.800");
-  const buttonBorderColor = useColorModeValue("gray.200", "gray.700");
-  const activeButtonBg = useColorModeValue("brand.500", "brand.400");
-  const activeButtonColor = "white";
-  const hoverBg = useColorModeValue("gray.100", "gray.700");
-  const brandHoverBg = useColorModeValue("brand.600", "brand.300");
+
 
   // Generate page numbers to display
   const getPageNumbers = () => {
@@ -86,8 +81,7 @@ export default function Pagination({
             <HStack spacing={2}>
               <Text
                 fontSize="sm"
-                color="gray.600"
-                _dark={{ color: "gray.300" }}
+                color="text.secondary"
               >
                 Show:
               </Text>
@@ -96,8 +90,8 @@ export default function Pagination({
                 onChange={e => onPageSizeChange(parseInt(e.target.value))}
                 size="sm"
                 w="80px"
-                bg={buttonBg}
-                borderColor={buttonBorderColor}
+                bg="bg.primary"
+                borderColor="border.primary"
               >
                 {pageSizeOptions.map(size => (
                   <option key={size} value={size}>
@@ -107,8 +101,7 @@ export default function Pagination({
               </Select>
               <Text
                 fontSize="sm"
-                color="gray.600"
-                _dark={{ color: "gray.300" }}
+                color="text.secondary"
               >
                 per page
               </Text>
@@ -128,11 +121,6 @@ export default function Pagination({
                 isDisabled={currentPage === 1}
                 size="sm"
                 variant="outline"
-                bg={buttonBg}
-                borderColor={buttonBorderColor}
-                _hover={{
-                  bg: hoverBg,
-                }}
               />
             </Tooltip>
           )}
@@ -146,11 +134,6 @@ export default function Pagination({
               isDisabled={currentPage === 1}
               size="sm"
               variant="outline"
-              bg={buttonBg}
-              borderColor={buttonBorderColor}
-              _hover={{
-                bg: hoverBg,
-              }}
             />
           </Tooltip>
 
@@ -162,8 +145,7 @@ export default function Pagination({
                   px={3}
                   py={2}
                   fontSize="sm"
-                  color="gray.500"
-                  _dark={{ color: "gray.400" }}
+                  color="text.muted"
                 >
                   ...
                 </Text>
@@ -172,12 +154,6 @@ export default function Pagination({
                   onClick={() => onPageChange(page as number)}
                   size="sm"
                   variant={currentPage === page ? "solid" : "outline"}
-                  bg={currentPage === page ? activeButtonBg : buttonBg}
-                  color={currentPage === page ? activeButtonColor : "inherit"}
-                  borderColor={buttonBorderColor}
-                  _hover={{
-                    bg: currentPage === page ? brandHoverBg : hoverBg,
-                  }}
                   minW="40px"
                 >
                   {page}
@@ -195,11 +171,6 @@ export default function Pagination({
               isDisabled={currentPage === totalPages}
               size="sm"
               variant="outline"
-              bg={buttonBg}
-              borderColor={buttonBorderColor}
-              _hover={{
-                bg: hoverBg,
-              }}
             />
           </Tooltip>
 
@@ -213,11 +184,6 @@ export default function Pagination({
                 isDisabled={currentPage === totalPages}
                 size="sm"
                 variant="outline"
-                bg={buttonBg}
-                borderColor={buttonBorderColor}
-                _hover={{
-                  bg: hoverBg,
-                }}
               />
             </Tooltip>
           )}

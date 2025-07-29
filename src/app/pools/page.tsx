@@ -37,6 +37,7 @@ import ErrorBoundary from "../../components/ErrorBoundary";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useCache, useFilterCache } from "../../hooks/useCache";
 import { Footer } from "../Footer";
+import EmbedWrapper from "@/components/EmbedWrapper";
 
 // Create a type that extends IPoolsParams and adds the index signature for FilterOptions
 type FilterParams = IPoolsParams & {
@@ -70,8 +71,6 @@ function PoolsPageContent() {
   // Cache data
   const { chains, protocols } = useChainsProtocols();
 
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
   const isEmbedMode = searchParams.get("embed") === "1";
 
   // Fetch pools from API
@@ -200,7 +199,7 @@ function PoolsPageContent() {
       {
         label: "24h APR",
         renderer: (pool: IAPool) => (
-          <Text color="green.500">
+          <Text color="status.success">
             {Formatter.formatAPR(pool.stats24h?.apr || 0)}
           </Text>
         ),
@@ -220,7 +219,7 @@ function PoolsPageContent() {
       {
         label: "7d APR",
         renderer: (pool: IAPool) => (
-          <Text color="green.500">
+          <Text color="status.success">
             {Formatter.formatAPR(pool.stats7d?.apr || 0)}
           </Text>
         ),
@@ -240,7 +239,7 @@ function PoolsPageContent() {
       {
         label: "30d APR",
         renderer: (pool: IAPool) => (
-          <Text color="green.500">
+          <Text color="status.success">
             {Formatter.formatAPR(pool.stats30d?.apr || 0)}
           </Text>
         ),
@@ -260,28 +259,14 @@ function PoolsPageContent() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
+    <Box minH="100vh" bg="bg.secondary">
       <Container maxW="7xl" py={6}>
-        {/* Header */}
-        {!isEmbedMode && (
-          <VStack spacing={6} mb={8}>
-            <HStack w="full" justify="space-between" align="start">
-              <VStack align="start" spacing={2}>
-                <Heading size="2xl" color="chakra-title">
-                  DeFi Pools
-                </Heading>
-                <Text fontSize="lg" color="text.secondary">
-                  Browse and filter DeFi pools across different chains
-                </Text>
-              </VStack>
-            </HStack>
-          </VStack>
-        )}
-
         {/* Breadcrumbs */}
-        <Breadcrumbs
-          items={[{ label: "Home", href: "/" }, { label: "Pools" }]}
-        />
+        <EmbedWrapper type="breadcrumbs">
+          <Breadcrumbs
+            items={[{ label: "Home", href: "/" }, { label: "Pools" }]}
+          />
+        </EmbedWrapper>
 
         {/* Filters */}
         <VStack spacing={4} align="stretch">
@@ -384,10 +369,9 @@ function PoolsPageContent() {
         {/* Pools Table */}
         {!loading && (
           <Card
-            bg={cardBg}
-            _dark={{ bg: "gray.800" }}
+            bg="bg.primary"
             border="1px"
-            borderColor={borderColor}
+            borderColor="border.primary"
             mb={6}
           >
             <TableContainer>
@@ -445,15 +429,13 @@ function PoolsPageContent() {
 
         {pools.length === 0 && !loading && (
           <Box textAlign="center" py={12}>
-            <Text color="text.muted">
-              No pools found matching your criteria.
-            </Text>
+            <Text>No pools found matching your criteria.</Text>
           </Box>
         )}
 
         {loading && (
           <Box textAlign="center" py={12}>
-            <Spinner size="xl" color="brand.500" />
+            <Spinner size="xl" />
             <Text>Loading pools and data...</Text>
           </Box>
         )}
@@ -472,7 +454,7 @@ export default function PoolsPage() {
         fallback={
           <Container maxW="7xl" py={6}>
             <Box textAlign="center" py={12}>
-              <Spinner size="xl" color="brand.500" />
+              <Spinner size="xl" />
               <Text>Loading...</Text>
             </Box>
           </Container>

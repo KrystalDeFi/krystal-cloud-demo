@@ -18,60 +18,65 @@ import {
   CloseButton,
   InputGroup,
   InputLeftElement,
+  Switch,
 } from "@chakra-ui/react";
 import { SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { IEmbedConfig, CLOUD_API_KEY, DOMAIN } from "../common/config";
+import { IEmbedConfig } from "../common/config";
+import { useEmbedConfig } from "../contexts/EmbedConfigContext";
 
 export default function EmbedButton() {
+  const { embedConfig, setEmbedConfig, updateEmbedConfig, isEmbedMode, isConfigDisabled } = useEmbedConfig();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const toast = useToast();
 
-  const isEmbedMode = searchParams.get("embed") === "1";
-  const isConfigMode = searchParams.get("config") === "1";
-  const [config, setConfig] = useState<IEmbedConfig>({
-    theme: "auto",
-    primaryColor: "#3b82f6", // Default blue
-  });
   const [mounted, setMounted] = useState(false);
   const [isValidHex, setIsValidHex] = useState(true);
-
-  const bg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  // Load embed config from URL params on mount and when search params change
   useEffect(() => {
-    // Load config from URL params
-    const theme =
-      (searchParams.get("theme") as "light" | "dark" | "auto") || "auto";
-    const primaryColor = searchParams.get("primaryColor") || "#3b82f6";
+    // Only load from URL params if we don't have cached config data and component is mounted
+    if (!embedConfig && mounted) {
+      const primaryColor = searchParams.get("primaryColor");
+      const theme = searchParams.get("theme");
+      const showNavigation = searchParams.get("showNavigation");
+      const showBreadcrumbs = searchParams.get("showBreadcrumbs");
 
-    setConfig({
-      theme,
-      primaryColor,
-    });
+      if (primaryColor || theme || showNavigation !== null || showBreadcrumbs !== null) {
+        const newConfig: IEmbedConfig = {
+          theme: (theme as "light" | "dark" | "auto") || "auto",
+          primaryColor: primaryColor || "#3b82f6",
+          showNavigation: showNavigation === "true",
+          showBreadcrumbs: showBreadcrumbs !== "false", // Default to true
+        };
+
+        setEmbedConfig(newConfig);
+      }
+    }
 
     // Validate hex color
     const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    setIsValidHex(hexRegex.test(primaryColor));
+    setIsValidHex(hexRegex.test(embedConfig?.primaryColor || "#3b82f6"));
+  }, [searchParams, embedConfig, setEmbedConfig, mounted]);
 
-    // Auto-open config panel if we're in config mode
-    if (isConfigMode && !isOpen) {
-      onOpen();
-    }
-  }, [searchParams, isConfigMode, isOpen, onOpen]);
+  const handleColorPickerChange = (color: string) => {
+    // Convert color picker value to hex format
+    const hexColor = color.startsWith("#") ? color : `#${color}`;
+    updateEmbedConfig("primaryColor", hexColor);
+  };
 
-  const updateConfig = (key: keyof IEmbedConfig, value: string) => {
+  const handleConfigUpdate = (key: keyof IEmbedConfig, value: string | boolean) => {
     // Validate hex color format for primaryColor
     if (key === "primaryColor") {
       const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-      const isValid = hexRegex.test(value);
+      const isValid = hexRegex.test(value as string);
       setIsValidHex(isValid);
 
       if (!isValid) {
@@ -80,43 +85,78 @@ export default function EmbedButton() {
       }
     }
 
-    const newConfig = { ...config, [key]: value };
-    setConfig(newConfig);
+    // Update the embed config (this will be cached)
+    updateEmbedConfig(key, value);
 
-    // Update URL params without page reload
-    const params = new URLSearchParams(searchParams.toString());
-    params.set(key.toString(), value.toString());
-    params.set("embed", "1"); // Always add embed=1 when updating config
+    // Update URL parameters only when user explicitly changes settings
+    // Use a debounced approach to prevent excessive updates
+    const updateUrlParams = () => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(key.toString(), value.toString());
+      params.set("embed", "1"); // Always add embed=1 when updating config
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    };
 
-    // Use replace to update URL without navigation
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    // Debounce URL updates to prevent loops
+    setTimeout(updateUrlParams, 100);
   };
 
-  const handleColorPickerChange = (color: string) => {
-    // Convert color picker value to hex format
-    const hexColor = color.startsWith("#") ? color : `#${color}`;
-    updateConfig("primaryColor", hexColor);
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: `${label} copied!`,
+        description: `The ${label.toLowerCase()} has been copied to your clipboard.`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Please copy manually.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
   };
 
   const handleOpenEmbedConfig = () => {
-    // Add embed=1 and config=1 to URL and open config panel
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("embed", "1");
-    params.set("config", "1");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     onOpen();
   };
 
-  const generateEmbedCode = () => {
-    if (!mounted) return "";
+  const handleCloseConfig = () => {
+    onClose();
+  };
 
+  const generateShareableLink = () => {
+    if (!embedConfig) return "";
+    
     const params = new URLSearchParams();
     params.set("embed", "1");
-    params.set("theme", config.theme);
-    params.set("primaryColor", config.primaryColor);
+    params.set("config", "disabled");
+    params.set("theme", embedConfig.theme);
+    params.set("primaryColor", embedConfig.primaryColor);
+    params.set("showNavigation", embedConfig.showNavigation.toString());
+    params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
+    
+    return `${window.location.origin}${pathname}?${params.toString()}`;
+  };
 
-    const embedUrl = `${DOMAIN}/${pathname}?${params.toString()}`;
-
+  const generateEmbedCode = () => {
+    if (!embedConfig) return "";
+    
+    const params = new URLSearchParams();
+    params.set("embed", "1");
+    params.set("config", "disabled");
+    params.set("theme", embedConfig.theme);
+    params.set("primaryColor", embedConfig.primaryColor);
+    params.set("showNavigation", embedConfig.showNavigation.toString());
+    params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
+    
+    const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
+    
     return `<iframe 
   src="${embedUrl}"
   width="100%"
@@ -126,30 +166,12 @@ export default function EmbedButton() {
 ></iframe>`;
   };
 
-  const copyToClipboard = async () => {
-    const embedCode = generateEmbedCode();
-    try {
-      await navigator.clipboard.writeText(embedCode);
-      toast({
-        title: "Embed code copied!",
-        description: "The embed code has been copied to your clipboard.",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (err) {
-      toast({
-        title: "Failed to copy",
-        description: "Please copy the code manually.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
+  // Don't show embed button when config is disabled
+  if (isConfigDisabled) {
+    return null;
+  }
 
-  // Don't show embed button in embed mode unless we're in config mode
-  if (isEmbedMode && !isConfigMode) {
+  if (!embedConfig) {
     return null;
   }
 
@@ -175,9 +197,9 @@ export default function EmbedButton() {
         right={0}
         h="100vh"
         w={isOpen ? "400px" : "0"}
-        bg={bg}
+        bg="bg.primary"
         borderLeft="1px"
-        borderColor={borderColor}
+        borderColor="border.primary"
         boxShadow="xl"
         zIndex={999}
         transition="width 0.3s ease-in-out"
@@ -190,9 +212,9 @@ export default function EmbedButton() {
               justify="space-between"
               align="center"
               p={4}
-              borderBottom="1px"
-              borderColor={borderColor}
-              bg={bg}
+                              borderBottom="1px"
+                borderColor="border.primary"
+                bg="bg.primary"
               position="sticky"
               top={0}
               zIndex={10}
@@ -202,24 +224,45 @@ export default function EmbedButton() {
                 <Text fontWeight="medium">Embed Configuration</Text>
               </HStack>
               <HStack spacing={2}>
-                <CloseButton
-                  onClick={() => {
-                    onClose();
-                    // Remove config=1 from URL when closing
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.delete("config");
-                    router.replace(`${pathname}?${params.toString()}`, {
-                      scroll: false,
-                    });
-                  }}
-                  size="sm"
-                />
+                <CloseButton onClick={handleCloseConfig} size="sm" />
               </HStack>
             </Flex>
 
             {/* Content */}
             <Box p={6} h="calc(100vh - 80px)" overflowY="auto">
               <VStack spacing={6} align="stretch">
+                {/* Display Settings */}
+                <Box>
+                  <Text fontSize="md" fontWeight="medium" mb={3}>
+                    Display Settings
+                  </Text>
+                  <VStack spacing={4} align="stretch">
+                    <FormControl display="flex" alignItems="center">
+                      <FormLabel fontSize="sm" mb="0">
+                        Show Navigation
+                      </FormLabel>
+                      <Switch
+                        isChecked={embedConfig?.showNavigation}
+                        onChange={(e) => handleConfigUpdate("showNavigation", e.target.checked)}
+                        colorScheme="brand"
+                      />
+                    </FormControl>
+
+                    <FormControl display="flex" alignItems="center">
+                      <FormLabel fontSize="sm" mb="0">
+                        Show Breadcrumbs
+                      </FormLabel>
+                      <Switch
+                        isChecked={embedConfig?.showBreadcrumbs}
+                        onChange={(e) => handleConfigUpdate("showBreadcrumbs", e.target.checked)}
+                        colorScheme="brand"
+                      />
+                    </FormControl>
+                  </VStack>
+                </Box>
+
+                <Divider />
+
                 {/* Theme Configuration */}
                 <Box>
                   <Text fontSize="md" fontWeight="medium" mb={3}>
@@ -231,33 +274,27 @@ export default function EmbedButton() {
                       <HStack spacing={2}>
                         <Button
                           size="sm"
-                          variant={
-                            config.theme === "auto" ? "solid" : "outline"
-                          }
+                          variant={embedConfig?.theme === "auto" ? "solid" : "outline"}
                           colorScheme="brand"
-                          onClick={() => updateConfig("theme", "auto")}
+                          onClick={() => handleConfigUpdate("theme", "auto")}
                           flex={1}
                         >
                           Auto
                         </Button>
                         <Button
                           size="sm"
-                          variant={
-                            config.theme === "light" ? "solid" : "outline"
-                          }
+                          variant={embedConfig?.theme === "light" ? "solid" : "outline"}
                           colorScheme="brand"
-                          onClick={() => updateConfig("theme", "light")}
+                          onClick={() => handleConfigUpdate("theme", "light")}
                           flex={1}
                         >
                           Light
                         </Button>
                         <Button
                           size="sm"
-                          variant={
-                            config.theme === "dark" ? "solid" : "outline"
-                          }
+                          variant={embedConfig?.theme === "dark" ? "solid" : "outline"}
                           colorScheme="brand"
-                          onClick={() => updateConfig("theme", "dark")}
+                          onClick={() => handleConfigUpdate("theme", "dark")}
                           flex={1}
                         >
                           Dark
@@ -272,10 +309,8 @@ export default function EmbedButton() {
                         <HStack spacing={2}>
                           <Input
                             type="color"
-                            value={config.primaryColor}
-                            onChange={e =>
-                              handleColorPickerChange(e.target.value)
-                            }
+                            value={embedConfig?.primaryColor}
+                            onChange={e => handleColorPickerChange(e.target.value)}
                             size="sm"
                             w="60px"
                             h="40px"
@@ -283,7 +318,7 @@ export default function EmbedButton() {
                             borderRadius="md"
                             cursor="pointer"
                           />
-                          <Text fontSize="xs" color="gray.500" flex={1}>
+                          <Text fontSize="xs" color="text.muted" flex={1}>
                             Click to pick a color
                           </Text>
                         </HStack>
@@ -295,24 +330,21 @@ export default function EmbedButton() {
                               w="4"
                               h="4"
                               borderRadius="sm"
-                              bg={config.primaryColor}
+                              bg={embedConfig?.primaryColor}
                               border="1px"
-                              borderColor="gray.300"
-                              _dark={{ borderColor: "gray.600" }}
+                              borderColor="border.primary"
                             />
                           </InputLeftElement>
                           <Input
                             type="text"
-                            value={config.primaryColor}
-                            onChange={e =>
-                              updateConfig("primaryColor", e.target.value)
-                            }
+                            value={embedConfig?.primaryColor}
+                            onChange={e => handleConfigUpdate("primaryColor", e.target.value)}
                             placeholder="#3b82f6"
                             fontFamily="mono"
                             fontSize="xs"
-                            borderColor={isValidHex ? undefined : "red.500"}
+                            borderColor={isValidHex ? undefined : "status.error"}
                             _focus={{
-                              borderColor: isValidHex ? "brand.500" : "red.500",
+                              borderColor: isValidHex ? "brand.500" : "status.error",
                               boxShadow: isValidHex
                                 ? "0 0 0 1px var(--chakra-colors-brand-500)"
                                 : "0 0 0 1px var(--chakra-colors-red-500)",
@@ -321,7 +353,7 @@ export default function EmbedButton() {
                         </InputGroup>
                         <Text
                           fontSize="xs"
-                          color={isValidHex ? "gray.500" : "red.500"}
+                          color={isValidHex ? "text.muted" : "status.error"}
                           mt={1}
                         >
                           {isValidHex
@@ -343,7 +375,7 @@ export default function EmbedButton() {
                     </Text>
                     <Button
                       size="sm"
-                      onClick={copyToClipboard}
+                      onClick={() => copyToClipboard(generateEmbedCode(), "Embed code")}
                       colorScheme="brand"
                     >
                       Copy
@@ -351,19 +383,17 @@ export default function EmbedButton() {
                   </HStack>
                   <Box
                     p={3}
-                    bg="gray.50"
-                    _dark={{ bg: "gray.700" }}
+                    bg="bg.secondary"
                     borderRadius="md"
                     border="1px"
-                    borderColor={borderColor}
+                    borderColor="border.primary"
                     maxH="200px"
                     overflowY="auto"
                   >
                     <Text
                       fontSize="xs"
                       fontFamily="mono"
-                      color="gray.600"
-                      _dark={{ color: "gray.300" }}
+                      color="text.muted"
                     >
                       {generateEmbedCode()}
                     </Text>
@@ -378,34 +408,7 @@ export default function EmbedButton() {
                     </Text>
                     <Button
                       size="sm"
-                      onClick={async () => {
-                        const params = new URLSearchParams();
-                        params.set("embed", "1");
-                        params.set("theme", config.theme);
-                        params.set("primaryColor", config.primaryColor);
-                        // Include API key in shareable link (now from config)
-                        params.set("apiKey", CLOUD_API_KEY);
-                        const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
-                        try {
-                          await navigator.clipboard.writeText(shareableUrl);
-                          toast({
-                            title: "Link copied!",
-                            description:
-                              "The shareable link has been copied to your clipboard.",
-                            status: "success",
-                            duration: 3000,
-                            isClosable: true,
-                          });
-                        } catch (err) {
-                          toast({
-                            title: "Failed to copy",
-                            description: "Please copy the link manually.",
-                            status: "error",
-                            duration: 3000,
-                            isClosable: true,
-                          });
-                        }
-                      }}
+                      onClick={() => copyToClipboard(generateShareableLink(), "Shareable link")}
                       colorScheme="green"
                     >
                       Copy Link
@@ -413,29 +416,17 @@ export default function EmbedButton() {
                   </HStack>
                   <Box
                     p={3}
-                    bg="green.50"
-                    _dark={{ bg: "green.900", borderColor: "green.700" }}
+                    bg="bg.brand"
                     borderRadius="md"
                     border="1px"
-                    borderColor="green.200"
+                    borderColor="border.brand"
                   >
                     <Text
                       fontSize="xs"
                       fontFamily="mono"
-                      color="green.700"
-                      _dark={{ color: "green.200" }}
+                      color="status.success"
                     >
-                      {(() => {
-                        const params = new URLSearchParams();
-                        params.set("embed", "1");
-                        params.set("theme", config.theme);
-                        params.set("primaryColor", config.primaryColor);
-                        // Include API key in shareable link display (now from config)
-                        params.set("apiKey", CLOUD_API_KEY);
-                        return window
-                          ? `${window.location.origin}${pathname}?${params.toString()}`
-                          : "";
-                      })()}
+                      {generateShareableLink()}
                     </Text>
                   </Box>
                 </Box>
@@ -443,14 +434,12 @@ export default function EmbedButton() {
                 {/* Live Preview Note */}
                 <Box
                   p={3}
-                  bg="blue.50"
-                  _dark={{ bg: "blue.900" }}
+                  bg="bg.brand"
                   borderRadius="md"
                 >
                   <Text
                     fontSize="sm"
-                    color="blue.700"
-                    _dark={{ color: "blue.200" }}
+                    color="status.info"
                   >
                     💡 Changes are applied immediately. Copy the embed code to
                     use this configuration in other applications.
@@ -461,15 +450,7 @@ export default function EmbedButton() {
                 <Button
                   colorScheme="brand"
                   size="lg"
-                  onClick={() => {
-                    onClose();
-                    // Remove config=1 from URL when closing
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.delete("config");
-                    router.replace(`${pathname}?${params.toString()}`, {
-                      scroll: false,
-                    });
-                  }}
+                  onClick={handleCloseConfig}
                 >
                   Done
                 </Button>
@@ -489,15 +470,7 @@ export default function EmbedButton() {
           bottom={0}
           bg="blackAlpha.300"
           zIndex={998}
-          onClick={() => {
-            onClose();
-            // Remove config=1 from URL when closing
-            const params = new URLSearchParams(searchParams.toString());
-            params.delete("config");
-            router.replace(`${pathname}?${params.toString()}`, {
-              scroll: false,
-            });
-          }}
+          onClick={handleCloseConfig}
           display={{ base: "block", md: "none" }}
         />
       )}

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { useSearchParams } from "next/navigation";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { IEmbedConfig } from "../common/config";
 
 const DEFAULT_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -534,20 +534,15 @@ export const cacheUtils = {
     if (typeof window === "undefined") return;
 
     try {
-      const keysToRemove: string[] = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith(prefix)) {
-          keysToRemove.push(key);
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith(prefix)) {
+          localStorage.removeItem(key);
+          console.log(`Cleared cache entry: ${key}`);
         }
-      }
-
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      console.log(
-        `Cleared ${keysToRemove.length} cache entries with prefix: ${prefix}`
-      );
+      });
     } catch (error) {
-      console.error(`Error clearing cache with prefix ${prefix}:`, error);
+      console.error("Error clearing cache by prefix:", error);
     }
   },
 
@@ -556,44 +551,37 @@ export const cacheUtils = {
     if (typeof window === "undefined") return;
 
     try {
-      localStorage.clear();
-      console.log("All cache entries cleared");
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.includes("cache")) {
+          localStorage.removeItem(key);
+          console.log(`Cleared cache entry: ${key}`);
+        }
+      });
     } catch (error) {
       console.error("Error clearing all cache:", error);
     }
   },
 
-  // Check if cache exists and is valid
-  has: (key: string): boolean => {
-    if (typeof window === "undefined") return false;
+  // Get cache statistics
+  getStats: (): { totalEntries: number; totalSize: number } => {
+    if (typeof window === "undefined") return { totalEntries: 0, totalSize: 0 };
 
     try {
-      const cached = localStorage.getItem(key);
-      if (!cached) return false;
+      const keys = Object.keys(localStorage);
+      const cacheKeys = keys.filter(key => key.includes("cache"));
+      const totalSize = cacheKeys.reduce((size, key) => {
+        const item = localStorage.getItem(key);
+        return size + (item ? item.length : 0);
+      }, 0);
 
-      const cacheData: CacheData<any> = JSON.parse(cached);
-      const now = Date.now();
-
-      return now - cacheData.timestamp < DEFAULT_CACHE_DURATION;
+      return {
+        totalEntries: cacheKeys.length,
+        totalSize,
+      };
     } catch (error) {
-      console.error("Error checking cache:", error);
-      return false;
-    }
-  },
-
-  // Get cache age in milliseconds
-  getAge: (key: string): number | null => {
-    if (typeof window === "undefined") return null;
-
-    try {
-      const cached = localStorage.getItem(key);
-      if (!cached) return null;
-
-      const cacheData: CacheData<any> = JSON.parse(cached);
-      return Date.now() - cacheData.timestamp;
-    } catch (error) {
-      console.error("Error getting cache age:", error);
-      return null;
+      console.error("Error getting cache stats:", error);
+      return { totalEntries: 0, totalSize: 0 };
     }
   },
 };

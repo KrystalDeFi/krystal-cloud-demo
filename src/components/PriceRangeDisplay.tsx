@@ -34,14 +34,14 @@ export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({
       <HStack spacing={1} w="100%" justify={"space-between"}>
         <Text fontSize="xs">{Formatter.formatPrice(minPrice)}</Text>
         {showVisual && (
-          <Box w="40px" h="2px" bg="gray.300" position="relative">
+          <Box w="40px" h="2px" bg="border.secondary" position="relative">
             <Box
               position="absolute"
               left={`${getCurrentPricePosition()}%`}
               top="-2px"
               w="4px"
               h="6px"
-              bg="yellow.400"
+              bg="status.warning"
               borderRadius="sm"
             />
           </Box>

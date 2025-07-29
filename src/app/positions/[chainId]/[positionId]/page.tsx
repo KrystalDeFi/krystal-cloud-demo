@@ -46,6 +46,7 @@ import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { Footer } from "@/app/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import EmbedWrapper from "../../../../components/EmbedWrapper";
 
 function PositionDetailsPageContent() {
   const params = useParams();
@@ -59,10 +60,11 @@ function PositionDetailsPageContent() {
   const { error, setError, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
 
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const textColor = useColorModeValue("gray.800", "white");
-  const mutedTextColor = useColorModeValue("gray.600", "gray.300");
+
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const isEmbedMode = searchParams.get("embed") === "1";
 
@@ -121,8 +123,8 @@ function PositionDetailsPageContent() {
         justifyContent="center"
       >
         <VStack spacing={4}>
-          <Spinner size="xl" color="brand.500" />
-          <Text>Loading position details...</Text>
+          <Spinner size="xl" />
+          <Text>Loading position data...</Text>
         </VStack>
       </Box>
     );
@@ -139,15 +141,18 @@ function PositionDetailsPageContent() {
   }
 
   return (
-    <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
+    <Box minH="100vh" bg="bg.secondary">
       <Container maxW="7xl" py={6}>
-        <Breadcrumbs
-          items={[
-            { label: "Home", href: "/" },
-            { label: `Wallet #${Formatter.shortAddress(position.ownerAddress)}`, href: `/wallets/${position.ownerAddress}/positions` },
-            { label: `#${Formatter.shortAddress(position.id)}`},
-          ]}
-        />
+        {/* Breadcrumbs */}
+        <EmbedWrapper type="breadcrumbs">
+          <Breadcrumbs
+            items={[
+              { label: "Home", href: "/" },
+              { label: `Wallet #${Formatter.shortAddress(position.ownerAddress)}`, href: `/wallets/${position.ownerAddress}/positions` },
+              { label: `#${Formatter.shortAddress(position.id)}`},
+            ]}
+          />
+        </EmbedWrapper>
         {/* Header */}
         <VStack spacing={6} mb={8}>
           <HStack w="full" justify="space-between" align="start">
@@ -172,7 +177,7 @@ function PositionDetailsPageContent() {
                 </HStack>
                 <VStack align="start" spacing={1}>
                   <HStack spacing={4}>
-                    <Text fontSize="xl" fontWeight="bold" color="chakra-title">
+                    <Text fontSize="xl" fontWeight="bold">
                       {position.currentAmounts[0].token.symbol}/{position.currentAmounts[1].token.symbol}
                     </Text>
                     {position.pool.feeTier && (
@@ -184,7 +189,7 @@ function PositionDetailsPageContent() {
                     {/* Status */}
                     <HStack spacing={1} align="center">
                       <DotIndicator status={position.status} size="md" />
-                      <Text fontSize="sm" color="gray.500">
+                      <Text fontSize="sm">
                         {position.status === "IN_RANGE" || position.status === "OPEN" ? "In range" : 
                         position.status === "OUT_OF_RANGE" || position.status === "OUT_RANGE" ? "Out of range" : 
                         "Closed"}
@@ -193,8 +198,8 @@ function PositionDetailsPageContent() {
                   </HStack>
                   <HStack spacing={2}>
                     <ProtocolDisplay protocol={position.pool.protocol} size="sm" />
-                    <Text fontSize="sm" color="gray.500">•</Text>
-                    <Text fontSize="sm" color="gray.500">
+                    <Text fontSize="sm">•</Text>
+                    <Text fontSize="sm">
                       Position #{Formatter.shortAddress(position.id)} ({Formatter.formatAge(position.openedTime)})
                     </Text>
                   </HStack>
@@ -207,7 +212,6 @@ function PositionDetailsPageContent() {
               <Link 
                 href={`https://defi.krystal.app/account/${position.ownerAddress}/positions/${position.id}?chainId=${position.chain.id}`} 
                 isExternal
-                color="blue.500"
                 fontSize="sm"
                 _hover={{ textDecoration: "underline" }}
               >
@@ -216,7 +220,6 @@ function PositionDetailsPageContent() {
               <Link 
                 href={`https://dexscreener.com/${position.chain.name.toLowerCase()}/${position.pool.poolAddress}`} 
                 isExternal
-                color="blue.500"
                 fontSize="sm"
                 _hover={{ textDecoration: "underline" }}
               >
@@ -229,33 +232,30 @@ function PositionDetailsPageContent() {
         {/* Main Stats */}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} mb={8}>
           {/* Total Value */}
-          <Card bg={cardBg} border="1px" borderColor={borderColor}>
+          <Card bg="bg.primary" border="1px" borderColor="border.primary">
             <CardBody>
               <Stat>
-                <StatLabel fontSize="sm" color="gray.500">
-                  <HStack spacing={2}>
-                    <Text>💰</Text>
-                    <Text>Total Value</Text>
-                  </HStack>
+                <StatLabel fontSize="sm" color="text.muted">
+                  Total Value
                 </StatLabel>
-                <StatNumber fontSize="3xl" fontWeight="bold" color="chakra-metrics">
+                <StatNumber fontSize="3xl" fontWeight="bold" color="metrics">
                   {Formatter.formatCurrency(position.currentPositionValue || 0)}
                 </StatNumber>
                 <VStack align="start" spacing={1} mt={2}>
                   <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" color="gray.500">Liquidity</Text>
-                    <Text fontSize="sm" fontWeight="medium">
-                      {Formatter.formatCurrency(position.currentPositionValue || 0)}
-                    </Text>
-                  </HStack>
-                  <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" color="gray.500">Deposits</Text>
+                    <Text fontSize="sm" color="text.muted">Liquidity</Text>
                     <Text fontSize="sm" fontWeight="medium">
                       {Formatter.formatCurrency(position.performance.totalDepositValue)}
                     </Text>
                   </HStack>
                   <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" color="gray.500">Withdrawals</Text>
+                    <Text fontSize="sm" color="text.muted">Deposits</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {Formatter.formatCurrency(position.performance.totalDepositValue)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="text.muted">Withdrawals</Text>
                     <Text fontSize="sm" fontWeight="medium">$0.00</Text>
                   </HStack>
                 </VStack>
@@ -264,7 +264,7 @@ function PositionDetailsPageContent() {
           </Card>
 
           {/* Earning */}
-          <Card bg={cardBg} border="1px" borderColor={borderColor}>
+          <Card bg="bg.primary" border="1px" borderColor="border.primary">
             <CardBody>
               <Stat>
                 <StatLabel fontSize="sm" color="gray.500">
@@ -295,38 +295,37 @@ function PositionDetailsPageContent() {
           </Card>
 
           {/* Profit & Loss */}
-          <Card bg={cardBg} border="1px" borderColor={borderColor}>
+          <Card bg="bg.primary" border="1px" borderColor="border.primary">
             <CardBody>
               <Stat>
-                <StatLabel fontSize="sm" color="gray.500">
-                  <HStack spacing={2}>
-                    <Text>📊</Text>
-                    <Text>Profit & Loss</Text>
-                  </HStack>
+                <StatLabel fontSize="sm" color="text.muted">
+                  Profit & Loss
                 </StatLabel>
-                <StatNumber 
-                  fontSize="3xl" 
-                  fontWeight="bold"
-                  color={position.performance.pnl >= 0 ? "green.500" : "red.500"}
-                >
+                <StatNumber fontSize="3xl" fontWeight="bold" color="status.success">
                   {Formatter.formatCurrency(position.performance.pnl)}
                 </StatNumber>
+                <Text fontSize="sm" fontWeight="medium" color="status.success">
+                  {Formatter.formatPercentage(position.performance.returnOnInvestment)}
+                </Text>
+                <Text fontSize="sm" fontWeight="medium" color="status.success">
+                  {Formatter.formatAPR(position.performance.apr.totalApr)}
+                </Text>
                 <VStack align="start" spacing={1} mt={2}>
                   <HStack justify="space-between" w="full">
                     <Text fontSize="sm" color="gray.500">Compare to HODL</Text>
-                    <Text fontSize="sm" fontWeight="medium">
+                    <Text fontSize="sm" fontWeight="medium" color="status.success">
                       {Formatter.formatCurrency(position.performance.compareToHold)}
                     </Text>
                   </HStack>
                   <HStack justify="space-between" w="full">
                     <Text fontSize="sm" color="gray.500">ROI</Text>
-                    <Text fontSize="sm" fontWeight="medium">
+                    <Text fontSize="sm" fontWeight="medium" color="status.success">
                       {Formatter.formatPercentage(position.performance.returnOnInvestment)}
                     </Text>
                   </HStack>
                   <HStack justify="space-between" w="full">
                     <Text fontSize="sm" color="gray.500">Impermanent Loss</Text>
-                    <Text fontSize="sm" fontWeight="medium" color="orange.500">
+                    <Text fontSize="sm" fontWeight="medium" color="status.warning">
                       {Formatter.formatCurrency(position.performance.impermanentLoss)}
                     </Text>
                   </HStack>
@@ -345,7 +344,7 @@ function PositionDetailsPageContent() {
         >
           <VStack spacing={6} align="stretch" h="auto" w="100%">
             {/* Fees & Rewards Section */}
-            <Card bg={cardBg} border="1px" borderColor={borderColor} h="auto" w="100%">
+            <Card border="1px" h="auto" w="100%">
               <CardBody>
                 <VStack align="start" spacing={4}>
                   <Heading size="md" color="chakra-title">
@@ -354,7 +353,7 @@ function PositionDetailsPageContent() {
                   
                   {/* Unclaimed Fees */}
                   <VStack align="start" spacing={1} w="full">
-                    <Text fontSize="sm" fontWeight="medium" color="gray.500">Unclaimed</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="text.muted">Unclaimed</Text>
                     {position.tradingFee.pending.map((fee, index) => (
                       <HStack key={index} justify="space-between" w="full" p={1}>
                         <HStack spacing={2}>
@@ -371,7 +370,7 @@ function PositionDetailsPageContent() {
                           <Text fontSize="sm" fontWeight="medium">
                             {Formatter.formatTokenAmount(fee.balance, fee.token.decimals, fee.token.symbol)}
                           </Text>
-                          <Text fontSize="xs" color="gray.500">
+                          <Text fontSize="xs" color="text.muted">
                             {Formatter.formatCurrency(fee.value)}
                           </Text>
                         </HStack>
@@ -381,7 +380,7 @@ function PositionDetailsPageContent() {
                   
                   {/* Claimed Fees */}
                   <VStack align="start" spacing={1} w="full">
-                    <Text fontSize="sm" fontWeight="medium" color="gray.500">Claimed</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="text.muted">Claimed</Text>
                     {position.tradingFee.claimed.map((fee, index) => (
                       <HStack key={index} justify="space-between" w="full" p={1}>
                         <HStack spacing={2}>
@@ -398,7 +397,7 @@ function PositionDetailsPageContent() {
                           <Text fontSize="sm" fontWeight="medium">
                             {Formatter.formatTokenAmount(fee.balance, fee.token.decimals, fee.token.symbol)}
                           </Text>
-                          <Text fontSize="xs" color="gray.500">
+                          <Text fontSize="xs" color="text.muted">
                             {Formatter.formatCurrency(fee.value)}
                           </Text>
                         </HStack>
@@ -419,9 +418,7 @@ function PositionDetailsPageContent() {
 
             {/* Left Column - Price Range & Liquidity Distribution */}
             <Card
-              bg={cardBg}
               border="1px"
-              borderColor={borderColor}
               h="auto"
             >
               <CardBody>
@@ -454,7 +451,7 @@ function PositionDetailsPageContent() {
           {/* Right Column - Liquidity & Fees & Rewards */}
           <VStack spacing={6} align="stretch" h="auto" w="100%">
             {/* Liquidity Section */}
-            <Card bg={cardBg} border="1px" borderColor={borderColor} h="auto" w="100%">
+            <Card border="1px" h="auto" w="100%">
               <CardBody>
                 <VStack align="start" spacing={4}>
                   <Heading size="md" color="chakra-title">
@@ -463,7 +460,7 @@ function PositionDetailsPageContent() {
                   
                   {/* Current Liquidity */}
                   <VStack align="start" spacing={1} w="full">
-                    <Text fontSize="sm" fontWeight="medium" color="gray.500">Current Liquidity</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="text.muted">Current Liquidity</Text>
                     {position.currentAmounts.map((amount, index) => {
                       const currentPercentage = ((amount.value / (position.currentPositionValue || 1)) * 100).toFixed(0);
                       
@@ -480,11 +477,11 @@ function PositionDetailsPageContent() {
                             <Text fontSize="sm" fontWeight="medium">{amount.token.symbol}</Text>
                           </HStack>
                           <HStack spacing={2}>
-                            <Text fontSize="xs" color="gray.500">{currentPercentage}%</Text>
+                            <Text fontSize="xs" color="text.muted">{currentPercentage}%</Text>
                             <Text fontSize="sm" fontWeight="medium">
                               {Formatter.formatTokenAmount(amount.balance, amount.token.decimals, amount.token.symbol)}
                             </Text>
-                            <Text fontSize="xs" color="gray.500">
+                            <Text fontSize="xs" color="text.muted">
                               {Formatter.formatCurrency(amount.value)}
                             </Text>
                           </HStack>
@@ -495,7 +492,7 @@ function PositionDetailsPageContent() {
                   
                   {/* HODL */}
                   <VStack align="start" spacing={1} w="full">
-                    <Text fontSize="sm" fontWeight="medium" color="gray.500">HODL</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="text.muted">HODL</Text>
                     {position.providedAmounts.map((amount, index) => {
                       const hodlPercentage = ((amount.value / (position.performance.totalDepositValue || 1)) * 100).toFixed(0);
                       
@@ -512,11 +509,11 @@ function PositionDetailsPageContent() {
                             <Text fontSize="sm" fontWeight="medium">{amount.token.symbol}</Text>
                           </HStack>
                           <HStack spacing={2}>
-                            <Text fontSize="xs" color="gray.500">{hodlPercentage}%</Text>
+                            <Text fontSize="xs" color="text.muted">{hodlPercentage}%</Text>
                             <Text fontSize="sm" fontWeight="medium">
                               {Formatter.formatTokenAmount(amount.balance, amount.token.decimals, amount.token.symbol)}
                             </Text>
-                            <Text fontSize="xs" color="gray.500">
+                            <Text fontSize="xs" color="text.muted">
                               {Formatter.formatCurrency(amount.value)}
                             </Text>
                           </HStack>
@@ -528,8 +525,8 @@ function PositionDetailsPageContent() {
                   {/* Impermanent Loss */}
                   <VStack align="start" spacing={2} w="full">
                     <HStack justify="space-between" w="full" p={1}>
-                      <Text fontSize="sm" fontWeight="medium" color="gray.500">Impermanent Loss</Text>
-                      <Text fontSize="sm" fontWeight="medium" color="red.500">
+                      <Text fontSize="sm" fontWeight="medium" color="text.muted">Impermanent Loss</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="status.error">
                         {Formatter.formatCurrency(position.performance.impermanentLoss)}
                       </Text>
                     </HStack>

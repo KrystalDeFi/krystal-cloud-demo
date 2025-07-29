@@ -25,13 +25,12 @@ export default function NavBar() {
     <Box
       as="nav"
       borderBottom="1px"
-      borderColor="gray.200"
-      _dark={{ borderColor: "gray.700", bg: "blackAlpha.900" }}
+      borderColor="border.primary"
+      bg="bg.primary"
       position="sticky"
       top={0}
       zIndex={50}
       backdropFilter="blur(10px)"
-      bg="whiteAlpha.900"
     >
       <Container maxW="7xl" py={4}>
         <Flex align="center" justify="space-between">
@@ -54,7 +53,13 @@ export default function NavBar() {
               />
             </Link>
             <HStack spacing={6}>
-              <Link href="/" fontSize="sm" fontWeight="medium">
+              <Link 
+                href="/" 
+                fontSize="sm" 
+                fontWeight="medium"
+                color="text.common"
+                _hover={{ color: "text.primary" }}
+              >
                 Home
               </Link>
 
@@ -63,6 +68,8 @@ export default function NavBar() {
                 isExternal
                 fontSize="sm"
                 fontWeight="medium"
+                color="text.common"
+                _hover={{ color: "text.primary" }}
               >
                 Swagger
               </Link>
@@ -71,6 +78,8 @@ export default function NavBar() {
                 isExternal
                 fontSize="sm"
                 fontWeight="medium"
+                color="text.common"
+                _hover={{ color: "text.primary" }}
               >
                 API Docs
               </Link>
@@ -84,6 +93,11 @@ export default function NavBar() {
             onClick={toggleColorMode}
             variant="ghost"
             size="md"
+            color="text.common"
+            _hover={{ 
+              bg: "bg.muted",
+              color: "text.primary"
+            }}
           />
         </Flex>
       </Container>

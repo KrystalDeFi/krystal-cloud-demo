@@ -24,14 +24,14 @@ export const DotIndicator: React.FC<DotIndicatorProps> = ({
     switch (status) {
       case "IN_RANGE":
       case "OPEN":
-        return "green.400";
+        return "status.success";
       case "OUT_OF_RANGE":
       case "OUT_RANGE":
-        return "red.400";
+        return "status.error";
       case "CLOSED":
-        return "gray.400";
+        return "text.muted";
       default:
-        return "gray.400";
+        return "text.muted";
     }
   };
 

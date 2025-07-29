@@ -33,6 +33,8 @@ export type ISortOrder = "asc" | "desc";
 export interface IEmbedConfig {
   theme: "light" | "dark" | "auto";
   primaryColor: string; // Hex color for primary color
+  showNavigation: boolean; // Show/hide navigation
+  showBreadcrumbs: boolean; // Show/hide breadcrumbs
 }
 
 // ============================================================================

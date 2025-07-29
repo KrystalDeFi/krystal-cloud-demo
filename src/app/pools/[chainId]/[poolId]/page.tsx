@@ -32,7 +32,7 @@ import {
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
 import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
 import { Formatter } from "@/common/formatter";
@@ -59,6 +59,8 @@ import { CHAIN_CONFIGS } from "@/common/config";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/app/Footer";
 import { useCache } from "@/hooks/useCache";
+import EmbedWrapper from "@/components/EmbedWrapper";
+import { useChainsProtocols } from "@/contexts/ChainsProtocolsContext";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -73,48 +75,28 @@ interface ChartDataPoint {
 
 function PoolDetailsPageContent() {
   const params = useParams();
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const toast = useToast();
   const chainId = params.chainId as string;
   const poolId = params.poolId as string;
 
   const [pool, setPool] = useState<IAPoolDetails | null>(null);
-  const [historicalData, setHistoricalData] = useState<IAPoolHistorical[]>([]);
+  const [historicalData, setHistoricalData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [chartTimeRange, setChartTimeRange] = useState<"7D" | "30D" | "90D">("30D");
+  const [selectedData, setSelectedData] = useState<"price" | "apr" | "tvl" | "volFee">("price");
   const [historicalLoading, setHistoricalLoading] = useState(false);
-  const { error, setError, handleApiError, clearError } = useApiError();
+  const [selectedChart, setSelectedChart] = useState<"price" | "apr" | "tvl" | "volFee">("price");
+  const [performanceTimeframe, setPerformanceTimeframe] = useState<"1h" | "24h" | "7d" | "30d">("24h");
+
+  const { error: apiError, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
-  const [selectedChart, setSelectedChart] = useState<
-    "price" | "apr" | "tvl" | "volFee"
-  >("tvl");
+  const toast = useToast();
 
-  const { data: chartTimeRange, setData: setChartTimeRange } = useCache<"7d" | "30d" | "90d">("chartTimeRange", {
-    defaultValue: "30d",
-  });
+  const { chains, protocols } = useChainsProtocols();
 
-  const { data: performanceTimeframe, setData: setPerformanceTimeframe } = useCache<"1h" | "24h" | "7d" | "30d">("performanceTimeframe", {
-    defaultValue: "24h",
-  });
-
-  const isEmbedMode = searchParams.get("embed") === "1";
-
-  // Color mode values
-  const bgColor = useColorModeValue("gray.50", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const textColor = useColorModeValue("gray.800", "white");
-  const mutedTextColor = useColorModeValue("gray.600", "gray.300");
-
-  useEffect(() => {
-    fetchPoolDetails();
-  }, [chainId, poolId]);
-
-  useEffect(() => {
-    if (pool) {
-      fetchHistoricalData();
-    }
-  }, [pool, chartTimeRange]);
-
+  // Fetch pool details from API
   const fetchPoolDetails = async () => {
     try {
       setLoading(true);
@@ -136,6 +118,16 @@ function PoolDetailsPageContent() {
     }
   };
 
+  useEffect(() => {
+    fetchPoolDetails();
+  }, [chainId, poolId]);
+
+  useEffect(() => {
+    if (pool) {
+      fetchHistoricalData();
+    }
+  }, [pool, chartTimeRange]);
+
   const fetchHistoricalData = async () => {
     if (!pool) return;
 
@@ -147,9 +139,9 @@ function PoolDetailsPageContent() {
       const endTime = Math.floor(Date.now() / 1000);
       const startTime =
         endTime -
-        (chartTimeRange === "7d"
+        (chartTimeRange === "7D"
           ? 7 * 24 * 60 * 60
-          : chartTimeRange === "30d"
+          : chartTimeRange === "30D"
             ? 30 * 24 * 60 * 60
             : 90 * 24 * 60 * 60);
 
@@ -160,7 +152,18 @@ function PoolDetailsPageContent() {
         endTime,
       });
 
-      setHistoricalData(response);
+      setHistoricalData(response.map(item => ({
+        timestamp: item.timestamp,
+        date: new Date(item.timestamp * 1000).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        price: Number(item.poolPrice) || 0,
+        volume: Number(item.volume24h) || 0,
+        fee: Number(item.fee24h) || 0,
+        tvl: Number(item.tvlUsd) || 0,
+        apr: Number(item.apr24h) || 0,
+      })));
     } catch (err) {
       console.error("Error fetching historical data:", err);
       toast({
@@ -197,13 +200,13 @@ function PoolDetailsPageContent() {
 
       // Format date based on time range
       let dateString;
-      if (chartTimeRange === "7d") {
+      if (chartTimeRange === "7D") {
         dateString = date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
           hour: "2-digit",
         });
-      } else if (chartTimeRange === "30d") {
+      } else if (chartTimeRange === "30D") {
         dateString = date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -218,11 +221,11 @@ function PoolDetailsPageContent() {
       return {
         timestamp: item.timestamp,
         date: dateString,
-        price: Number(item.poolPrice) || 0,
-        volume: Number(item.volume24h) || 0,
-        fee: Number(item.fee24h) || 0,
-        tvl: Number(item.tvlUsd) || 0,
-        apr: Number(item.apr24h) || 0,
+        price: item.price,
+        volume: item.volume,
+        fee: item.fee,
+        tvl: item.tvl,
+        apr: item.apr,
       };
     });
   };
@@ -251,7 +254,7 @@ function PoolDetailsPageContent() {
           alignItems="center"
           justifyContent="center"
         >
-          <Text color={mutedTextColor}>No historical data available</Text>
+          <Text color={useColorModeValue("brand.200", "brand.700")}>No historical data available</Text>
         </Box>
       );
     }
@@ -381,8 +384,8 @@ function PoolDetailsPageContent() {
                   }}
                   labelFormatter={(label: any) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: cardBg,
-                    border: `1px solid ${borderColor}`,
+                    backgroundColor: useColorModeValue("chakra-body-bg", "chakra-body-bg"),
+                    border: `1px solid ${useColorModeValue("chakra-border-color", "chakra-border-color")}`,
                     borderRadius: "8px",
                     color: textColor,
                   }}
@@ -445,8 +448,8 @@ function PoolDetailsPageContent() {
                   ]}
                   labelFormatter={(label: any) => `Date: ${label}`}
                   contentStyle={{
-                    backgroundColor: cardBg,
-                    border: `1px solid ${borderColor}`,
+                    backgroundColor: useColorModeValue("chakra-body-bg", "chakra-body-bg"),
+                    border: `1px solid ${useColorModeValue("chakra-border-color", "chakra-border-color")}`,
                     borderRadius: "8px",
                     color: textColor,
                   }}
@@ -510,10 +513,10 @@ function PoolDetailsPageContent() {
         display="flex"
         alignItems="center"
         justifyContent="center"
-        bg={bgColor}
+        bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")}
       >
         <VStack spacing={4}>
-          <Spinner size="xl" color="blue.500" />
+          <Spinner size="xl" color="highlight" />
           <Text>Loading pool details...</Text>
         </VStack>
       </Box>
@@ -533,16 +536,18 @@ function PoolDetailsPageContent() {
   const statsData = getStatsData();
 
   return (
-    <Box minH="100vh" bg={bgColor}>
+    <Box minH="100vh" bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")}>
       <Container maxW="7xl" py={6}>
         {/* Header */}
 
-        <Breadcrumbs
-          items={[
-            { label: "Pools", href: "/pools" },
-            { label: `#${Formatter.shortAddress(pool.poolAddress)}` },
-          ]}
-        />
+        <EmbedWrapper type="breadcrumbs">
+          <Breadcrumbs
+            items={[
+              { label: "Pools", href: "/pools" },
+              { label: `#${Formatter.shortAddress(pool.poolAddress)}` },
+            ]}
+          />
+        </EmbedWrapper>
 
         <HStack align="center" spacing={3} mb={4} mt={4}>
           <HStack spacing={4} align="center">
@@ -562,7 +567,7 @@ function PoolDetailsPageContent() {
                 fallbackSrc="/images/token-fallback.png"
               />
             </HStack>
-            <Heading size="lg" color={textColor}>
+            <Heading size="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
               {pool.token0.symbol}/{pool.token1.symbol}
             </Heading>
           </HStack>
@@ -575,7 +580,7 @@ function PoolDetailsPageContent() {
                 boxSize="20px"
                 borderRadius="full"
               />
-              <Text fontSize="sm" color={mutedTextColor}>
+              <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                 {pool.chain.name}
               </Text>
             </HStack>
@@ -588,7 +593,7 @@ function PoolDetailsPageContent() {
                 borderRadius="full"
                 fallbackSrc="/images/token-fallback.png"
               />
-              <Text fontSize="sm" color={mutedTextColor}>
+              <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                 {pool.protocol.name}
               </Text>
             </HStack>
@@ -601,16 +606,15 @@ function PoolDetailsPageContent() {
         <Box>
           <Grid templateColumns={{ base: "1fr", md: "1fr 2fr" }} gap={6} mb={8}>
             <GridItem>
-              <Card bg={cardBg} border="1px" borderColor={borderColor}>
+              <Card bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")} border="1px" borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")}>
                 <CardBody>
                   <Stat>
-                    <StatLabel color={mutedTextColor}>
+                    <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Total Value Locked
                     </StatLabel>
                     <StatNumber
                       fontSize="2xl"
                       fontWeight="bold"
-                      color={textColor}
                     >
                       {formatCurrency(pool.tvl)}
                     </StatNumber>
@@ -620,14 +624,14 @@ function PoolDetailsPageContent() {
               </Card>
             </GridItem>
             <GridItem>
-              <Card bg={cardBg} border="1px" borderColor={borderColor}>
+              <Card bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")} border="1px" borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")}>
                 <CardBody>
                   <VStack align="start" spacing={4}>
                     <HStack justify="space-between" w="full">
                       <Text
                         fontSize="sm"
                         fontWeight="medium"
-                        color={mutedTextColor}
+                        color={useColorModeValue("chakra-metrics", "chakra-metrics")}
                       >
                         Performance
                       </Text>
@@ -654,26 +658,26 @@ function PoolDetailsPageContent() {
 
                     <SimpleGrid columns={3} spacing={4} w="full">
                       <Stat>
-                        <StatLabel color={mutedTextColor} fontSize="xs">
+                        <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")} fontSize="xs">
                           Volume ({performanceTimeframe})
                         </StatLabel>
-                        <StatNumber fontSize="lg" color={textColor}>
+                        <StatNumber fontSize="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
                           {Formatter.formatCurrency(statsData.volume)}
                         </StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel color={mutedTextColor} fontSize="xs">
+                        <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")} fontSize="xs">
                           Fee ({performanceTimeframe})
                         </StatLabel>
-                        <StatNumber fontSize="lg" color={textColor}>
+                        <StatNumber fontSize="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
                           {Formatter.formatCurrency(statsData.fee)}
                         </StatNumber>
                       </Stat>
                       <Stat>
-                        <StatLabel color={mutedTextColor} fontSize="xs">
+                        <StatLabel color={useColorModeValue("chakra-metrics", "chakra-metrics")} fontSize="xs">
                           APR ({performanceTimeframe})
                         </StatLabel>
-                        <StatNumber fontSize="lg" color={textColor}>
+                        <StatNumber fontSize="lg" color={useColorModeValue("chakra-title", "chakra-title")}>
                           {Formatter.formatAPR(statsData.apr)}
                         </StatNumber>
                       </Stat>
@@ -690,9 +694,9 @@ function PoolDetailsPageContent() {
           {/* Historical Chart */}
           <GridItem w="full" overflow="hidden">
             <Card
-              bg={cardBg}
+              bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")}
               border="1px"
-              borderColor={borderColor}
+              borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")}
               w="full"
               overflow="hidden"
             >
@@ -711,25 +715,25 @@ function PoolDetailsPageContent() {
                   <HStack spacing={2}>
                     <Button
                       size="sm"
-                      variant={chartTimeRange === "7d" ? "solid" : "outline"}
+                      variant={chartTimeRange === "7D" ? "solid" : "outline"}
                       colorScheme="brand"
-                      onClick={() => setChartTimeRange("7d")}
+                      onClick={() => setChartTimeRange("7D")}
                     >
                       7D
                     </Button>
                     <Button
                       size="sm"
-                      variant={chartTimeRange === "30d" ? "solid" : "outline"}
+                      variant={chartTimeRange === "30D" ? "solid" : "outline"}
                       colorScheme="brand"
-                      onClick={() => setChartTimeRange("30d")}
+                      onClick={() => setChartTimeRange("30D")}
                     >
                       30D
                     </Button>
                     <Button
                       size="sm"
-                      variant={chartTimeRange === "90d" ? "solid" : "outline"}
+                      variant={chartTimeRange === "90D" ? "solid" : "outline"}
                       colorScheme="brand"
-                      onClick={() => setChartTimeRange("90d")}
+                      onClick={() => setChartTimeRange("90D")}
                     >
                       90D
                     </Button>
@@ -763,14 +767,14 @@ function PoolDetailsPageContent() {
 
           {/* Information */}
           <GridItem>
-            <Card bg={cardBg} border="1px" borderColor={borderColor} w="full">
+            <Card bg={useColorModeValue("chakra-body-bg", "chakra-body-bg")} border="1px" borderColor={useColorModeValue("chakra-border-color", "chakra-border-color")} w="full">
               <CardBody>
                 <Heading size="md" mb={6} color="chakra-title">
                   Information
                 </Heading>
                 <VStack spacing={4} align="stretch">
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={mutedTextColor}>
+                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Chain
                     </Text>
                     <HStack spacing={2}>
@@ -785,7 +789,7 @@ function PoolDetailsPageContent() {
                     </HStack>
                   </HStack>
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={mutedTextColor}>
+                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Protocol
                     </Text>
                     <HStack spacing={2}>
@@ -800,7 +804,7 @@ function PoolDetailsPageContent() {
                     </HStack>
                   </HStack>
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={mutedTextColor}>
+                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Pool
                     </Text>
                     <Address
@@ -809,7 +813,7 @@ function PoolDetailsPageContent() {
                     />
                   </HStack>
                   <HStack spacing={2} justify="space-between">
-                    <Text fontSize="sm" color={mutedTextColor}>
+                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Fee-tier
                     </Text>
                     <Text fontSize="sm" color="chakra-metrics">
@@ -817,7 +821,7 @@ function PoolDetailsPageContent() {
                     </Text>
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
-                    <Text fontSize="sm" color={mutedTextColor}>
+                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Token0
                     </Text>
                     <VStack align="end" spacing={0}>
@@ -834,13 +838,13 @@ function PoolDetailsPageContent() {
                       <Address
                         address={pool.token0.address}
                         explorerBaseUrl={pool.chain.explorer + "/token/"}
-                        color={textColor}
+                        color={useColorModeValue("chakra-title", "chakra-title")}
                         fontSize="xs"
                       />
                     </VStack>
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
-                    <Text fontSize="sm" color={mutedTextColor}>
+                    <Text fontSize="sm" color={useColorModeValue("chakra-metrics", "chakra-metrics")}>
                       Token1
                     </Text>
                     <VStack align="end" spacing={0}>
@@ -857,7 +861,7 @@ function PoolDetailsPageContent() {
                       <Address
                         address={pool.token1.address}
                         explorerBaseUrl={pool.chain.explorer + "/token/"}
-                        color={textColor}
+                        color={useColorModeValue("chakra-title", "chakra-title")}
                         fontSize="xs"
                       />
                     </VStack>
@@ -913,3 +917,4 @@ export default function PoolDetailsPage() {
     </ErrorBoundary>
   );
 }
+

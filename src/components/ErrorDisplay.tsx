@@ -10,7 +10,6 @@ import {
   Button,
   Alert,
   AlertIcon,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, RepeatIcon } from "@chakra-ui/icons";
 
@@ -22,28 +21,16 @@ interface ErrorDisplayProps {
   compact?: boolean;
 }
 
-export function ErrorDisplay({
-  error,
-  onRetry,
-  title,
-  showApiKeyButton = true,
-  compact = false,
-}: ErrorDisplayProps) {
-  const bgColor = useColorModeValue("gray.50", "gray.900");
-  const cardBg = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
-  if (!error) return null;
-
+export function ErrorDisplay({ error, onRetry, title, showApiKeyButton = true, compact = false }: ErrorDisplayProps) {
   const isApiKeyError =
-    error.includes("API key") ||
-    error.includes("No API key") ||
-    error.includes("API key not found");
+    error?.includes("API key") ||
+    error?.includes("No API key") ||
+    error?.includes("API key not found");
 
   const isNetworkError =
-    error.includes("fetch") ||
-    error.includes("network") ||
-    error.includes("Failed to fetch");
+    error?.includes("fetch") ||
+    error?.includes("network") ||
+    error?.includes("Failed to fetch");
 
   const getErrorTitle = () => {
     if (title) return title;
@@ -100,7 +87,7 @@ export function ErrorDisplay({
   return (
     <Box
       py={20}
-      bg={bgColor}
+      bg="bg.primary"
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -129,7 +116,7 @@ export function ErrorDisplay({
               >
                 Get Free API Key
               </Button>
-              <Text fontSize="xs" color="gray.500">
+              <Text fontSize="xs" color="text.muted">
                 Sign up at cloud.krystal.app to get your free API key
               </Text>
             </VStack>

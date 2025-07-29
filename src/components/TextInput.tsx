@@ -73,7 +73,7 @@ const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
               zIndex={1}
               pointerEvents="none"
             >
-              <Text color="gray.500" fontSize="xs">
+              <Text color="text.muted" fontSize="xs">
                 hit enter ↳ to apply
               </Text>
             </Box>
