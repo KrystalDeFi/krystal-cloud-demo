@@ -45,7 +45,8 @@ const pages = [
   {
     title: "Position Details",
     description: "View detailed information about a specific position",
-    defaultLink: "/positions/1/0xc36442b4a4522e871399cd717abdd847ab11fe88-1041224",
+    defaultLink:
+      "/positions/1/0xc36442b4a4522e871399cd717abdd847ab11fe88-1041224",
     icon: InfoIcon,
   },
 ];
@@ -93,13 +94,19 @@ export default function Home() {
               </Heading>
               <VStack align="start" spacing={3}>
                 <Text>
-                  This page includes boilerplate UI which use Krystal's Cloud API under the hood.
+                  This page includes boilerplate UI which use Krystal's Cloud
+                  API under the hood.
                 </Text>
                 <Text>
-                  You can easily customize and embed any page in your application.
+                  You can easily customize and embed any page in your
+                  application.
                 </Text>
                 <Text>
-                  Leave us a message on <Link href="https://discord.com/invite/VJZXyb9QfA" isExternal>Discord</Link> for any enquiries and requests.
+                  Leave us a message on{" "}
+                  <Link href="https://discord.com/invite/VJZXyb9QfA" isExternal>
+                    Discord
+                  </Link>{" "}
+                  for any enquiries and requests.
                 </Text>
               </VStack>
             </Box>

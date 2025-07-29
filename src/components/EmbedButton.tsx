@@ -23,7 +23,7 @@ import {
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { IEmbedConfig, CLOUD_API_KEY } from "../common/config";
+import { IEmbedConfig, CLOUD_API_KEY, DOMAIN } from "../common/config";
 
 export default function EmbedButton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -75,7 +75,7 @@ export default function EmbedButton() {
       const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
       const isValid = hexRegex.test(value);
       setIsValidHex(isValid);
-      
+
       if (!isValid) {
         // If invalid hex, don't update the config
         return;
@@ -96,7 +96,7 @@ export default function EmbedButton() {
 
   const handleColorPickerChange = (color: string) => {
     // Convert color picker value to hex format
-    const hexColor = color.startsWith('#') ? color : `#${color}`;
+    const hexColor = color.startsWith("#") ? color : `#${color}`;
     updateConfig("primaryColor", hexColor);
   };
 
@@ -117,7 +117,7 @@ export default function EmbedButton() {
     params.set("theme", config.theme);
     params.set("primaryColor", config.primaryColor);
 
-    const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
+    const embedUrl = `${DOMAIN}/${pathname}?${params.toString()}`;
 
     return `<iframe 
   src="${embedUrl}"
@@ -316,7 +316,9 @@ export default function EmbedButton() {
                           <Input
                             type="color"
                             value={config.primaryColor}
-                            onChange={e => handleColorPickerChange(e.target.value)}
+                            onChange={e =>
+                              handleColorPickerChange(e.target.value)
+                            }
                             size="sm"
                             w="60px"
                             h="40px"
@@ -328,7 +330,7 @@ export default function EmbedButton() {
                             Click to pick a color
                           </Text>
                         </HStack>
-                        
+
                         {/* Hex Input */}
                         <InputGroup size="sm">
                           <InputLeftElement>
@@ -354,17 +356,20 @@ export default function EmbedButton() {
                             borderColor={isValidHex ? undefined : "red.500"}
                             _focus={{
                               borderColor: isValidHex ? "brand.500" : "red.500",
-                              boxShadow: isValidHex 
-                                ? "0 0 0 1px var(--chakra-colors-brand-500)" 
-                                : "0 0 0 1px var(--chakra-colors-red-500)"
+                              boxShadow: isValidHex
+                                ? "0 0 0 1px var(--chakra-colors-brand-500)"
+                                : "0 0 0 1px var(--chakra-colors-red-500)",
                             }}
                           />
                         </InputGroup>
-                        <Text fontSize="xs" color={isValidHex ? "gray.500" : "red.500"} mt={1}>
-                          {isValidHex 
+                        <Text
+                          fontSize="xs"
+                          color={isValidHex ? "gray.500" : "red.500"}
+                          mt={1}
+                        >
+                          {isValidHex
                             ? "Use the color picker above or enter a hex color manually (e.g., #3b82f6)"
-                            : "Invalid hex color format. Please use # followed by 3 or 6 characters (e.g., #3b82f6)"
-                          }
+                            : "Invalid hex color format. Please use # followed by 3 or 6 characters (e.g., #3b82f6)"}
                         </Text>
                       </VStack>
                     </FormControl>
@@ -470,7 +475,9 @@ export default function EmbedButton() {
                         params.set("primaryColor", config.primaryColor);
                         // Include API key in shareable link display (now from config)
                         params.set("apiKey", CLOUD_API_KEY);
-                        return `${window.location.origin}${pathname}?${params.toString()}`;
+                        return window
+                          ? `${window.location.origin}${pathname}?${params.toString()}`
+                          : "";
                       })()}
                     </Text>
                   </Box>

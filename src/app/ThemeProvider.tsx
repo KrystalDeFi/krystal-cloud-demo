@@ -222,50 +222,50 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
     semanticTokens: {
       colors: {
         // Text colors - semantic naming
-        "text": {
+        text: {
           // Primary text color
-          "primary": {
+          primary: {
             _light: "gray.900",
             _dark: "gray.100",
           },
           // Secondary/subtle text color
-          "secondary": {
+          secondary: {
             _light: "gray.600",
             _dark: "gray.400",
           },
           // Muted/disabled text color
-          "muted": {
+          muted: {
             _light: "gray.500",
             _dark: "gray.500",
           },
           // Common text (default)
-          "common": {
+          common: {
             _light: "gray.800",
             _dark: "gray.200",
           },
           // Link text color
-          "link": {
+          link: {
             _light: "brand.600",
             _dark: "brand.400",
           },
         },
         // Heading colors using brand color (important text)
-        "heading": {
+        heading: {
           _light: brandColors[900],
           _dark: brandColors[100],
         },
         // Highlight colors using brand color (important text)
-        "highlight": {
+        highlight: {
           _light: brandColors[600],
           _dark: brandColors[300],
         },
         // Key numbers and metrics using brand color
-        "metrics": {
+        metrics: {
           _light: brandColors[800],
           _dark: brandColors[200],
         },
         // Title and header text using brand color
-        "title": {
+        title: {
           _light: brandColors[900],
           _dark: brandColors[100],
         },
@@ -404,7 +404,9 @@ export default function ThemeProvider({
 
     // API key is now configured in config.ts, no longer stored in localStorage
     if (apiKey) {
-      console.warn("API key from URL is deprecated. API key is now configured in config.ts");
+      console.warn(
+        "API key from URL is deprecated. API key is now configured in config.ts"
+      );
     }
 
     // Create theme with primary color

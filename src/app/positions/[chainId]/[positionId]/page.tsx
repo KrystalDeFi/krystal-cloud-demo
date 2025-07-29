@@ -48,6 +48,7 @@ import {
 } from "../../../../hooks/useApiError";
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
+import { Footer } from "@/app/Footer";
 
 function PositionDetailsPageContent() {
   const params = useParams();
@@ -619,13 +620,7 @@ function PositionDetailsPageContent() {
         </Card>
 
         {/* Footer */}
-        {!isEmbedMode && (
-          <Box textAlign="center" mt={8}>
-            <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
-              Built with Next.js and Chakra UI • Powered by Krystal Cloud API
-            </Text>
-          </Box>
-        )}
+        <Footer />
       </Container>
     </Box>
   );

@@ -10,11 +10,12 @@ interface CacheData<T> {
   timestamp: number;
 }
 
-interface CacheOptions {
-  duration?: number;
-  defaultData?: any;
-  enabled?: boolean;
-  fetcher?: () => Promise<any>; // Optional fetcher function
+interface CacheOptions<T> {
+  defaultValue?: T;
+  paramKey?: string;
+  syncParams?: boolean;
+  fetchData?: () => Promise<T>;
+  duration?: number; // empty = no expiry
 }
 
 interface CacheResult<T> {
@@ -26,44 +27,27 @@ interface CacheResult<T> {
   setData: (data: T) => void;
 }
 
-// Unified cache hook for both data fetching and simple key-value caching
+/**
+ * Unified cache hook with priority flow:
+ * fetchData (if present) > data from paramKey (if present) > data stored in localStorage (if present) > default value
+ * 
+ * If data is present in params or fetch data, it will be stored in localStorage for next time use
+ */
 export function useCache<T>(
-  key: string,
-  options: CacheOptions & { fetcher: () => Promise<T> }
-): CacheResult<T>;
-export function useCache<T>(
-  key: string,
-  defaultValue?: T
-): [T | null, (value: T) => void, () => void];
-export function useCache<T>(
-  key: string,
-  optionsOrFetcher?: CacheOptions & { fetcher: () => Promise<T> } | T
-): CacheResult<T> | [T | null, (value: T) => void, () => void] {
-  // Determine if this is a fetcher-based cache or simple key-value cache
-  const isFetcherMode = optionsOrFetcher && typeof optionsOrFetcher === 'object' && 'fetcher' in optionsOrFetcher;
-  
-  if (isFetcherMode) {
-    // Fetcher-based cache mode
-    const options = optionsOrFetcher as CacheOptions & { fetcher: () => Promise<T> };
-    return useFetcherCache(key, options);
-  } else {
-    // Simple key-value cache mode
-    const defaultValue = optionsOrFetcher as T;
-    return useKeyValueCache(key, defaultValue);
-  }
-}
-
-// Internal hook for fetcher-based caching
-function useFetcherCache<T>(
-  key: string,
-  options: CacheOptions & { fetcher: () => Promise<T> }
+  cacheKey: string,
+  options: CacheOptions<T> = {}
 ): CacheResult<T> {
   const {
+    defaultValue,
+    paramKey,
+    fetchData,
     duration = DEFAULT_CACHE_DURATION,
-    defaultData,
-    enabled = true,
-    fetcher,
+    syncParams = false,
   } = options;
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [data, setDataState] = useState<T | null>(null);
   const [loading, setLoading] = useState(false);
@@ -76,59 +60,154 @@ function useFetcherCache<T>(
     if (typeof window === "undefined") return null;
 
     try {
-      const cached = localStorage.getItem(key);
+      const cached = localStorage.getItem(cacheKey);
       if (!cached) return null;
 
       const cacheData: CacheData<T> = JSON.parse(cached);
       const now = Date.now();
 
-      // Check if cache is still valid
-      if (now - cacheData.timestamp < duration) {
-        console.log(`Using cached data for key: ${key}`);
+      // Check if cache is still valid (if duration is specified)
+      if (duration && now - cacheData.timestamp < duration) {
+        console.log(`Using cached data for key: ${cacheKey}`);
+        return cacheData.data;
+      } else if (!duration) {
+        // No expiry specified, use cached data
+        console.log(`Using cached data for key: ${cacheKey} (no expiry)`);
         return cacheData.data;
       }
 
       // Cache expired, remove it
-      localStorage.removeItem(key);
+      localStorage.removeItem(cacheKey);
       return null;
     } catch (error) {
       console.error("Error reading cache:", error);
-      localStorage.removeItem(key);
+      localStorage.removeItem(cacheKey);
       return null;
     }
-  }, [key, duration]);
+  }, [cacheKey, duration]);
 
-  // Set data in cache
-  const setCachedData = useCallback((data: T): void => {
-    if (typeof window === "undefined") return;
+  // Set data in cache (async for better performance)
+  const setCachedData = useCallback(
+    async (data: T): Promise<void> => {
+      if (typeof window === "undefined") return;
+
+      try {
+        const cacheData: CacheData<T> = {
+          data,
+          timestamp: Date.now(),
+        };
+        
+        // Use requestIdleCallback for better performance if available
+        if (window.requestIdleCallback) {
+          window.requestIdleCallback(() => {
+            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+            console.log(`Cached data for key: ${cacheKey}`);
+          });
+        } else {
+          // Fallback to setTimeout for non-blocking operation
+          setTimeout(() => {
+            localStorage.setItem(cacheKey, JSON.stringify(cacheData));
+            console.log(`Cached data for key: ${cacheKey}`);
+          }, 0);
+        }
+      } catch (error) {
+        console.error("Error setting cache:", error);
+      }
+    },
+    [cacheKey]
+  );
+
+  // Get data from URL parameter
+  const getParamData = useCallback((): T | null => {
+    if (!paramKey) return null;
 
     try {
-      const cacheData: CacheData<T> = {
-        data,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(key, JSON.stringify(cacheData));
-      console.log(`Cached data for key: ${key}`);
+      const paramValue = searchParams.get(paramKey);
+      if (paramValue === null) return null;
+
+      // Try to parse as JSON first, then as primitive
+      try {
+        const parsed = JSON.parse(paramValue);
+        console.log(`Using param data for key: ${cacheKey} from param: ${paramKey}`);
+        return parsed;
+      } catch {
+        // If not JSON, try to convert to appropriate type based on defaultValue
+        if (defaultValue !== undefined) {
+          if (typeof defaultValue === "number") {
+            return Number(paramValue) as T;
+          } else if (typeof defaultValue === "boolean") {
+            return (paramValue === "true") as T;
+          } else {
+            return paramValue as T;
+          }
+        }
+        return paramValue as T;
+      }
     } catch (error) {
-      console.error("Error setting cache:", error);
+      console.error("Error reading param data:", error);
+      return null;
     }
-  }, [key]);
+  }, [paramKey, searchParams, defaultValue]);
+
+  // Debounced URL update to prevent excessive router calls
+  const debouncedSetParamData = useCallback(
+    (() => {
+      let timeoutId: NodeJS.Timeout;
+      return (data: T) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          if (!paramKey || !syncParams) return;
+
+          try {
+            const params = new URLSearchParams(searchParams.toString());
+            const serializedData = typeof data === "object" ? JSON.stringify(data) : String(data);
+            params.set(paramKey, serializedData);
+            router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+            console.log(`Set param data for key: ${cacheKey} in param: ${paramKey}`);
+          } catch (error) {
+            console.error("Error setting param data:", error);
+          }
+        }, 100); // 100ms debounce
+      };
+    })(),
+    [paramKey, searchParams, router, pathname, syncParams, cacheKey]
+  );
+
+  // Set data in URL parameter (async and debounced)
+  const setParamData = useCallback(
+    async (data: T): Promise<void> => {
+      if (!paramKey || !syncParams) return;
+      
+      // Use requestIdleCallback for better performance if available
+      if (window.requestIdleCallback) {
+        window.requestIdleCallback(() => {
+          debouncedSetParamData(data);
+        });
+      } else {
+        // Fallback to setTimeout for non-blocking operation
+        setTimeout(() => {
+          debouncedSetParamData(data);
+        }, 0);
+      }
+    },
+    [paramKey, syncParams, debouncedSetParamData]
+  );
 
   // Invalidate cache
   const invalidate = useCallback(() => {
     if (typeof window === "undefined") return;
 
     try {
-      localStorage.removeItem(key);
-      console.log(`Cache invalidated for key: ${key}`);
+      localStorage.removeItem(cacheKey);
+      console.log(`Cache invalidated for key: ${cacheKey}`);
     } catch (error) {
-      console.error(`Error invalidating cache for key: ${key}:`, error);
+      console.error(`Error invalidating cache for key: ${cacheKey}:`, error);
     }
-  }, [key]);
+  }, [cacheKey]);
 
   // Fetch data and update cache
   const refetch = useCallback(async () => {
-    if (!enabled) return;
+    if (!fetchData) return;
 
     // Cancel previous request if it exists
     if (abortControllerRef.current) {
@@ -142,63 +221,137 @@ function useFetcherCache<T>(
       setLoading(true);
       setError(null);
 
-      console.log(`Fetching data for key: ${key}...`);
-      const fetchedData = await fetcher();
-      
+      console.log(`Fetching data for key: ${cacheKey}...`);
+      const fetchedData = await fetchData();
+
       // Check if request was aborted
       if (abortControllerRef.current.signal.aborted) {
         return;
       }
 
-      console.log(`Fetched data for key: ${key} successfully`);
+      console.log(`Fetched data for key: ${cacheKey} successfully`);
       setDataState(fetchedData);
-      setCachedData(fetchedData);
+      
+      // Store fetched data in cache and params asynchronously
+      setCachedData(fetchedData).catch(error => {
+        console.error("Error caching fetched data:", error);
+      });
+      if (paramKey) {
+        setParamData(fetchedData).catch(error => {
+          console.error("Error setting param data:", error);
+        });
+      }
     } catch (err) {
       // Check if request was aborted
       if (abortControllerRef.current.signal.aborted) {
         return;
       }
 
-      console.error(`Error fetching data for key: ${key}:`, err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to fetch data";
+      console.error(`Error fetching data for key: ${cacheKey}:`, err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch data";
       setError(errorMessage);
 
       // Return default data if provided
-      if (defaultData !== undefined) {
-        console.log(`Using default data for key: ${key}`);
-        setDataState(defaultData);
-        setCachedData(defaultData);
+      if (defaultValue !== undefined) {
+        console.log(`Using default data for key: ${cacheKey}`);
+        setDataState(defaultValue);
+        setCachedData(defaultValue).catch(error => {
+          console.error("Error caching default data:", error);
+        });
+        if (paramKey) {
+          setParamData(defaultValue).catch(error => {
+            console.error("Error setting param data:", error);
+          });
+        }
       }
     } finally {
       if (!abortControllerRef.current.signal.aborted) {
         setLoading(false);
       }
     }
-  }, [key, fetcher, enabled, defaultData, setCachedData]);
+  }, [cacheKey, fetchData, defaultValue, setCachedData, setParamData, paramKey]);
 
   // Set data manually (useful for optimistic updates)
-  const setData = useCallback((newData: T) => {
-    setDataState(newData);
-    setCachedData(newData);
-  }, [setCachedData]);
+  const setData = useCallback(
+    (newData: T) => {
+      // Update state immediately for responsive UI
+      setDataState(newData);
+      
+      // Store data asynchronously to avoid blocking
+      setCachedData(newData).catch(error => {
+        console.error("Error caching data:", error);
+      });
+      
+      setParamData(newData).catch(error => {
+        console.error("Error setting param data:", error);
+      });
+    },
+    [setCachedData, setParamData]
+  );
 
-  // Initialize data from cache or fetch (only once)
+  // Initialize data with priority flow
   useEffect(() => {
-    if (!enabled || initializedRef.current) return;
+    if (initializedRef.current) return;
 
     initializedRef.current = true;
+    let finalData: T | null = null;
 
-    // Try to get from cache first
-    const cachedData = getCachedData();
-    if (cachedData !== null) {
-      setDataState(cachedData);
-      setLoading(false);
+    // Priority 1: Fetch data (if available)
+    if (fetchData) {
+      refetch();
       return;
     }
 
-    // If no cached data, fetch it
-    refetch();
-  }, [enabled, getCachedData, refetch]);
+    // Priority 2: Data from paramKey (if present)
+    if (paramKey) {
+      finalData = getParamData();
+      if (finalData !== null) {
+        console.log(`Using param data for key: ${cacheKey}`);
+        setDataState(finalData);
+        setCachedData(finalData).catch(error => {
+          console.error("Error caching param data:", error);
+        });
+        return;
+      }
+    }
+
+    // Priority 3: Data stored in localStorage (if present)
+    finalData = getCachedData();
+    if (finalData !== null) {
+      console.log(`Using cached data for key: ${cacheKey}`);
+      setDataState(finalData);
+      return;
+    }
+
+    // Priority 4: Default value
+    if (defaultValue !== undefined) {
+      console.log(`Using default data for key: ${cacheKey}`);
+      setDataState(defaultValue);
+      setCachedData(defaultValue).catch(error => {
+        console.error("Error caching default data:", error);
+      });
+      if (paramKey) {
+        setParamData(defaultValue).catch(error => {
+          console.error("Error setting param data:", error);
+        });
+      }
+      return;
+    }
+
+    // No data available
+    setDataState(null);
+  }, [
+    cacheKey,
+    fetchData,
+    paramKey,
+    defaultValue,
+    getParamData,
+    getCachedData,
+    setCachedData,
+    setParamData,
+    refetch,
+  ]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -219,101 +372,41 @@ function useFetcherCache<T>(
   };
 }
 
-// Internal hook for simple key-value caching
-function useKeyValueCache<T>(
-  key: string,
-  defaultValue?: T
-): [T | null, (value: T) => void, () => void] {
-  const [data, setDataState] = useState<T | null>(() => {
-    if (typeof window === "undefined") return defaultValue || null;
-
-    try {
-      const cached = localStorage.getItem(key);
-      if (!cached) return defaultValue || null;
-
-      const cacheData: CacheData<T> = JSON.parse(cached);
-      const now = Date.now();
-
-      // Check if cache is still valid (24 hours)
-      if (now - cacheData.timestamp < DEFAULT_CACHE_DURATION) {
-        return cacheData.data;
-      }
-
-      // Cache expired, remove it
-      localStorage.removeItem(key);
-      return defaultValue || null;
-    } catch (error) {
-      console.error("Error reading cache:", error);
-      localStorage.removeItem(key);
-      return defaultValue || null;
-    }
-  });
-
-  const setValue = useCallback((value: T) => {
-    setDataState(value);
-    
-    if (typeof window === "undefined") return;
-
-    try {
-      const cacheData: CacheData<T> = {
-        data: value,
-        timestamp: Date.now(),
-      };
-      localStorage.setItem(key, JSON.stringify(cacheData));
-    } catch (error) {
-      console.error("Error setting cache:", error);
-    }
-  }, [key]);
-
-  const clearValue = useCallback(() => {
-    setDataState(null);
-    
-    if (typeof window === "undefined") return;
-
-    try {
-      localStorage.removeItem(key);
-    } catch (error) {
-      console.error("Error clearing cache:", error);
-    }
-  }, [key]);
-
-  return [data, setValue, clearValue];
-}
-
 // Specialized hook for filter caching with URL parameter synchronization
-export function useFilterCache<T extends Record<string, any>>(
-  options: {
-    cacheKey: string;
-    defaultFilters: T;
-    paramToFilterMap?: Record<string, string>;
-    filterToParamMap?: Record<string, string>;
-  }
-) {
-  const { cacheKey, defaultFilters, paramToFilterMap = {}, filterToParamMap = {} } = options;
+export function useFilterCache<T extends Record<string, any>>(options: {
+  cacheKey: string;
+  defaultFilters: T;
+  filterToParamMap?: Record<string, string>;
+}) {
+  const {
+    cacheKey,
+    defaultFilters,
+    filterToParamMap = {},
+  } = options;
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
 
   // Get cached filters using the unified useCache hook
-  const [cachedFilters, setCachedFilters, clearCachedFilters] = useCache<T>(
+  const { data: cachedFilters, setData: setCachedFilters, invalidate: clearCachedFilters } = useCache<T>(
     cacheKey,
-    defaultFilters
+    { defaultValue: defaultFilters }
   );
 
   // Initialize filters state
   const [filters, setFiltersState] = useState<T>(() => {
     // Priority: URL params -> cached filters -> default filters
     const urlFilters: Partial<T> = {};
-    
+
     // Extract filters from URL params
     Object.keys(defaultFilters).forEach(filterKey => {
       const paramKey = filterToParamMap[filterKey] || filterKey;
       const paramValue = searchParams.get(paramKey);
-      
+
       if (paramValue !== null) {
         // Convert string values to appropriate types
         const defaultValue = defaultFilters[filterKey];
-        if (typeof defaultValue === 'number') {
+        if (typeof defaultValue === "number") {
           urlFilters[filterKey as keyof T] = parseInt(paramValue) as T[keyof T];
         } else {
           urlFilters[filterKey as keyof T] = paramValue as T[keyof T];
@@ -323,76 +416,93 @@ export function useFilterCache<T extends Record<string, any>>(
 
     // If we have URL params, use them; otherwise use cached filters
     const hasUrlParams = Object.keys(urlFilters).length > 0;
-    const initialFilters = hasUrlParams ? urlFilters : (cachedFilters || defaultFilters);
-    
+    const initialFilters = hasUrlParams
+      ? urlFilters
+      : cachedFilters || defaultFilters;
+
     return { ...defaultFilters, ...initialFilters } as T;
   });
 
   // Memoize the current search params string to prevent unnecessary re-renders
-  const searchParamsString = useMemo(() => searchParams.toString(), [searchParams]);
+  const searchParamsString = useMemo(
+    () => searchParams.toString(),
+    [searchParams]
+  );
 
   // Update URL params when filters change
-  const updateUrlParams = useCallback((updates: Partial<T>) => {
-    const params = new URLSearchParams(searchParamsString);
-    
-    Object.entries(updates).forEach(([filterKey, value]) => {
-      const paramKey = filterToParamMap[filterKey] || filterKey;
-      
-      if (value !== undefined && value !== null && value !== '') {
-        params.set(paramKey, value.toString());
-      } else {
-        params.delete(paramKey);
-      }
-    });
+  const updateUrlParams = useCallback(
+    (updates: Partial<T>) => {
+      const params = new URLSearchParams(searchParamsString);
 
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParamsString, router, pathname, filterToParamMap]);
+      Object.entries(updates).forEach(([filterKey, value]) => {
+        const paramKey = filterToParamMap[filterKey] || filterKey;
+
+        if (value !== undefined && value !== null && value !== "") {
+          params.set(paramKey, value.toString());
+        } else {
+          params.delete(paramKey);
+        }
+      });
+
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    },
+    [searchParamsString, router, pathname, filterToParamMap]
+  );
 
   // Update filters and cache
-  const updateFilters = useCallback((updates: Partial<T>) => {
-    const newFilters = { ...filters, ...updates };
-    setFiltersState(newFilters);
-    
-    // Save to cache
-    setCachedFilters(newFilters);
-    
-    // Update URL params
-    updateUrlParams(updates);
-  }, [filters, setCachedFilters, updateUrlParams]);
+  const updateFilters = useCallback(
+    (updates: Partial<T>) => {
+      const newFilters = { ...filters, ...updates };
+      setFiltersState(newFilters);
+
+      // Save to cache
+      setCachedFilters(newFilters);
+
+      // Update URL params
+      updateUrlParams(updates);
+    },
+    [filters, setCachedFilters, updateUrlParams]
+  );
 
   // Sync with URL params when they change
   useEffect(() => {
     const urlFilters: Partial<T> = {};
     let hasChanges = false;
-    
+
     Object.keys(defaultFilters).forEach(filterKey => {
       const paramKey = filterToParamMap[filterKey] || filterKey;
       const paramValue = searchParams.get(paramKey);
-      
+
       if (paramValue !== null) {
         const defaultValue = defaultFilters[filterKey];
         let convertedValue: T[keyof T];
-        
-        if (typeof defaultValue === 'number') {
+
+        if (typeof defaultValue === "number") {
           convertedValue = parseInt(paramValue) as T[keyof T];
         } else {
           convertedValue = paramValue as T[keyof T];
         }
-        
+
         if (filters[filterKey as keyof T] !== convertedValue) {
           urlFilters[filterKey as keyof T] = convertedValue;
           hasChanges = true;
         }
       }
     });
-    
+
     // If URL params have changed, update filters and cache
     if (hasChanges) {
       const newFilters = { ...filters, ...urlFilters };
       setFiltersState(newFilters);
       setCachedFilters(newFilters);
     }
-  }, [searchParamsString, filters, defaultFilters, filterToParamMap, setCachedFilters]);
+  }, [
+    searchParamsString,
+    filters,
+    defaultFilters,
+    filterToParamMap,
+    setCachedFilters,
+  ]);
 
   // Reset filters to defaults
   const resetFilters = useCallback(() => {
@@ -486,4 +596,4 @@ export const cacheUtils = {
       return null;
     }
   },
-}; 
+};

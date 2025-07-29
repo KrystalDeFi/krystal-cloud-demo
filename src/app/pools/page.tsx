@@ -23,7 +23,6 @@ import {
   TableContainer,
   Image,
 } from "@chakra-ui/react";
-import { ExternalLinkIcon, ArrowBackIcon } from "@chakra-ui/icons";
 import { useRouter, useSearchParams } from "next/navigation";
 import { IPoolsParams, KrystalApi } from "../../services/krystalApi";
 import { SORT_OPTIONS } from "../../common/config";
@@ -37,6 +36,7 @@ import { ErrorDisplay } from "../../components/ErrorDisplay";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useCache, useFilterCache } from "../../hooks/useCache";
+import { Footer } from "../Footer";
 
 // Create a type that extends IPoolsParams and adds the index signature for FilterOptions
 type FilterParams = IPoolsParams & {
@@ -126,10 +126,10 @@ function PoolsPageContent() {
 
     // Always reset to 0 offset, unless offset param is present
     const updates: Partial<FilterParams> = { [key]: value };
-    if (key !== 'offset') {
+    if (key !== "offset") {
       updates.offset = 0;
     }
-    
+
     updateFilters(updates);
   };
 
@@ -270,10 +270,7 @@ function PoolsPageContent() {
                 <Heading size="2xl" color="chakra-title">
                   DeFi Pools
                 </Heading>
-                <Text
-                  fontSize="lg"
-                  color="text.secondary"
-                >
+                <Text fontSize="lg" color="text.secondary">
                   Browse and filter DeFi pools across different chains
                 </Text>
               </VStack>
@@ -282,7 +279,9 @@ function PoolsPageContent() {
         )}
 
         {/* Breadcrumbs */}
-        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Pools" }]} />
+        <Breadcrumbs
+          items={[{ label: "Home", href: "/" }, { label: "Pools" }]}
+        />
 
         {/* Filters */}
         <VStack spacing={4} align="stretch">
@@ -446,9 +445,9 @@ function PoolsPageContent() {
 
         {pools.length === 0 && !loading && (
           <Box textAlign="center" py={12}>
-                            <Text color="text.muted">
-                  No pools found matching your criteria.
-                </Text>
+            <Text color="text.muted">
+              No pools found matching your criteria.
+            </Text>
           </Box>
         )}
 
@@ -460,11 +459,7 @@ function PoolsPageContent() {
         )}
 
         {/* Footer */}
-        <Box textAlign="center" mt={8}>
-          <Text fontSize="sm" color="text.secondary">
-            Built with Next.js and Chakra UI • Powered by Krystal Cloud API
-          </Text>
-        </Box>
+        <Footer />
       </Container>
     </Box>
   );

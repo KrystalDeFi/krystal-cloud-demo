@@ -17,10 +17,12 @@ export class Formatter {
   }
 
   static formatFeeTier(value: number) {
-    return new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(value / 10000) + "%";
+    return (
+      new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
+      }).format(value / 10000) + "%"
+    );
   }
 
   static formatPercentage(value: number, showSign: boolean = true) {

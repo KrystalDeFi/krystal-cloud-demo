@@ -38,23 +38,23 @@ import {
   Image,
   Link,
   SimpleGrid,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
 } from "@chakra-ui/react";
 import {
   SearchIcon,
-  ExternalLinkIcon,
-  ArrowBackIcon,
   ChevronUpIcon,
   ChevronDownIcon,
 } from "@chakra-ui/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { KrystalApi, IPositionsParams } from "../../../../services/krystalApi";
 import { IAPosition } from "../../../../services/apiTypes";
-import { CHAIN_CONFIGS } from "../../../../common/config";
 import { Formatter } from "../../../../common/formatter";
 import { DotIndicator } from "../../../../components/DotIndicator";
 import { ChainDisplay } from "../../../../components/ChainDisplay";
 import { ProtocolDisplay } from "../../../../components/ProtocolDisplay";
-import { TokenPairDisplay } from "../../../../components/TokenPairDisplay";
 import { PriceRangeDisplay } from "../../../../components/PriceRangeDisplay";
 import {
   useApiError,
@@ -62,12 +62,19 @@ import {
 } from "../../../../hooks/useApiError";
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
+import { Footer } from "@/app/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import { FallbackImg } from "@/components/FallbackImg";
 
 interface WalletStats {
   totalValue: number;
   totalPositions: number;
   activePositions: number;
+  closedPositions: number;
   totalFeesEarned: number;
+  pendingFees: number;
+  totalPnL: number;
+  activePnL: number;
   averageApr: number;
 }
 
@@ -98,6 +105,8 @@ const VirtualizedTableRow = React.memo(
       );
     }, []);
 
+    const [token0, token1] = position.currentAmounts;
+
     return (
       <Tr
         _hover={{ bg: "gray.50", _dark: { bg: "gray.700" }, cursor: "pointer" }}
@@ -106,24 +115,30 @@ const VirtualizedTableRow = React.memo(
         <Td>
           <VStack align="start" spacing={1}>
             <HStack spacing={2}>
-              <ChainDisplay chain={position.chain} size="sm" />
-              <ProtocolDisplay protocol={position.pool.protocol} size="sm" />
+              <HStack spacing={1}>
+                {[token0, token1].map((t, index) => (
+                  <FallbackImg
+                    src={t.token.logo || ""}
+                    alt={t.token.symbol}
+                    w="20px"
+                    h="20px"  
+                    borderRadius="full"
+                    key={index}
+                  />
+                ))}
+              </HStack>
+
+              <HStack spacing={0} fontSize="md">
+                <Text>{token0.token.symbol}</Text>
+                <Text>/</Text>
+                <Text>{token1.token.symbol}</Text>
+              </HStack>
               <DotIndicator status={position.status} size="sm" />
             </HStack>
-            <HStack spacing={2}>
-              {position.currentAmounts.slice(0, 2).map((amount, index) => (
-                <HStack key={index} spacing={1}>
-                  <Image
-                    src={amount.token.logo}
-                    alt={amount.token.symbol}
-                    w="16px"
-                    h="16px"
-                    borderRadius="full"
-                    fallbackSrc="/images/token-fallback.png"
-                  />
-                  <Text fontSize="xs">{amount.token.symbol}</Text>
-                </HStack>
-              ))}
+
+            <HStack spacing={2} mt={2}>
+              <ChainDisplay chain={position.chain} size="sm" />
+              <ProtocolDisplay protocol={position.pool.protocol} size="sm" />
             </HStack>
           </VStack>
         </Td>
@@ -315,6 +330,9 @@ function WalletPositionsPageContent() {
       0
     );
     const activePositions = openPositions.length;
+    const closedPositionsCount = closedPositions.length;
+    
+    // Calculate fees
     const totalFeesEarned = allPositions.reduce((sum, pos) => {
       const pendingFees = pos.tradingFee.pending.reduce(
         (feeSum, fee) => feeSum + fee.value,
@@ -326,6 +344,23 @@ function WalletPositionsPageContent() {
       );
       return sum + pendingFees + claimedFees;
     }, 0);
+    
+    const pendingFees = allPositions.reduce((sum, pos) => {
+      return sum + pos.tradingFee.pending.reduce(
+        (feeSum, fee) => feeSum + fee.value,
+        0
+      );
+    }, 0);
+    
+    // Calculate PnL
+    const totalPnL = allPositions.reduce((sum, pos) => {
+      return sum + (pos.performance.pnl || 0);
+    }, 0);
+    
+    const activePnL = openPositions.reduce((sum, pos) => {
+      return sum + (pos.performance.pnl || 0);
+    }, 0);
+    
     const averageApr =
       allPositions.length > 0
         ? allPositions.reduce(
@@ -338,7 +373,11 @@ function WalletPositionsPageContent() {
       totalValue,
       totalPositions: allPositions.length,
       activePositions,
+      closedPositions: closedPositionsCount,
       totalFeesEarned,
+      pendingFees,
+      totalPnL,
+      activePnL,
       averageApr,
     };
   }, [openPositions, closedPositions]);
@@ -461,86 +500,74 @@ function WalletPositionsPageContent() {
   return (
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
       <Container maxW="7xl" py={6}>
-        {/* Header */}
-        {!isEmbedMode && (
-          <VStack spacing={6} mb={8}>
-            <HStack w="full" justify="space-between" align="start">
-              <VStack align="start" spacing={2}>
-                <Button
-                  leftIcon={<ArrowBackIcon />}
-                  variant="ghost"
-                  onClick={() => router.push("/")}
-                  size="sm"
-                >
-                  Back to Home
-                </Button>
-                <Heading size="2xl" color="chakra-title">
-                  Wallet Positions
-                </Heading>
-                <Text
-                  fontSize="lg"
-                  color="gray.600"
-                  _dark={{ color: "gray.300" }}
-                >
-                  {walletAddress}
-                </Text>
-              </VStack>
-
-              {/* Wallet Address Input */}
-              <VStack align="end" spacing={2}>
-                <InputGroup maxW="400px">
-                  <Input
-                    placeholder="Enter wallet address"
-                    value={newWalletAddress}
-                    onChange={e => setNewWalletAddress(e.target.value)}
-                    onKeyPress={handleWalletAddressKeyPress}
-                    onBlur={handleWalletAddressChange}
-                  />
-                  <InputLeftElement>
-                    <SearchIcon color="gray.400" />
-                  </InputLeftElement>
-                </InputGroup>
-              </VStack>
-            </HStack>
-          </VStack>
-        )}
+        <Breadcrumbs 
+          items={[
+            { label: "Home", href: "/" },
+            { label: `Wallet` },
+            { label: `#${Formatter.shortAddress(walletAddress)}` },
+          ]}
+        />
 
         {/* Stats */}
         {memoizedStats && (
           <Card bg={cardBg} p={6} mb={6} border="1px" borderColor={borderColor}>
-            <HStack spacing={8} justify="space-around">
-              <VStack>
-                <Text fontSize="sm" color="gray.500">
+            <HStack spacing={6} wrap="wrap" align="start" justifyContent={"space-between"}>
+              <Stat>
+                <StatLabel fontSize="sm" color="gray.500">
                   Total Value
-                </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
+                </StatLabel>
+                <StatNumber fontSize="2xl" color="chakra-metrics">
                   {Formatter.formatCurrency(memoizedStats.totalValue)}
-                </Text>
-              </VStack>
-              <VStack>
-                <Text fontSize="sm" color="gray.500">
+                </StatNumber>
+              </Stat>
+              
+              <Stat>
+                <StatLabel fontSize="sm" color="gray.500">
                   Active Positions
-                </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
+                </StatLabel>
+                <StatNumber fontSize="2xl" color="chakra-metrics">
                   {memoizedStats.activePositions}
-                </Text>
-              </VStack>
-              <VStack>
-                <Text fontSize="sm" color="gray.500">
+                </StatNumber>
+                <StatHelpText fontSize="xs" color="gray.500">
+                  Closed: {memoizedStats.closedPositions}
+                </StatHelpText>
+              </Stat>
+              
+              <Stat>
+                <StatLabel fontSize="sm" color="gray.500">
                   Total Fees Earned
-                </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
+                </StatLabel>
+                <StatNumber fontSize="2xl" color="chakra-metrics">
                   {Formatter.formatCurrency(memoizedStats.totalFeesEarned)}
-                </Text>
-              </VStack>
-              <VStack>
-                <Text fontSize="sm" color="gray.500">
+                </StatNumber>
+                <StatHelpText fontSize="xs" color="gray.500">
+                  Pending: {Formatter.formatCurrency(memoizedStats.pendingFees)}
+                </StatHelpText>
+              </Stat>
+              
+              <Stat>
+                <StatLabel fontSize="sm" color="gray.500">
+                  Total PnL
+                </StatLabel>
+                <StatNumber 
+                  fontSize="2xl" 
+                  color={memoizedStats.totalPnL >= 0 ? "green.500" : "red.500"}
+                >
+                  {Formatter.formatCurrency(memoizedStats.totalPnL)}
+                </StatNumber>
+                <StatHelpText fontSize="xs" color="gray.500">
+                  Active: {Formatter.formatCurrency(memoizedStats.activePnL)}
+                </StatHelpText>
+              </Stat>
+              
+              <Stat>
+                <StatLabel fontSize="sm" color="gray.500">
                   Average APR
-                </Text>
-                <Text fontSize="2xl" fontWeight="bold" color="chakra-metrics">
+                </StatLabel>
+                <StatNumber fontSize="2xl" color="chakra-metrics">
                   {Formatter.formatAPR(memoizedStats.averageApr)}
-                </Text>
-              </VStack>
+                </StatNumber>
+              </Stat>
             </HStack>
           </Card>
         )}
@@ -793,13 +820,7 @@ function WalletPositionsPageContent() {
         )}
 
         {/* Footer */}
-        {!isEmbedMode && (
-          <Box textAlign="center" mt={8}>
-            <Text fontSize="sm" color="gray.600" _dark={{ color: "gray.300" }}>
-              Built with Next.js and Chakra UI • Powered by Krystal Cloud API
-            </Text>
-          </Box>
-        )}
+        <Footer />
       </Container>
     </Box>
   );

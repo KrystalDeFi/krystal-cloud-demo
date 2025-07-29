@@ -14,8 +14,6 @@ import {
   SimpleGrid,
   Badge,
   Spinner,
-  Alert,
-  AlertIcon,
   Stat,
   StatLabel,
   StatNumber,
@@ -30,15 +28,11 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  IconButton,
-  Tooltip,
-  Flex,
   Image,
   useToast,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { ArrowBackIcon, CopyIcon } from "@chakra-ui/icons";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
 import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
 import { Formatter } from "@/common/formatter";
@@ -63,6 +57,8 @@ import {
 } from "recharts";
 import { CHAIN_CONFIGS } from "@/common/config";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { Footer } from "@/app/Footer";
+import { useCache } from "@/hooks/useCache";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -77,7 +73,6 @@ interface ChartDataPoint {
 
 function PoolDetailsPageContent() {
   const params = useParams();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
   const chainId = params.chainId as string;
@@ -92,10 +87,14 @@ function PoolDetailsPageContent() {
   const [selectedChart, setSelectedChart] = useState<
     "price" | "apr" | "tvl" | "volFee"
   >("tvl");
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
-  const [selectedTimeframe, setSelectedTimeframe] = useState<
-    "1h" | "24h" | "7d" | "30d"
-  >("24h");
+
+  const { data: chartTimeRange, setData: setChartTimeRange } = useCache<"7d" | "30d" | "90d">("chartTimeRange", {
+    defaultValue: "30d",
+  });
+
+  const { data: performanceTimeframe, setData: setPerformanceTimeframe } = useCache<"1h" | "24h" | "7d" | "30d">("performanceTimeframe", {
+    defaultValue: "24h",
+  });
 
   const isEmbedMode = searchParams.get("embed") === "1";
 
@@ -114,7 +113,7 @@ function PoolDetailsPageContent() {
     if (pool) {
       fetchHistoricalData();
     }
-  }, [pool, timeRange]);
+  }, [pool, chartTimeRange]);
 
   const fetchPoolDetails = async () => {
     try {
@@ -148,9 +147,9 @@ function PoolDetailsPageContent() {
       const endTime = Math.floor(Date.now() / 1000);
       const startTime =
         endTime -
-        (timeRange === "7d"
+        (chartTimeRange === "7d"
           ? 7 * 24 * 60 * 60
-          : timeRange === "30d"
+          : chartTimeRange === "30d"
             ? 30 * 24 * 60 * 60
             : 90 * 24 * 60 * 60);
 
@@ -198,13 +197,13 @@ function PoolDetailsPageContent() {
 
       // Format date based on time range
       let dateString;
-      if (timeRange === "7d") {
+      if (chartTimeRange === "7d") {
         dateString = date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
           hour: "2-digit",
         });
-      } else if (timeRange === "30d") {
+      } else if (chartTimeRange === "30d") {
         dateString = date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
@@ -255,10 +254,11 @@ function PoolDetailsPageContent() {
           <Text color={mutedTextColor}>No historical data available</Text>
         </Box>
       );
-    }    
-    
+    }
+
     // Use all data points from API (API already filters by time range)
-    const displayData = (selectedChart !== "volFee") 
+    const displayData =
+      selectedChart !== "volFee"
         ? data.filter(item => item[selectedChart] != 0)
         : data;
 
@@ -469,7 +469,7 @@ function PoolDetailsPageContent() {
   const getStatsData = () => {
     if (!pool) return { volume: 0, fee: 0, apr: 0 };
 
-    switch (selectedTimeframe) {
+    switch (performanceTimeframe) {
       case "1h":
         return {
           volume: pool.stats1h?.volume || 0,
@@ -582,9 +582,7 @@ function PoolDetailsPageContent() {
 
             <HStack spacing={1}>
               <Image
-                src={
-                  pool.protocol.logo || `/images/token-fallback.png`
-                }
+                src={pool.protocol.logo || `/images/token-fallback.png`}
                 alt={pool.protocol.name}
                 boxSize="20px"
                 borderRadius="full"
@@ -595,9 +593,7 @@ function PoolDetailsPageContent() {
               </Text>
             </HStack>
 
-            <Badge size="xs">
-              Fee {Formatter.formatFeeTier(pool.feeTier)}
-            </Badge>
+            <Badge size="xs">Fee {Formatter.formatFeeTier(pool.feeTier)}</Badge>
           </HStack>
         </HStack>
 
@@ -642,12 +638,12 @@ function PoolDetailsPageContent() {
                               key={timeframe}
                               size="xs"
                               variant={
-                                selectedTimeframe === timeframe
+                                performanceTimeframe === timeframe
                                   ? "solid"
                                   : "outline"
                               }
                               colorScheme="brand"
-                              onClick={() => setSelectedTimeframe(timeframe)}
+                              onClick={() => setPerformanceTimeframe(timeframe)}
                             >
                               {timeframe}
                             </Button>
@@ -659,7 +655,7 @@ function PoolDetailsPageContent() {
                     <SimpleGrid columns={3} spacing={4} w="full">
                       <Stat>
                         <StatLabel color={mutedTextColor} fontSize="xs">
-                          Volume ({selectedTimeframe})
+                          Volume ({performanceTimeframe})
                         </StatLabel>
                         <StatNumber fontSize="lg" color={textColor}>
                           {Formatter.formatCurrency(statsData.volume)}
@@ -667,7 +663,7 @@ function PoolDetailsPageContent() {
                       </Stat>
                       <Stat>
                         <StatLabel color={mutedTextColor} fontSize="xs">
-                          Fee ({selectedTimeframe})
+                          Fee ({performanceTimeframe})
                         </StatLabel>
                         <StatNumber fontSize="lg" color={textColor}>
                           {Formatter.formatCurrency(statsData.fee)}
@@ -675,7 +671,7 @@ function PoolDetailsPageContent() {
                       </Stat>
                       <Stat>
                         <StatLabel color={mutedTextColor} fontSize="xs">
-                          APR ({selectedTimeframe})
+                          APR ({performanceTimeframe})
                         </StatLabel>
                         <StatNumber fontSize="lg" color={textColor}>
                           {Formatter.formatAPR(statsData.apr)}
@@ -715,25 +711,25 @@ function PoolDetailsPageContent() {
                   <HStack spacing={2}>
                     <Button
                       size="sm"
-                      variant={timeRange === "7d" ? "solid" : "outline"}
+                      variant={chartTimeRange === "7d" ? "solid" : "outline"}
                       colorScheme="brand"
-                      onClick={() => setTimeRange("7d")}
+                      onClick={() => setChartTimeRange("7d")}
                     >
                       7D
                     </Button>
                     <Button
                       size="sm"
-                      variant={timeRange === "30d" ? "solid" : "outline"}
+                      variant={chartTimeRange === "30d" ? "solid" : "outline"}
                       colorScheme="brand"
-                      onClick={() => setTimeRange("30d")}
+                      onClick={() => setChartTimeRange("30d")}
                     >
                       30D
                     </Button>
                     <Button
                       size="sm"
-                      variant={timeRange === "90d" ? "solid" : "outline"}
+                      variant={chartTimeRange === "90d" ? "solid" : "outline"}
                       colorScheme="brand"
-                      onClick={() => setTimeRange("90d")}
+                      onClick={() => setChartTimeRange("90d")}
                     >
                       90D
                     </Button>
@@ -904,6 +900,7 @@ function PoolDetailsPageContent() {
             </Card>
           </GridItem>
         </Grid>
+        <Footer />
       </Container>
     </Box>
   );

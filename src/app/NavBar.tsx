@@ -77,8 +77,6 @@ export default function NavBar() {
             </HStack>
           </HStack>
 
-
-
           {/* Dark Mode Toggle */}
           <IconButton
             aria-label="Toggle color mode"

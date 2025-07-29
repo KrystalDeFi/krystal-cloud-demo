@@ -31,7 +31,7 @@ export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({
 
   return (
     <VStack align="start" spacing={1}>
-      <HStack spacing={1}>
+      <HStack spacing={1} w="100%" justify={"space-between"}>
         <Text fontSize="xs">{Formatter.formatPrice(minPrice)}</Text>
         {showVisual && (
           <Box w="40px" h="2px" bg="gray.300" position="relative">
@@ -49,13 +49,13 @@ export const PriceRangeDisplay: React.FC<PriceRangeDisplayProps> = ({
         <Text fontSize="xs">{Formatter.formatPrice(maxPrice)}</Text>
       </HStack>
       {showPercentages && currentPrice && (
-        <HStack spacing={2}>
-          <Text fontSize="xs" color="red.500">
+        <HStack spacing={2} justify={"space-between"} w="100%">
+          <Text fontSize="xs">
             {Formatter.formatPercentage(
               calculatePercentage(minPrice, currentPrice)
             )}
           </Text>
-          <Text fontSize="xs" color="green.500">
+          <Text fontSize="xs">
             {Formatter.formatPercentage(
               calculatePercentage(maxPrice, currentPrice)
             )}

@@ -1,5 +1,5 @@
-export const CLOUD_API_KEY = "5434932e2240f3d895f79061090361aa5f987604"
-
+export const CLOUD_API_KEY = "5434932e2240f3d895f79061090361aa5f987604";
+export const DOMAIN = "https://cloud-ui.krystal.app"
 
 // ============================================================================
 // STATISTICS INTERFACES

@@ -92,13 +92,16 @@ const getApiKey = (): string => {
 // Helper function to set API key (no longer needed, kept for compatibility)
 const setApiKey = (key: string): void => {
   // API key is now configured in config.ts, no longer stored in localStorage
-  console.warn("setApiKey is deprecated. API key is now configured in config.ts");
+  console.warn(
+    "setApiKey is deprecated. API key is now configured in config.ts"
+  );
 };
 
 // Generic API request function
 const apiRequest = async <T>(
   endpoint: string,
   apiKey: string,
+
   params?: Record<string, any>
 ): Promise<T> => {
   const url = new URL(`${BASE_URL}${endpoint}`);

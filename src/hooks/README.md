@@ -1,141 +1,123 @@
 # Cache Hooks
 
-This directory contains React hooks for caching data with localStorage persistence and React integration.
+This module provides a unified caching solution for React applications with automatic URL parameter synchronization and localStorage persistence.
 
-## Unified Cache Hook
+## Unified `useCache` Hook
 
-### `useCache<T>`
+The `useCache` hook provides a single, unified interface for caching data with the following priority flow:
 
-A unified React hook that can handle both data fetching and simple key-value caching with automatic localStorage persistence.
+1. **fetchData** (if present) - Fetches fresh data from API
+2. **paramKey** (if present) - Gets data from URL parameter
+3. **localStorage** (if present) - Gets cached data from browser storage
+4. **defaultValue** (if provided) - Uses fallback default value
 
-#### Data Fetching Mode
+### API
 
 ```typescript
-const { data, loading, error, refetch, invalidate, setData } = useCache<T>(
-  key: string,
-  options: CacheOptions & { fetcher: () => Promise<T> }
-);
+function useCache<T>(
+  cacheKey: string,
+  options: CacheOptions<T> = {}
+): CacheResult<T>
+
+interface CacheOptions<T> {
+  defaultValue?: T;
+  paramKey?: string;
+  fetchData?: () => Promise<T>;
+  duration?: number; // empty = no expiry
+}
+
+interface CacheResult<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+  invalidate: () => void;
+  setData: (data: T) => void;
+}
 ```
 
-**Parameters:**
-- `key`: Unique cache key for localStorage
-- `options`: Configuration object
-  - `fetcher`: Async function that fetches the data
-  - `duration`: Cache duration in milliseconds (default: 24 hours)
-  - `defaultData`: Fallback data if fetch fails
-  - `enabled`: Whether the hook is enabled (default: true)
+### Usage Examples
 
-**Returns:**
-- `data`: Cached data or null
-- `loading`: Loading state
-- `error`: Error message if fetch failed
-- `refetch`: Function to manually refetch data
-- `invalidate`: Function to clear cache
-- `setData`: Function to manually set data (useful for optimistic updates)
-
-**Example:**
+#### Simple Caching with Default Value
 ```typescript
-const { data: chains, loading, error } = useCache(
-  'chains',
-  {
-    fetcher: () => KrystalApi.chains.getAll(apiKey),
-    defaultData: DEFAULT_CHAINS
+const { data, setData, invalidate } = useCache('user_preferences', {
+  defaultValue: { theme: 'light', language: 'en' }
+});
+```
+
+#### Caching with URL Parameter Sync
+```typescript
+const { data, setData } = useCache('selected_chain', {
+  defaultValue: 'ethereum',
+  paramKey: 'chain'
+});
+// URL: /pools?chain=polygon -> data = 'polygon'
+```
+
+#### Caching with API Fetch
+```typescript
+const { data, loading, error, refetch } = useCache('chains', {
+  defaultValue: [],
+  fetchData: async () => {
+    const response = await fetch('/api/chains');
+    return response.json();
   }
-);
+});
 ```
 
-#### Simple Key-Value Mode
-
+#### Complete Example with All Features
 ```typescript
-const [value, setValue, clearValue] = useCache<T>(
-  key: string,
-  defaultValue?: T
-);
+const { data, loading, error, refetch, setData } = useCache('user_settings', {
+  defaultValue: { theme: 'light' },
+  paramKey: 'settings',
+  fetchData: async () => {
+    const response = await fetch('/api/user/settings');
+    return response.json();
+  },
+  duration: 3600000 // 1 hour expiry
+});
 ```
 
-**Parameters:**
-- `key`: Unique cache key for localStorage
-- `defaultValue`: Default value if no cached data exists
+### Priority Flow
 
-**Returns:**
-- `value`: Cached value or null
-- `setValue`: Function to set and cache a value
-- `clearValue`: Function to clear the cached value
+1. **fetchData**: If provided, this takes highest priority and will fetch fresh data
+2. **paramKey**: If no fetchData, checks URL parameter for data
+3. **localStorage**: If no param data, checks browser cache
+4. **defaultValue**: If no cached data, uses the default value
 
-**Example:**
-```typescript
-const [userPreferences, setUserPreferences, clearPreferences] = useCache(
-  'user_preferences',
-  { theme: 'light', language: 'en' }
-);
-```
+### Automatic Storage
 
-### `useFilterCache<T>`
+When data is obtained from `fetchData` or `paramKey`, it's automatically stored in localStorage for future use.
 
-A specialized hook for managing filter options with URL parameter synchronization.
+## Specialized Hooks
+
+### `useFilterCache`
+
+A specialized hook for managing filter state with URL synchronization:
 
 ```typescript
-const { filters, updateFilters, resetFilters, clearFilters, cachedFilters } = useFilterCache<T>(
-  options: UseFilterCacheOptions
-);
-```
-
-**Flow:**
-1. Default filter options are from URL params, then localStorage cache
-2. If URL params differ from cache, the cache is updated
-3. When user changes filters, both URL params and cache are updated
-
-**Parameters:**
-- `cacheKey`: Unique cache key for localStorage
-- `defaultFilters`: Default filter values
-- `paramToFilterMap`: Optional mapping from URL param names to filter names
-- `filterToParamMap`: Optional mapping from filter names to URL param names
-
-**Returns:**
-- `filters`: Current filter state
-- `updateFilters`: Function to update filters
-- `resetFilters`: Function to reset to defaults
-- `clearFilters`: Function to clear all filters
-- `cachedFilters`: Raw cached filter data
-
-**Example:**
-```typescript
-const { filters, updateFilters } = useFilterCache({
+const { filters, updateFilters, resetFilters, clearFilters } = useFilterCache({
   cacheKey: 'pools_filters',
   defaultFilters: {
     token: undefined,
     chainId: undefined,
-    sortBy: SORT_OPTIONS.TVL,
+    protocol: undefined,
+    minTvl: undefined,
+    minVolume24h: undefined,
+    sortBy: 'tvl',
     limit: 50,
     offset: 0,
-  }
-});
-```
-
-## Usage Patterns
-
-### Data Fetching with Cache
-```typescript
-// For API data that needs to be fetched and cached
-const { data, loading, error, refetch } = useCache('api_data', {
-  fetcher: () => fetchDataFromAPI(),
-  defaultData: fallbackData,
-  duration: 30 * 60 * 1000 // 30 minutes
-});
-```
-
-### Simple Key-Value Storage
-```typescript
-// For user preferences, settings, etc.
-const [theme, setTheme, clearTheme] = useCache('user_theme', 'light');
-```
-
-### Filter State Management
-```typescript
-// For complex filter states with URL sync
-const { filters, updateFilters } = useFilterCache({
-  cacheKey: 'search_filters',
-  defaultFilters: { query: '', category: 'all', sort: 'newest' }
+  },
+  paramToFilterMap: {
+    token: 'token',
+    chainId: 'chain',
+    protocol: 'protocol',
+  },
+  filterToParamMap: {
+    token: 'token',
+    chainId: 'chain',
+    protocol: 'protocol',
+  },
 });
 ```
 
@@ -143,47 +125,56 @@ const { filters, updateFilters } = useFilterCache({
 
 ### `cacheUtils`
 
-Utility functions for cache management:
+```typescript
+// Clear cache entries with specific prefix
+cacheUtils.clearByPrefix('user_');
 
-- `clearByPrefix(prefix)`: Clear all cache entries with a specific prefix
-- `clearAll()`: Clear all cache entries
-- `has(key)`: Check if cache exists and is valid
-- `getAge(key)`: Get cache age in milliseconds
+// Clear all cache entries
+cacheUtils.clearAll();
 
-## Migration from CacheService
+// Check if cache exists and is valid
+const hasCache = cacheUtils.has('user_preferences');
 
-The old `CacheService` class is deprecated. Here's how to migrate:
+// Get cache age in milliseconds
+const age = cacheUtils.getAge('user_preferences');
+```
+
+## Migration Guide
+
+### From Old API
 
 **Before:**
 ```typescript
-const data = await CacheService.getOrFetch('key', fetchData);
-CacheService.set('key', data);
-CacheService.remove('key');
-```
+// Simple key-value cache
+const [data, setData, clearData] = useCache('key', defaultValue);
 
-**After (Data Fetching):**
-```typescript
-const { data, setData, invalidate } = useCache('key', {
-  fetcher: fetchData
+// Fetcher-based cache
+const { data, loading, error, refetch } = useCache('key', {
+  fetcher: fetchData,
+  defaultData: defaultValue
 });
-setData(newData);
-invalidate();
 ```
 
-**After (Simple Storage):**
+**After:**
 ```typescript
-const [value, setValue, clearValue] = useCache('key', defaultValue);
-setValue(newValue);
-clearValue();
+// Unified API
+const { data, setData, invalidate } = useCache('key', {
+  defaultValue: defaultValue
+});
+
+// With fetch
+const { data, loading, error, refetch } = useCache('key', {
+  defaultValue: defaultValue,
+  fetchData: fetchData
+});
 ```
 
-## Benefits
+## Features
 
-1. **Unified API**: Single hook for both data fetching and simple caching
-2. **React Integration**: Automatic re-renders when cache changes
-3. **Loading States**: Built-in loading and error states for data fetching
-4. **TypeScript Support**: Better type inference and generic support
-5. **SSR Support**: Proper handling of server-side rendering
-6. **Abort Controller**: Automatic request cancellation on unmount
-7. **Optimistic Updates**: Manual data setting for immediate UI updates
-8. **Flexible**: Choose between data fetching or simple key-value mode 
+- **Unified API**: Single hook for all caching needs
+- **Priority Flow**: Intelligent data source selection
+- **URL Sync**: Automatic URL parameter synchronization
+- **Type Safety**: Full TypeScript support
+- **Error Handling**: Built-in error states and retry mechanisms
+- **Performance**: Efficient caching with configurable expiry
+- **Flexibility**: Support for complex data types and custom serialization
