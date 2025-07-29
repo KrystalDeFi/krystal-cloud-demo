@@ -6,10 +6,8 @@ import {
   VStack,
   HStack,
   Text,
-  Switch,
   FormControl,
   FormLabel,
-  Select,
   Input,
   useColorModeValue,
   useDisclosure,
@@ -21,7 +19,7 @@ import {
   InputGroup,
   InputLeftElement,
 } from "@chakra-ui/react";
-import { ExternalLinkIcon, SettingsIcon } from "@chakra-ui/icons";
+import { SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { IEmbedConfig, CLOUD_API_KEY, DOMAIN } from "../common/config";
 
@@ -166,7 +164,7 @@ export default function EmbedButton() {
           borderRadius="md"
           boxShadow="md"
         >
-          Embed this page
+          Customize & Embed Page
         </Button>
       </Box>
 
@@ -204,23 +202,6 @@ export default function EmbedButton() {
                 <Text fontWeight="medium">Embed Configuration</Text>
               </HStack>
               <HStack spacing={2}>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    // Remove all embed-related params to exit embed mode
-                    const params = new URLSearchParams(searchParams.toString());
-                    params.delete("embed");
-                    params.delete("config");
-                    params.delete("theme");
-                    params.delete("primaryColor");
-                    router.replace(`${pathname}?${params.toString()}`, {
-                      scroll: false,
-                    });
-                  }}
-                >
-                  Exit Embed Mode
-                </Button>
                 <CloseButton
                   onClick={() => {
                     onClose();
@@ -239,26 +220,6 @@ export default function EmbedButton() {
             {/* Content */}
             <Box p={6} h="calc(100vh - 80px)" overflowY="auto">
               <VStack spacing={6} align="stretch">
-                {/* Current Page Info */}
-                <Box
-                  p={4}
-                  bg="gray.50"
-                  _dark={{ bg: "gray.700" }}
-                  borderRadius="lg"
-                >
-                  <Text fontSize="sm" fontWeight="medium" mb={2}>
-                    Current Page
-                  </Text>
-                  <Text
-                    fontSize="xs"
-                    fontFamily="mono"
-                    color="gray.600"
-                    _dark={{ color: "gray.300" }}
-                  >
-                    {pathname}
-                  </Text>
-                </Box>
-
                 {/* Theme Configuration */}
                 <Box>
                   <Text fontSize="md" fontWeight="medium" mb={3}>
@@ -302,10 +263,6 @@ export default function EmbedButton() {
                           Dark
                         </Button>
                       </HStack>
-                      <Text fontSize="xs" color="gray.500" mt={1}>
-                        Current:{" "}
-                        {config.theme === "auto" ? "System" : config.theme}
-                      </Text>
                     </FormControl>
 
                     <FormControl>

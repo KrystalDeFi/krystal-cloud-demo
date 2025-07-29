@@ -14,20 +14,16 @@ import {
   SimpleGrid,
   Badge,
   Spinner,
-  Alert,
-  AlertIcon,
   Stat,
   StatLabel,
   StatNumber,
-  StatHelpText,
   useColorModeValue,
-  Button,
-  Link,
   Image,
-  Divider,
   Grid,
   GridItem,
   IconButton,
+  Divider,
+  Link,
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, ArrowBackIcon, CopyIcon } from "@chakra-ui/icons";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -49,6 +45,7 @@ import {
 import { ErrorDisplay } from "../../../../components/ErrorDisplay";
 import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { Footer } from "@/app/Footer";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 function PositionDetailsPageContent() {
   const params = useParams();
@@ -68,6 +65,22 @@ function PositionDetailsPageContent() {
   const mutedTextColor = useColorModeValue("gray.600", "gray.300");
 
   const isEmbedMode = searchParams.get("embed") === "1";
+
+  // Helper functions for calculations
+  const getTotalPendingFees = useMemo(() => {
+    if (!position) return 0;
+    return position.tradingFee.pending.reduce((sum, fee) => sum + fee.value, 0);
+  }, [position]);
+
+  const getTotalClaimedFees = useMemo(() => {
+    if (!position) return 0;
+    return position.tradingFee.claimed.reduce((sum, fee) => sum + fee.value, 0);
+  }, [position]);
+
+  const getCurrentPrice = useMemo(() => {
+    if (!position || !position.currentAmounts[0] || !position.currentAmounts[1]) return undefined;
+    return position.currentAmounts[1].price / position.currentAmounts[0].price;
+  }, [position]);
 
   useEffect(() => {
     fetchPositionDetails();
@@ -99,27 +112,6 @@ function PositionDetailsPageContent() {
     // You could add a toast notification here
   };
 
-  const getCurrentPrice = useMemo(() => {
-    if (!position || position.currentAmounts.length < 2) return undefined;
-
-    const token0 = position.currentAmounts[0];
-    const token1 = position.currentAmounts[1];
-    if (token0.price > 0 && token1.price > 0) {
-      return token0.price / token1.price;
-    }
-    return undefined;
-  }, [position]);
-
-  const getTotalPendingFees = useMemo(() => {
-    if (!position) return 0;
-    return position.tradingFee.pending.reduce((sum, fee) => sum + fee.value, 0);
-  }, [position]);
-
-  const getTotalClaimedFees = useMemo(() => {
-    if (!position) return 0;
-    return position.tradingFee.claimed.reduce((sum, fee) => sum + fee.value, 0);
-  }, [position]);
-
   if (loading) {
     return (
       <Box
@@ -149,475 +141,406 @@ function PositionDetailsPageContent() {
   return (
     <Box minH="100vh" bg="gray.50" _dark={{ bg: "gray.900" }}>
       <Container maxW="7xl" py={6}>
+        <Breadcrumbs
+          items={[
+            { label: "Home", href: "/" },
+            { label: `Wallet #${Formatter.shortAddress(position.ownerAddress)}`, href: `/wallets/${position.ownerAddress}/positions` },
+            { label: `#${Formatter.shortAddress(position.id)}`},
+          ]}
+        />
         {/* Header */}
-        {!isEmbedMode && (
-          <VStack spacing={6} mb={8}>
-            <HStack w="full" justify="space-between" align="start">
-              <VStack align="start" spacing={2}>
-                <Button
-                  leftIcon={<ArrowBackIcon />}
-                  variant="ghost"
-                  onClick={() =>
-                    router.push(`/wallets/${position?.ownerAddress}/positions`)
-                  }
-                  size="sm"
-                >
-                  Back to Wallet
-                </Button>
-                <HStack spacing={4} align="center">
-                  <Heading size="2xl" color="chakra-title">
-                    Position Details
-                  </Heading>
-                  <ChainDisplay chain={position.chain} size="lg" />
-                  <ProtocolDisplay
-                    protocol={position.pool.protocol}
-                    size="lg"
+        <VStack spacing={6} mb={8}>
+          <HStack w="full" justify="space-between" align="start">
+            <VStack align="start" spacing={3}>
+              {/* Token Pair and Protocol Info */}
+              <HStack spacing={4} align="center">
+                <HStack spacing={2}>
+                  <Image
+                    src={position.currentAmounts[0].token.logo}
+                    alt={position.currentAmounts[0].token.symbol}
+                    boxSize="32px"
+                    borderRadius="full"
+                    fallbackSrc="/images/token-fallback.png"
                   />
-                  <DotIndicator status={position.status} size="lg" />
+                  <Image
+                    src={position.currentAmounts[1].token.logo}
+                    alt={position.currentAmounts[1].token.symbol}
+                    boxSize="32px"
+                    borderRadius="full"
+                    fallbackSrc="/images/token-fallback.png"
+                  />
                 </HStack>
-                <Text fontSize="lg" color={mutedTextColor}>
-                  Position ID: {position.id}
-                </Text>
-              </VStack>
-              <Link
-                href={`${position.chain.explorer}/address/${position.pool.poolAddress}`}
+                <VStack align="start" spacing={1}>
+                  <HStack spacing={4}>
+                    <Text fontSize="xl" fontWeight="bold" color="chakra-title">
+                      {position.currentAmounts[0].token.symbol}/{position.currentAmounts[1].token.symbol}
+                    </Text>
+                    {position.pool.feeTier && (
+                      <Badge colorScheme="blue" fontSize="xs">
+                        {Formatter.formatFeeTier(position.pool.feeTier)}
+                      </Badge>
+                    )}
+
+                    {/* Status */}
+                    <HStack spacing={1} align="center">
+                      <DotIndicator status={position.status} size="md" />
+                      <Text fontSize="sm" color="gray.500">
+                        {position.status === "IN_RANGE" || position.status === "OPEN" ? "In range" : 
+                        position.status === "OUT_OF_RANGE" || position.status === "OUT_RANGE" ? "Out of range" : 
+                        "Closed"}
+                      </Text>
+                    </HStack>
+                  </HStack>
+                  <HStack spacing={2}>
+                    <ProtocolDisplay protocol={position.pool.protocol} size="sm" />
+                    <Text fontSize="sm" color="gray.500">•</Text>
+                    <Text fontSize="sm" color="gray.500">
+                      Position #{Formatter.shortAddress(position.id)} ({Formatter.formatAge(position.openedTime)})
+                    </Text>
+                  </HStack>
+                </VStack>
+              </HStack>
+            </VStack>
+
+            {/* Links */}
+            <HStack spacing={3} align="center">
+              <Link 
+                href={`https://defi.krystal.app/account/${position.ownerAddress}/positions/${position.id}?chainId=${position.chain.id}`} 
                 isExternal
+                color="blue.500"
+                fontSize="sm"
+                _hover={{ textDecoration: "underline" }}
               >
-                <Button rightIcon={<ExternalLinkIcon />} colorScheme="blue">
-                  View on Explorer
-                </Button>
+                [Open on Krystal]
+              </Link>
+              <Link 
+                href={`https://dexscreener.com/${position.chain.name.toLowerCase()}/${position.pool.poolAddress}`} 
+                isExternal
+                color="blue.500"
+                fontSize="sm"
+                _hover={{ textDecoration: "underline" }}
+              >
+                [Dexscreener]
               </Link>
             </HStack>
-          </VStack>
-        )}
+          </HStack>
+        </VStack>
 
-        {/* Key Stats */}
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mb={8}>
+        {/* Main Stats */}
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6} mb={8}>
+          {/* Total Value */}
           <Card bg={cardBg} border="1px" borderColor={borderColor}>
             <CardBody>
               <Stat>
-                <StatLabel>Current Value</StatLabel>
-                <StatNumber fontSize="2xl">
+                <StatLabel fontSize="sm" color="gray.500">
+                  <HStack spacing={2}>
+                    <Text>💰</Text>
+                    <Text>Total Value</Text>
+                  </HStack>
+                </StatLabel>
+                <StatNumber fontSize="3xl" fontWeight="bold" color="chakra-metrics">
                   {Formatter.formatCurrency(position.currentPositionValue || 0)}
                 </StatNumber>
-                <StatHelpText>Current position value</StatHelpText>
+                <VStack align="start" spacing={1} mt={2}>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">Liquidity</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {Formatter.formatCurrency(position.currentPositionValue || 0)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">Deposits</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {Formatter.formatCurrency(position.performance.totalDepositValue)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">Withdrawals</Text>
+                    <Text fontSize="sm" fontWeight="medium">$0.00</Text>
+                  </HStack>
+                </VStack>
               </Stat>
             </CardBody>
           </Card>
 
+          {/* Earning */}
           <Card bg={cardBg} border="1px" borderColor={borderColor}>
             <CardBody>
               <Stat>
-                <StatLabel>Total Deposited</StatLabel>
-                <StatNumber fontSize="2xl">
-                  {Formatter.formatCurrency(
-                    position.performance.totalDepositValue
-                  )}
+                <StatLabel fontSize="sm" color="gray.500">
+                  <HStack spacing={2}>
+                    <Text>💚</Text>
+                    <Text>Earning</Text>
+                  </HStack>
+                </StatLabel>
+                <StatNumber fontSize="3xl" fontWeight="bold" color="green.500">
+                  {Formatter.formatCurrency(getTotalPendingFees + getTotalClaimedFees)}
                 </StatNumber>
-                <StatHelpText>Total amount deposited</StatHelpText>
+                <VStack align="start" spacing={1} mt={2}>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">Unclaimed fees & rewards</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="green.500">
+                      {Formatter.formatCurrency(getTotalPendingFees)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">APR</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="green.500">
+                      {Formatter.formatAPR(position.performance.apr.totalApr)}
+                    </Text>
+                  </HStack>
+                </VStack>
               </Stat>
             </CardBody>
           </Card>
 
+          {/* Profit & Loss */}
           <Card bg={cardBg} border="1px" borderColor={borderColor}>
             <CardBody>
               <Stat>
-                <StatLabel>P&L</StatLabel>
-                <StatNumber
-                  fontSize="2xl"
-                  color={
-                    position.performance.pnl >= 0 ? "chakra-metrics" : "red.500"
-                  }
+                <StatLabel fontSize="sm" color="gray.500">
+                  <HStack spacing={2}>
+                    <Text>📊</Text>
+                    <Text>Profit & Loss</Text>
+                  </HStack>
+                </StatLabel>
+                <StatNumber 
+                  fontSize="3xl" 
+                  fontWeight="bold"
+                  color={position.performance.pnl >= 0 ? "green.500" : "red.500"}
                 >
                   {Formatter.formatCurrency(position.performance.pnl)}
                 </StatNumber>
-                <StatHelpText>
-                  {Formatter.formatPercentage(
-                    position.performance.returnOnInvestment
-                  )}{" "}
-                  ROI
-                </StatHelpText>
-              </Stat>
-            </CardBody>
-          </Card>
-
-          <Card bg={cardBg} border="1px" borderColor={borderColor}>
-            <CardBody>
-              <Stat>
-                <StatLabel>Total APR</StatLabel>
-                <StatNumber fontSize="2xl" color="chakra-metrics">
-                  {Formatter.formatAPR(position.performance.apr.totalApr)}
-                </StatNumber>
-                <StatHelpText>Annual percentage rate</StatHelpText>
+                <VStack align="start" spacing={1} mt={2}>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">Compare to HODL</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {Formatter.formatCurrency(position.performance.compareToHold)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">ROI</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {Formatter.formatPercentage(position.performance.returnOnInvestment)}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between" w="full">
+                    <Text fontSize="sm" color="gray.500">Impermanent Loss</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="orange.500">
+                      {Formatter.formatCurrency(position.performance.impermanentLoss)}
+                    </Text>
+                  </HStack>
+                </VStack>
               </Stat>
             </CardBody>
           </Card>
         </SimpleGrid>
 
-        {/* Performance Metrics */}
-        <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
-          <CardBody>
-            <Heading size="md" mb={6} color="chakra-title">
-              Performance Metrics
-            </Heading>
-            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
-              <Box>
-                <Text fontWeight="medium" mb={2}>
-                  Impermanent Loss
-                </Text>
-                <Text
-                  fontSize="lg"
-                  color={
-                    position.performance.impermanentLoss >= 0
-                      ? "green.500"
-                      : "red.500"
-                  }
-                >
-                  {Formatter.formatPercentage(
-                    position.performance.impermanentLoss
-                  )}
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="medium" mb={2}>
-                  Compare to Hold
-                </Text>
-                <Text
-                  fontSize="lg"
-                  color={
-                    position.performance.compareToHold >= 0
-                      ? "green.500"
-                      : "red.500"
-                  }
-                >
-                  {Formatter.formatPercentage(
-                    position.performance.compareToHold
-                  )}
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="medium" mb={2}>
-                  Fee APR
-                </Text>
-                <Text fontSize="lg" color="green.500">
-                  {Formatter.formatAPR(position.performance.apr.feeApr)}
-                </Text>
-              </Box>
-              <Box>
-                <Text fontWeight="medium" mb={2}>
-                  Farm APR
-                </Text>
-                <Text fontSize="lg" color="green.500">
-                  {Formatter.formatAPR(position.performance.apr.farmApr)}
-                </Text>
-              </Box>
-            </SimpleGrid>
-          </CardBody>
-        </Card>
-
-        {/* Token Information */}
-        <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
-          <CardBody>
-            <Heading size="md" mb={6} color={textColor}>
-              Token Information
-            </Heading>
-
-            {/* Current Amounts */}
-            <Box mb={6}>
-              <Text fontWeight="medium" mb={4}>
-                Current Amounts
-              </Text>
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                {position.currentAmounts.map((amount, index) => (
-                  <Card key={index} variant="outline" p={4}>
-                    <HStack spacing={3}>
-                      <Image
-                        src={amount.token.logo}
-                        alt={amount.token.symbol}
-                        boxSize="32px"
-                        borderRadius="full"
-                        fallbackSrc="/images/token-fallback.png"
-                      />
-                      <VStack align="start" spacing={1} flex={1}>
-                        <Text fontWeight="medium">{amount.token.symbol}</Text>
-                        <Text fontSize="sm" color={mutedTextColor}>
-                          {amount.token.name}
-                        </Text>
-                        <Text
-                          fontSize="xs"
-                          fontFamily="mono"
-                          color={mutedTextColor}
-                        >
-                          {Formatter.formatNumber(
-                            parseFloat(amount.balance) /
-                              Math.pow(10, amount.token.decimals),
-                            6
-                          )}
-                        </Text>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {Formatter.formatCurrency(amount.value)}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </Card>
-                ))}
-              </SimpleGrid>
-            </Box>
-
-            {/* Provided Amounts */}
-            <Box mb={6}>
-              <Text fontWeight="medium" mb={4}>
-                Initial Provided Amounts
-              </Text>
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                {position.providedAmounts.map((amount, index) => (
-                  <Card key={index} variant="outline" p={4}>
-                    <HStack spacing={3}>
-                      <Image
-                        src={amount.token.logo}
-                        alt={amount.token.symbol}
-                        boxSize="32px"
-                        borderRadius="full"
-                        fallbackSrc="/images/token-fallback.png"
-                      />
-                      <VStack align="start" spacing={1} flex={1}>
-                        <Text fontWeight="medium">{amount.token.symbol}</Text>
-                        <Text fontSize="sm" color={mutedTextColor}>
-                          {amount.token.name}
-                        </Text>
-                        <Text
-                          fontSize="xs"
-                          fontFamily="mono"
-                          color={mutedTextColor}
-                        >
-                          {Formatter.formatNumber(
-                            parseFloat(amount.balance) /
-                              Math.pow(10, amount.token.decimals),
-                            6
-                          )}
-                        </Text>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {Formatter.formatCurrency(amount.value)}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </Card>
-                ))}
-              </SimpleGrid>
-            </Box>
-
-            {/* Trading Fees */}
-            <Box>
-              <Text fontWeight="medium" mb={4}>
-                Trading Fees
-              </Text>
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-                <Box>
-                  <Text fontSize="sm" color={mutedTextColor} mb={2}>
-                    Pending Fees
-                  </Text>
-                  <VStack spacing={2}>
+        {/* Main Content - 2 Column Layout */}
+        <SimpleGrid
+          columns={{ base: 1, lg: 2 }}
+          spacing={8}
+          mb={8}
+          alignItems="start"
+        >
+          <VStack spacing={6} align="stretch" h="auto" w="100%">
+            {/* Fees & Rewards Section */}
+            <Card bg={cardBg} border="1px" borderColor={borderColor} h="auto" w="100%">
+              <CardBody>
+                <VStack align="start" spacing={4}>
+                  <Heading size="md" color="chakra-title">
+                    Fees & Rewards
+                  </Heading>
+                  
+                  {/* Unclaimed Fees */}
+                  <VStack align="start" spacing={1} w="full">
+                    <Text fontSize="sm" fontWeight="medium" color="gray.500">Unclaimed</Text>
                     {position.tradingFee.pending.map((fee, index) => (
-                      <HStack key={index} justify="space-between" w="full">
+                      <HStack key={index} justify="space-between" w="full" p={1}>
                         <HStack spacing={2}>
                           <Image
                             src={fee.token.logo}
                             alt={fee.token.symbol}
-                            boxSize="16px"
+                            boxSize="14px"
                             borderRadius="full"
                             fallbackSrc="/images/token-fallback.png"
                           />
-                          <Text fontSize="sm">{fee.token.symbol}</Text>
+                          <Text fontSize="sm" fontWeight="medium">{fee.token.symbol}</Text>
                         </HStack>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {Formatter.formatCurrency(fee.value)}
-                        </Text>
+                        <HStack spacing={2}>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {Formatter.formatTokenAmount(fee.balance, fee.token.decimals, fee.token.symbol)}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            {Formatter.formatCurrency(fee.value)}
+                          </Text>
+                        </HStack>
                       </HStack>
                     ))}
                   </VStack>
-                  <Divider my={2} />
-                  <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" fontWeight="medium">
-                      Total Pending
-                    </Text>
-                    <Text fontSize="sm" fontWeight="medium" color="green.500">
-                      {Formatter.formatCurrency(getTotalPendingFees)}
-                    </Text>
-                  </HStack>
-                </Box>
-                <Box>
-                  <Text fontSize="sm" color={mutedTextColor} mb={2}>
-                    Claimed Fees
-                  </Text>
-                  <VStack spacing={2}>
+                  
+                  {/* Claimed Fees */}
+                  <VStack align="start" spacing={1} w="full">
+                    <Text fontSize="sm" fontWeight="medium" color="gray.500">Claimed</Text>
                     {position.tradingFee.claimed.map((fee, index) => (
-                      <HStack key={index} justify="space-between" w="full">
+                      <HStack key={index} justify="space-between" w="full" p={1}>
                         <HStack spacing={2}>
                           <Image
                             src={fee.token.logo}
                             alt={fee.token.symbol}
-                            boxSize="16px"
+                            boxSize="14px"
                             borderRadius="full"
                             fallbackSrc="/images/token-fallback.png"
                           />
-                          <Text fontSize="sm">{fee.token.symbol}</Text>
+                          <Text fontSize="sm" fontWeight="medium">{fee.token.symbol}</Text>
                         </HStack>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {Formatter.formatCurrency(fee.value)}
-                        </Text>
+                        <HStack spacing={2}>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {Formatter.formatTokenAmount(fee.balance, fee.token.decimals, fee.token.symbol)}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            {Formatter.formatCurrency(fee.value)}
+                          </Text>
+                        </HStack>
                       </HStack>
                     ))}
                   </VStack>
-                  <Divider my={2} />
-                  <HStack justify="space-between" w="full">
-                    <Text fontSize="sm" fontWeight="medium">
-                      Total Claimed
-                    </Text>
-                    <Text fontSize="sm" fontWeight="medium" color="blue.500">
-                      {Formatter.formatCurrency(getTotalClaimedFees)}
+                  
+                  {/* Total Fees */}
+                  <HStack justify="space-between" w="full" p={1}>
+                    <Text fontSize="sm" fontWeight="medium">Total Fees and Rewards</Text>
+                    <Text fontSize="sm" fontWeight="medium" color="green.500">
+                      {Formatter.formatCurrency(getTotalPendingFees + getTotalClaimedFees)}
                     </Text>
                   </HStack>
-                </Box>
-              </SimpleGrid>
-            </Box>
-          </CardBody>
-        </Card>
+                </VStack>
+              </CardBody>
+            </Card>
 
-        {/* Position Details */}
-        <Card bg={cardBg} border="1px" borderColor={borderColor} mb={8}>
-          <CardBody>
-            <Heading size="md" mb={6} color={textColor}>
-              Position Details
-            </Heading>
-            <Grid
-              templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-              gap={6}
+            {/* Left Column - Price Range & Liquidity Distribution */}
+            <Card
+              bg={cardBg}
+              border="1px"
+              borderColor={borderColor}
+              h="auto"
             >
-              <GridItem>
-                <VStack align="start" spacing={4}>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Wallet Address
-                    </Text>
-                    <HStack>
-                      <Text
-                        fontSize="sm"
-                        fontFamily="mono"
-                        color={mutedTextColor}
-                      >
-                        {position.ownerAddress}
-                      </Text>
-                      <IconButton
-                        size="sm"
-                        icon={<CopyIcon />}
-                        aria-label="Copy address"
-                        onClick={() =>
-                          copyToClipboard(
-                            position.ownerAddress,
-                            "Wallet address"
-                          )
-                        }
-                      />
-                    </HStack>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Pool Address
-                    </Text>
-                    <HStack>
-                      <Text
-                        fontSize="sm"
-                        fontFamily="mono"
-                        color={mutedTextColor}
-                      >
-                        {position.pool.poolAddress}
-                      </Text>
-                      <IconButton
-                        size="sm"
-                        icon={<CopyIcon />}
-                        aria-label="Copy pool address"
-                        onClick={() =>
-                          copyToClipboard(
-                            position.pool.poolAddress,
-                            "Pool address"
-                          )
-                        }
-                      />
-                    </HStack>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Token ID
-                    </Text>
-                    <Text fontSize="sm" color={mutedTextColor}>
-                      {position.tokenId}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Liquidity
-                    </Text>
-                    <Text fontSize="sm" color={mutedTextColor}>
-                      {Formatter.formatNumber(
-                        parseFloat(position.liquidity),
-                        0
-                      )}
-                    </Text>
-                  </Box>
-                </VStack>
-              </GridItem>
-              <GridItem>
-                <VStack align="start" spacing={4}>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
+              <CardBody>
+                <VStack align="start" spacing={6}>
+                  {/* Price Range */}
+                  <VStack align="start" spacing={4} w="full">
+                    <Heading size="md" color="chakra-title">
                       Price Range
-                    </Text>
-                    <PriceRangeDisplay
-                      minPrice={position.minPrice}
-                      maxPrice={position.maxPrice}
-                      currentPrice={getCurrentPrice}
-                      showPercentages={true}
-                      showVisual={true}
-                    />
-                  </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Opened Time
-                    </Text>
-                    <Text fontSize="sm" color={mutedTextColor}>
-                      {Formatter.formatAge(position.openedTime)}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Last Update Block
-                    </Text>
-                    <Text fontSize="sm" color={mutedTextColor}>
-                      {position.lastUpdateBlock.toLocaleString()}
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="medium" mb={2}>
-                      Status
-                    </Text>
-                    <HStack>
-                      <DotIndicator status={position.status} size="md" />
-                      <Text fontSize="sm" color={mutedTextColor}>
-                        {position.status === "IN_RANGE"
-                          ? "In Range"
-                          : position.status === "OUT_OF_RANGE"
-                            ? "Out of Range"
-                            : position.status === "CLOSED"
-                              ? "Closed"
-                              : position.status}
+                    </Heading>
+                    <VStack align="start" spacing={2} w="full">
+                      <HStack justify="space-between" w="full">
+                        <Text fontSize="sm" color="gray.500">Min Price</Text>
+                        <Text fontSize="sm" fontWeight="medium">
+                          {position.minPrice.toFixed(6)} WETH = 1 {position.currentAmounts[0].token.symbol}
+                        </Text>
+                      </HStack>
+                      <HStack justify="space-between" w="full">
+                        <Text fontSize="sm" color="gray.500">Max Price</Text>
+                        <Text fontSize="sm" fontWeight="medium">
+                          {position.maxPrice.toFixed(6)} WETH = 1 {position.currentAmounts[0].token.symbol}
+                        </Text>
+                      </HStack>
+                    </VStack>
+                  </VStack>
+                </VStack>
+              </CardBody>
+            </Card>
+          </VStack>
+
+          {/* Right Column - Liquidity & Fees & Rewards */}
+          <VStack spacing={6} align="stretch" h="auto" w="100%">
+            {/* Liquidity Section */}
+            <Card bg={cardBg} border="1px" borderColor={borderColor} h="auto" w="100%">
+              <CardBody>
+                <VStack align="start" spacing={4}>
+                  <Heading size="md" color="chakra-title">
+                    Liquidity
+                  </Heading>
+                  
+                  {/* Current Liquidity */}
+                  <VStack align="start" spacing={1} w="full">
+                    <Text fontSize="sm" fontWeight="medium" color="gray.500">Current Liquidity</Text>
+                    {position.currentAmounts.map((amount, index) => {
+                      const currentPercentage = ((amount.value / (position.currentPositionValue || 1)) * 100).toFixed(0);
+                      
+                      return (
+                        <HStack key={index} justify="space-between" w="full" p={1}>
+                          <HStack spacing={2}>
+                            <Image
+                              src={amount.token.logo}
+                              alt={amount.token.symbol}
+                              boxSize="14px"
+                              borderRadius="full"
+                              fallbackSrc="/images/token-fallback.png"
+                            />
+                            <Text fontSize="sm" fontWeight="medium">{amount.token.symbol}</Text>
+                          </HStack>
+                          <HStack spacing={2}>
+                            <Text fontSize="xs" color="gray.500">{currentPercentage}%</Text>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {Formatter.formatTokenAmount(amount.balance, amount.token.decimals, amount.token.symbol)}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500">
+                              {Formatter.formatCurrency(amount.value)}
+                            </Text>
+                          </HStack>
+                        </HStack>
+                      );
+                    })}
+                  </VStack>
+                  
+                  {/* HODL */}
+                  <VStack align="start" spacing={1} w="full">
+                    <Text fontSize="sm" fontWeight="medium" color="gray.500">HODL</Text>
+                    {position.providedAmounts.map((amount, index) => {
+                      const hodlPercentage = ((amount.value / (position.performance.totalDepositValue || 1)) * 100).toFixed(0);
+                      
+                      return (
+                        <HStack key={index} justify="space-between" w="full" p={1}>
+                          <HStack spacing={2}>
+                            <Image
+                              src={amount.token.logo}
+                              alt={amount.token.symbol}
+                              boxSize="14px"
+                              borderRadius="full"
+                              fallbackSrc="/images/token-fallback.png"
+                            />
+                            <Text fontSize="sm" fontWeight="medium">{amount.token.symbol}</Text>
+                          </HStack>
+                          <HStack spacing={2}>
+                            <Text fontSize="xs" color="gray.500">{hodlPercentage}%</Text>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {Formatter.formatTokenAmount(amount.balance, amount.token.decimals, amount.token.symbol)}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500">
+                              {Formatter.formatCurrency(amount.value)}
+                            </Text>
+                          </HStack>
+                        </HStack>
+                      );
+                    })}
+                  </VStack>
+                  
+                  {/* Impermanent Loss */}
+                  <VStack align="start" spacing={2} w="full">
+                    <HStack justify="space-between" w="full" p={1}>
+                      <Text fontSize="sm" fontWeight="medium" color="gray.500">Impermanent Loss</Text>
+                      <Text fontSize="sm" fontWeight="medium" color="red.500">
+                        {Formatter.formatCurrency(position.performance.impermanentLoss)}
                       </Text>
                     </HStack>
-                  </Box>
+                  </VStack>
                 </VStack>
-              </GridItem>
-            </Grid>
-          </CardBody>
-        </Card>
+              </CardBody>
+            </Card>
+
+            
+          </VStack>
+        </SimpleGrid>
 
         {/* Footer */}
         <Footer />
