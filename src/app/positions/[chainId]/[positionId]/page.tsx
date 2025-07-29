@@ -406,9 +406,7 @@ function PositionDetailsPageContent() {
             <Card border="1px" h="auto" w="100%">
               <CardBody>
                 <VStack align="start" spacing={4}>
-                  <Heading size="md">
-                    Fees & Rewards
-                  </Heading>
+                  <Heading size="md">Fees & Rewards</Heading>
 
                   {/* Unclaimed Fees */}
                   <VStack align="start" spacing={1} w="full">
@@ -511,9 +509,7 @@ function PositionDetailsPageContent() {
                 <VStack align="start" spacing={6}>
                   {/* Price Range */}
                   <VStack align="start" spacing={4} w="full">
-                    <Heading size="md">
-                      Price Range
-                    </Heading>
+                    <Heading size="md">Price Range</Heading>
                     <VStack align="start" spacing={2} w="full">
                       <HStack justify="space-between" w="full">
                         <Text fontSize="sm" color="gray.500">
@@ -546,9 +542,7 @@ function PositionDetailsPageContent() {
             <Card border="1px" h="auto" w="100%">
               <CardBody>
                 <VStack align="start" spacing={4}>
-                  <Heading size="md">
-                    Liquidity
-                  </Heading>
+                  <Heading size="md">Liquidity</Heading>
 
                   {/* Current Liquidity */}
                   <VStack align="start" spacing={1} w="full">

@@ -85,7 +85,9 @@ function PoolsPageContent() {
       // Prepare API parameters based on swagger specification
       // Filter out undefined values to avoid sending them to the API
       const apiParams: IPoolsParams = Object.fromEntries(
-        Object.entries(filters || {}).filter(([_, value]) => value !== undefined && value !== null && value !== "")
+        Object.entries(filters || {}).filter(
+          ([_, value]) => value !== undefined && value !== null && value !== ""
+        )
       );
 
       console.log("API Parameters:", apiParams);
@@ -318,11 +320,17 @@ function PoolsPageContent() {
               size="sm"
             >
               <option value="all">All Protocols</option>
-              {protocols.filter(protocol => selectedChain ? selectedChain?.supportedProtocols?.includes(protocol.key) : true).map(protocol => (
-                <option key={protocol.key} value={protocol.key}>
-                  {protocol.name}
-                </option>
-              ))}
+              {protocols
+                .filter(protocol =>
+                  selectedChain
+                    ? selectedChain?.supportedProtocols?.includes(protocol.key)
+                    : true
+                )
+                .map(protocol => (
+                  <option key={protocol.key} value={protocol.key}>
+                    {protocol.name}
+                  </option>
+                ))}
             </Select>
             <Select
               w="fit-content"
@@ -381,9 +389,7 @@ function PoolsPageContent() {
                 <Thead>
                   <Tr>
                     {tableColumns.map((col, idx) => (
-                      <Th key={idx}>
-                        {col.label}
-                      </Th>
+                      <Th key={idx}>{col.label}</Th>
                     ))}
                   </Tr>
                 </Thead>

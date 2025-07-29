@@ -328,18 +328,24 @@ export default function ThemeProvider({
     const urlTheme = searchParams.get("theme");
     const embedPrimaryColor = embedConfig?.primaryColor;
     const embedTheme = embedConfig?.theme;
-    
+
     const primaryColor = urlPrimaryColor || embedPrimaryColor || "#3b82f6";
     const embedThemeFinal = urlTheme || embedTheme;
 
     console.log(
       "ThemeProvider Debug:",
-      "URL primaryColor =", urlPrimaryColor,
-      "URL theme =", urlTheme,
-      "Embed primaryColor =", embedPrimaryColor,
-      "Embed theme =", embedTheme,
-      "Final primaryColor =", primaryColor,
-      "Final theme =", embedThemeFinal
+      "URL primaryColor =",
+      urlPrimaryColor,
+      "URL theme =",
+      urlTheme,
+      "Embed primaryColor =",
+      embedPrimaryColor,
+      "Embed theme =",
+      embedTheme,
+      "Final primaryColor =",
+      primaryColor,
+      "Final theme =",
+      embedThemeFinal
     );
 
     // API key is now configured in config.ts, no longer stored in localStorage

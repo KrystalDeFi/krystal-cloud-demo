@@ -51,7 +51,7 @@ export default function EmbedButton() {
     config: searchParams.get("config"),
     isEmbedMode,
     isConfigDisabled,
-    willShowButton: !isConfigDisabled && embedConfig
+    willShowButton: !isConfigDisabled && embedConfig,
   });
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export default function EmbedButton() {
       urlPrimaryColor: primaryColor,
       urlTheme: theme,
       currentEmbedConfig: embedConfig,
-      mounted
+      mounted,
     });
 
     // Flow: URL params > cached config > default values
@@ -82,10 +82,13 @@ export default function EmbedButton() {
       showBreadcrumbs !== null
     ) {
       const newConfig: IEmbedConfig = {
-        theme: (theme as "light" | "dark" | "auto") || embedConfig?.theme || "auto",
+        theme:
+          (theme as "light" | "dark" | "auto") || embedConfig?.theme || "auto",
         primaryColor: primaryColor || embedConfig?.primaryColor || "#3b82f6",
-        showNavigation: showNavigation === "true" || (embedConfig?.showNavigation ?? false),
-        showBreadcrumbs: showBreadcrumbs !== "false" && (embedConfig?.showBreadcrumbs ?? true),
+        showNavigation:
+          showNavigation === "true" || (embedConfig?.showNavigation ?? false),
+        showBreadcrumbs:
+          showBreadcrumbs !== "false" && (embedConfig?.showBreadcrumbs ?? true),
       };
 
       console.log("EmbedButton: Updating config from URL params:", newConfig);
@@ -129,16 +132,16 @@ export default function EmbedButton() {
     // Sync URL parameters with the most updated value for shareable links
     const updateUrlParams = () => {
       const params = new URLSearchParams(searchParams.toString());
-      
+
       // Update the specific parameter
       params.set(key.toString(), value.toString());
-      
+
       // Always add embed=1 when updating config
       params.set("embed", "1");
-      
+
       // Remove config=disabled if it exists (since user is actively configuring)
       params.delete("config");
-      
+
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
@@ -222,7 +225,12 @@ export default function EmbedButton() {
     return null;
   }
 
-  console.log("EmbedButton: Showing button - config disabled:", isConfigDisabled, "embed config:", !!embedConfig);
+  console.log(
+    "EmbedButton: Showing button - config disabled:",
+    isConfigDisabled,
+    "embed config:",
+    !!embedConfig
+  );
 
   return (
     <>

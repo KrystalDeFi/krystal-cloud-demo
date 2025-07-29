@@ -89,14 +89,6 @@ const getApiKey = (): string => {
   return CLOUD_API_KEY;
 };
 
-// Helper function to set API key (no longer needed, kept for compatibility)
-const setApiKey = (key: string): void => {
-  // API key is now configured in config.ts, no longer stored in localStorage
-  console.warn(
-    "setApiKey is deprecated. API key is now configured in config.ts"
-  );
-};
-
 // Generic API request function
 const apiRequest = async <T>(
   endpoint: string,
@@ -264,5 +256,4 @@ export const KrystalApi = {
   pools: poolsApi,
   positions: positionsApi,
   getApiKey,
-  setApiKey,
 };

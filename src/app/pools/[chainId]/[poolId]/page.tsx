@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -30,11 +30,11 @@ import {
   TabPanel,
   Image,
   useToast,
-  useColorModeValue
+  useColorModeValue,
 } from "@chakra-ui/react";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
-import { IAPoolDetails, IAPoolHistorical } from "../../../../services/apiTypes";
+import { IAPoolDetails } from "../../../../services/apiTypes";
 import { Formatter } from "@/common/formatter";
 import { FallbackImg } from "@/components/FallbackImg";
 import { Address } from "@/components/Address";
@@ -58,7 +58,6 @@ import {
 import { CHAIN_CONFIGS } from "@/common/config";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/app/Footer";
-import { useCache } from "@/hooks/useCache";
 import EmbedWrapper from "@/components/EmbedWrapper";
 import { useChainsProtocols } from "@/contexts/ChainsProtocolsContext";
 
@@ -75,8 +74,6 @@ interface ChartDataPoint {
 
 function PoolDetailsPageContent() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const chainId = params.chainId as string;
   const poolId = params.poolId as string;
 
@@ -87,9 +84,6 @@ function PoolDetailsPageContent() {
   const [chartTimeRange, setChartTimeRange] = useState<"7D" | "30D" | "90D">(
     "30D"
   );
-  const [selectedData, setSelectedData] = useState<
-    "price" | "apr" | "tvl" | "volFee"
-  >("price");
   const [historicalLoading, setHistoricalLoading] = useState(false);
   const [selectedChart, setSelectedChart] = useState<
     "price" | "apr" | "tvl" | "volFee"
@@ -98,11 +92,15 @@ function PoolDetailsPageContent() {
     "1h" | "24h" | "7d" | "30d"
   >("24h");
 
-  const { error: apiError, handleApiError, clearError } = useApiError();
+  const { handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
   const toast = useToast();
 
-  const { chains, protocols } = useChainsProtocols();
+  // Theme-aware colors for charts using primary color - moved outside renderChart
+  const gridColor = useColorModeValue("brand.200", "brand.700");
+  const axisColor = useColorModeValue("brand.600", "white");
+  const backgroundOpacity = useColorModeValue(0.15, 0.08);
+  const backgroundFilter = useColorModeValue("none", "brightness(0) invert(1)");
 
   // Fetch pool details from API
   const fetchPoolDetails = async () => {
@@ -275,11 +273,6 @@ function PoolDetailsPageContent() {
         ? data.filter(item => item[selectedChart] != 0)
         : data;
 
-    // Theme-aware colors for charts using primary color
-    const gridColor = useColorModeValue("brand.200", "brand.700");
-    const axisColor = useColorModeValue("brand.600", "white");
-    const textColor = useColorModeValue("brand.800", "white");
-
     // Extract values for the selected chart type
     const getValue = (item: ChartDataPoint) => {
       switch (selectedChart) {
@@ -326,8 +319,8 @@ function PoolDetailsPageContent() {
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           backgroundSize: "contain",
-          opacity: useColorModeValue(0.15, 0.08),
-          filter: useColorModeValue("none", "brightness(0) invert(1)"),
+          opacity: backgroundOpacity,
+          filter: backgroundFilter,
           zIndex: 0,
           pointerEvents: "none",
         }}
@@ -586,6 +579,7 @@ function PoolDetailsPageContent() {
             <HStack spacing={1}>
               <Image
                 src={pool.chain.logo}
+                alt={pool.chain.name}
                 fallbackSrc="/images/token-fallback.png"
                 boxSize="20px"
                 borderRadius="full"
@@ -625,8 +619,7 @@ function PoolDetailsPageContent() {
               </Card>
             </GridItem>
             <GridItem>
-              <Card
-              >
+              <Card>
                 <CardBody>
                   <VStack align="start" spacing={4}>
                     <HStack justify="space-between" w="full">
@@ -759,9 +752,7 @@ function PoolDetailsPageContent() {
 
           {/* Information */}
           <GridItem>
-            <Card
-              w="full"
-            >
+            <Card w="full">
               <CardBody>
                 <Heading size="md" mb={6}>
                   Information
@@ -800,7 +791,9 @@ function PoolDetailsPageContent() {
                   </HStack>
                   <HStack spacing={2} justify="space-between">
                     <Text fontSize="sm">Fee-tier</Text>
-                    <Text fontSize="sm">{Formatter.formatFeeTier(pool.feeTier)}</Text>
+                    <Text fontSize="sm">
+                      {Formatter.formatFeeTier(pool.feeTier)}
+                    </Text>
                   </HStack>
                   <HStack spacing={2} justify="space-between" align="start">
                     <Text fontSize="sm">Token0</Text>
@@ -862,8 +855,13 @@ function PoolDetailsPageContent() {
                         label: "[explorer]",
                         href: `${pool.chain.explorer}/address/${pool.poolAddress}`,
                       },
-                    ].map(item => (
-                      <Link href={item.href} isExternal fontSize="xs">
+                    ].map((item, index) => (
+                      <Link
+                        key={index}
+                        href={item.href}
+                        isExternal
+                        fontSize="xs"
+                      >
                         {item.label}
                         {/* <Image
                           src={item.img}
