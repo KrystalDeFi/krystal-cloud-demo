@@ -30,10 +30,30 @@ export function EmbedConfigProvider({
         showNavigation: false,
         showBreadcrumbs: true,
       },
-      // Enable URL param sync for shareable links
-      syncParams: true,
+      // Disable URL param sync to avoid loops - we'll handle URL params manually
+      syncParams: false,
     }
   );
+
+  // Local state for immediate UI updates to prevent blinking
+  const [immediateConfig, setImmediateConfig] = React.useState(embedConfig);
+
+  // Sync immediate config with embed config when it changes
+  React.useEffect(() => {
+    if (embedConfig) {
+      setImmediateConfig(embedConfig);
+    }
+  }, [embedConfig]);
+
+  // Only log in development mode to reduce console noise
+  if (process.env.NODE_ENV === "development") {
+    console.log("EmbedConfigContext Debug:", {
+      embedConfig,
+      immediateConfig,
+      showNavigation: immediateConfig?.showNavigation,
+      showBreadcrumbs: immediateConfig?.showBreadcrumbs,
+    });
+  }
 
   const updateEmbedConfig = useCallback(
     (key: keyof IEmbedConfig, value: string | boolean) => {
@@ -43,22 +63,31 @@ export function EmbedConfigProvider({
       if (embedConfig[key] === value) return;
 
       const newConfig = { ...embedConfig, [key]: value };
+      console.log("EmbedConfigContext: Updating config:", {
+        key,
+        value,
+        newConfig,
+      });
+
+      // Update immediate config first for instant UI feedback
+      setImmediateConfig(newConfig);
+
+      // Then update the cached config
       setEmbedConfig(newConfig);
     },
     [embedConfig, setEmbedConfig]
   );
 
-  // Note: isEmbedMode and isConfigDisabled will be determined by URL params in individual components
-  // since this provider doesn't have access to useSearchParams
+  // Memoize the context value to prevent unnecessary re-renders
   const embedConfigValue = useMemo(
     () => ({
-      embedConfig,
+      embedConfig: immediateConfig, // Use immediate config for instant updates
       setEmbedConfig,
       updateEmbedConfig,
       isEmbedMode: false, // This will be determined by URL params in components
       isConfigDisabled: false, // This will be determined by URL params in components
     }),
-    [embedConfig, setEmbedConfig, updateEmbedConfig]
+    [immediateConfig, setEmbedConfig, updateEmbedConfig]
   );
 
   return (

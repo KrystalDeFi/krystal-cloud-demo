@@ -80,29 +80,27 @@ export default function Home() {
               position="relative"
               overflow="hidden"
             >
-              <Box
-                position="absolute"
-                top={0}
-                left={0}
-                right={0}
-                bottom={0}
-                bgGradient="linear(to-br, bg.secondary, bg.brand, bg.secondary)"
-                opacity={0.1}
-              />
               <Heading size="md" mb={4}>
                 Welcome Buidlers 👋
               </Heading>
               <VStack align="start" spacing={3}>
-                <Text fontWeight="medium">DeFi Pools</Text>
+                <Text fontWeight="medium">
+                  This page includes views which are calling Krystal Cloud API
+                  under the hood.
+                </Text>
                 <Text>
                   You can easily customize and embed any page in your
                   application.
                 </Text>
                 <Text>
                   Leave us a message on{" "}
-                  <Link href="https://t.me/krystalapp" isExternal>
-                    Telegram
-                  </Link>
+                  <Link
+                    href={"https://discord.com/invite/VJZXyb9QfA"}
+                    isExternal
+                  >
+                    Discord
+                  </Link>{" "}
+                  for any enquiries and requests.
                 </Text>
               </VStack>
             </Box>

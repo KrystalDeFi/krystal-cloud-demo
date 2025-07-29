@@ -19,6 +19,7 @@ import {
   InputGroup,
   InputLeftElement,
   Switch,
+  Spinner,
 } from "@chakra-ui/react";
 import { SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
@@ -41,6 +42,8 @@ export default function EmbedButton() {
 
   const [mounted, setMounted] = useState(false);
   const [isValidHex, setIsValidHex] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [hasLoadedFromUrl, setHasLoadedFromUrl] = useState(false);
 
   // Determine embed mode and config disabled from URL params
   const isEmbedMode = searchParams.get("embed") === "1";
@@ -60,49 +63,62 @@ export default function EmbedButton() {
 
   // Load embed config from URL params on mount and when search params change
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || hasLoadedFromUrl) return;
 
     const primaryColor = searchParams.get("primaryColor");
     const theme = searchParams.get("theme");
     const showNavigation = searchParams.get("showNavigation");
     const showBreadcrumbs = searchParams.get("showBreadcrumbs");
 
-    console.log("EmbedButton Debug:", {
-      urlPrimaryColor: primaryColor,
-      urlTheme: theme,
-      currentEmbedConfig: embedConfig,
-      mounted,
-    });
+    // Only log in development mode to reduce console noise
+    if (process.env.NODE_ENV === "development") {
+      console.log("EmbedButton Debug:", {
+        urlPrimaryColor: primaryColor,
+        urlTheme: theme,
+        urlShowNavigation: showNavigation,
+        urlShowBreadcrumbs: showBreadcrumbs,
+        currentEmbedConfig: embedConfig,
+        currentLocalConfig: embedConfig, // Changed from localConfig to embedConfig
+        mounted,
+        hasLoadedFromUrl,
+      });
+    }
 
-    // Flow: URL params > cached config > default values
+    // Only update config from URL params if we have URL params and haven't loaded from URL yet
+    // This prevents loops by only loading from URL on first load
     if (
-      primaryColor ||
-      theme ||
-      showNavigation !== null ||
-      showBreadcrumbs !== null
+      (primaryColor ||
+        theme ||
+        showNavigation !== null ||
+        showBreadcrumbs !== null) &&
+      !hasLoadedFromUrl
     ) {
       const newConfig: IEmbedConfig = {
         theme:
           (theme as "light" | "dark" | "auto") || embedConfig?.theme || "auto",
         primaryColor: primaryColor || embedConfig?.primaryColor || "#3b82f6",
         showNavigation:
-          showNavigation === "true" || (embedConfig?.showNavigation ?? false),
+          showNavigation !== null
+            ? showNavigation === "true"
+            : (embedConfig?.showNavigation ?? false),
         showBreadcrumbs:
-          showBreadcrumbs !== "false" && (embedConfig?.showBreadcrumbs ?? true),
+          showBreadcrumbs !== null
+            ? showBreadcrumbs !== "false"
+            : (embedConfig?.showBreadcrumbs ?? true),
       };
 
-      console.log("EmbedButton: Updating config from URL params:", newConfig);
-
-      // Only update if config has changed
-      if (JSON.stringify(newConfig) !== JSON.stringify(embedConfig)) {
-        setEmbedConfig(newConfig);
-      }
+      console.log(
+        "EmbedButton: Loading config from URL params (first load):",
+        newConfig
+      );
+      setEmbedConfig(newConfig);
+      setHasLoadedFromUrl(true);
     }
 
     // Validate hex color
     const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
     setIsValidHex(hexRegex.test(embedConfig?.primaryColor || "#3b82f6"));
-  }, [searchParams, embedConfig, setEmbedConfig, mounted]);
+  }, [searchParams, embedConfig, setEmbedConfig, mounted, hasLoadedFromUrl]);
 
   const handleColorPickerChange = (color: string) => {
     // Convert color picker value to hex format
@@ -114,6 +130,9 @@ export default function EmbedButton() {
     key: keyof IEmbedConfig,
     value: string | boolean
   ) => {
+    // Block re-clicks during updates
+    if (isUpdating) return;
+
     // Validate hex color format for primaryColor
     if (key === "primaryColor") {
       const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
@@ -126,10 +145,13 @@ export default function EmbedButton() {
       }
     }
 
-    // Update the embed config (this will be cached)
+    // Set updating state to block re-clicks
+    setIsUpdating(true);
+
+    // Update the embed config (this will update both immediate and cached state)
     updateEmbedConfig(key, value);
 
-    // Sync URL parameters with the most updated value for shareable links
+    // Update URL parameters ONLY (don't sync back to cache to avoid loops)
     const updateUrlParams = () => {
       const params = new URLSearchParams(searchParams.toString());
 
@@ -142,11 +164,16 @@ export default function EmbedButton() {
       // Remove config=disabled if it exists (since user is actively configuring)
       params.delete("config");
 
+      // Update URL without triggering cache sync
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
-    // Debounce URL updates to prevent loops
-    setTimeout(updateUrlParams, 100);
+    // Debounce URL updates to prevent loops and allow UI to update first
+    setTimeout(() => {
+      updateUrlParams();
+      // Reset updating state after a short delay to allow rendering to complete
+      setTimeout(() => setIsUpdating(false), 100);
+    }, 150);
   };
 
   const copyToClipboard = async (text: string, label: string) => {
@@ -204,14 +231,7 @@ export default function EmbedButton() {
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
 
     const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
-
-    return `<iframe 
-  src="${embedUrl}"
-  width="100%"
-  height="600px"
-  frameborder="0"
-  style="border: none; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"
-></iframe>`;
+    return `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
   };
 
   // Don't show embed button when config is disabled
@@ -279,6 +299,14 @@ export default function EmbedButton() {
               <HStack spacing={2}>
                 <SettingsIcon />
                 <Text fontWeight="medium">Embed Configuration</Text>
+                {isUpdating && (
+                  <HStack spacing={1}>
+                    <Spinner size="sm" color="highlight" />
+                    <Text fontSize="xs" color="text.muted">
+                      Updating...
+                    </Text>
+                  </HStack>
+                )}
               </HStack>
               <HStack spacing={2}>
                 <CloseButton onClick={handleCloseConfig} size="sm" />
@@ -298,29 +326,40 @@ export default function EmbedButton() {
                       <FormLabel fontSize="sm" mb="0">
                         Show Navigation
                       </FormLabel>
-                      <Switch
-                        isChecked={embedConfig?.showNavigation}
-                        onChange={e =>
-                          handleConfigUpdate("showNavigation", e.target.checked)
-                        }
-                        colorScheme="brand"
-                      />
+                      <HStack spacing={2}>
+                        <Switch
+                          isChecked={embedConfig?.showNavigation}
+                          onChange={e =>
+                            handleConfigUpdate(
+                              "showNavigation",
+                              e.target.checked
+                            )
+                          }
+                          colorScheme="brand"
+                          isDisabled={isUpdating}
+                        />
+                        {isUpdating && <Spinner size="sm" color="highlight" />}
+                      </HStack>
                     </FormControl>
 
                     <FormControl display="flex" alignItems="center">
                       <FormLabel fontSize="sm" mb="0">
                         Show Breadcrumbs
                       </FormLabel>
-                      <Switch
-                        isChecked={embedConfig?.showBreadcrumbs}
-                        onChange={e =>
-                          handleConfigUpdate(
-                            "showBreadcrumbs",
-                            e.target.checked
-                          )
-                        }
-                        colorScheme="brand"
-                      />
+                      <HStack spacing={2}>
+                        <Switch
+                          isChecked={embedConfig?.showBreadcrumbs}
+                          onChange={e =>
+                            handleConfigUpdate(
+                              "showBreadcrumbs",
+                              e.target.checked
+                            )
+                          }
+                          colorScheme="brand"
+                          isDisabled={isUpdating}
+                        />
+                        {isUpdating && <Spinner size="sm" color="highlight" />}
+                      </HStack>
                     </FormControl>
                   </VStack>
                 </Box>
@@ -344,6 +383,7 @@ export default function EmbedButton() {
                           colorScheme="brand"
                           onClick={() => handleConfigUpdate("theme", "auto")}
                           flex={1}
+                          isDisabled={isUpdating}
                         >
                           Auto
                         </Button>
@@ -355,6 +395,7 @@ export default function EmbedButton() {
                           colorScheme="brand"
                           onClick={() => handleConfigUpdate("theme", "light")}
                           flex={1}
+                          isDisabled={isUpdating}
                         >
                           Light
                         </Button>
@@ -366,6 +407,7 @@ export default function EmbedButton() {
                           colorScheme="brand"
                           onClick={() => handleConfigUpdate("theme", "dark")}
                           flex={1}
+                          isDisabled={isUpdating}
                         >
                           Dark
                         </Button>
@@ -389,6 +431,7 @@ export default function EmbedButton() {
                             p={1}
                             borderRadius="md"
                             cursor="pointer"
+                            isDisabled={isUpdating}
                           />
                           <Text fontSize="xs" color="text.muted" flex={1}>
                             Click to pick a color
@@ -419,6 +462,7 @@ export default function EmbedButton() {
                             borderColor={
                               isValidHex ? undefined : "status.error"
                             }
+                            isDisabled={isUpdating}
                             _focus={{
                               borderColor: isValidHex
                                 ? "brand.500"

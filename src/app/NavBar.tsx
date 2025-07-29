@@ -13,13 +13,9 @@ import {
   Image,
 } from "@chakra-ui/react";
 import { SunIcon, MoonIcon } from "@chakra-ui/icons";
-import { useSearchParams } from "next/navigation";
 
 export default function NavBar() {
   const { colorMode, toggleColorMode } = useColorMode();
-  const searchParams = useSearchParams();
-
-  const isEmbedMode = searchParams.get("embed") === "1";
 
   return (
     <Box
