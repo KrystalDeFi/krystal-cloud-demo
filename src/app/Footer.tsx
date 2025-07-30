@@ -25,7 +25,7 @@ export function Footer() {
           <Text fontSize="sm" color="text.muted">
             Powered by{" "}
           </Text>
-          <Link href="https://krystal.app" isExternal>
+          <Link href="https://krystal.app?utm_source=cloudui" isExternal>
             <Image
               src={
                 logoColor === "black"

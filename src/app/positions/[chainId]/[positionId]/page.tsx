@@ -221,7 +221,7 @@ function PositionDetailsPageContent() {
             {/* Links */}
             <HStack spacing={3} align="center">
               <Link
-                href={`https://defi.krystal.app/account/${position.ownerAddress}/positions/${position.id}?chainId=${position.chain.id}`}
+                href={`https://defi.krystal.app/account/${position.ownerAddress}/positions/${position.id}?chainId=${position.chain.id}&utm_source=cloudui`}
                 isExternal
                 fontSize="sm"
                 _hover={{ textDecoration: "underline" }}

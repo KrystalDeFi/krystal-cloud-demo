@@ -12,6 +12,7 @@ import {
   AlertIcon,
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, RepeatIcon } from "@chakra-ui/icons";
+import { useFirebaseAnalytics } from "../hooks/useFirebaseAnalytics";
 
 interface ErrorDisplayProps {
   error: string | null;
@@ -28,6 +29,8 @@ export function ErrorDisplay({
   showApiKeyButton = true,
   compact = false,
 }: ErrorDisplayProps) {
+  const { trackError, trackButtonClick } = useFirebaseAnalytics();
+
   const isApiKeyError =
     error?.includes("API key") ||
     error?.includes("No API key") ||
@@ -37,6 +40,20 @@ export function ErrorDisplay({
     error?.includes("fetch") ||
     error?.includes("network") ||
     error?.includes("Failed to fetch");
+
+  // Track error when component mounts with an error
+  React.useEffect(() => {
+    if (error) {
+      trackError(
+        isApiKeyError ? "api_key_error" : isNetworkError ? "network_error" : "general_error",
+        error,
+        {
+          error_type: isApiKeyError ? "api_key" : isNetworkError ? "network" : "general",
+          page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+        }
+      );
+    }
+  }, [error, isApiKeyError, isNetworkError, trackError]);
 
   const getErrorTitle = () => {
     if (title) return title;
@@ -55,6 +72,20 @@ export function ErrorDisplay({
     return error;
   };
 
+  const handleRetry = () => {
+    trackButtonClick("error_retry", {
+      error_type: isApiKeyError ? "api_key" : isNetworkError ? "network" : "general",
+      page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+    });
+    onRetry?.();
+  };
+
+  const handleGetApiKey = () => {
+    trackButtonClick("get_api_key", {
+      page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+    });
+  };
+
   if (compact) {
     return (
       <Alert status="error" borderRadius="lg">
@@ -65,19 +96,20 @@ export function ErrorDisplay({
           {isApiKeyError && showApiKeyButton && (
             <Button
               as="a"
-              href="https://cloud.krystal.app"
+              href="https://cloud.krystal.app?utm_source=cloudui"
               target="_blank"
               rel="noopener noreferrer"
               leftIcon={<ExternalLinkIcon />}
               colorScheme="blue"
               size="sm"
+              onClick={handleGetApiKey}
             >
               Get Free API Key
             </Button>
           )}
           {onRetry && (
             <Button
-              onClick={onRetry}
+              onClick={handleRetry}
               leftIcon={<RepeatIcon />}
               variant="outline"
               size="sm"
@@ -112,13 +144,14 @@ export function ErrorDisplay({
             <VStack spacing={4} w="full">
               <Button
                 as="a"
-                href="https://cloud.krystal.app"
+                href="https://cloud.krystal.app?utm_source=cloudui"
                 target="_blank"
                 rel="noopener noreferrer"
                 leftIcon={<ExternalLinkIcon />}
                 colorScheme="blue"
                 size="lg"
                 w="full"
+                onClick={handleGetApiKey}
               >
                 Get Free API Key
               </Button>
@@ -130,7 +163,7 @@ export function ErrorDisplay({
 
           {onRetry && (
             <Button
-              onClick={onRetry}
+              onClick={handleRetry}
               leftIcon={<RepeatIcon />}
               variant="outline"
               size="sm"

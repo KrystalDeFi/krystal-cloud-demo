@@ -49,39 +49,58 @@
         <h1>🧪 Test Krystal Cloud Embedding</h1>
         
         <div class="test-section">
-            <h2>1. Basic Embed Test</h2>
-            <div id="status1" class="status">Testing...</div>
+            <h2>1. Basic Embed (Default Settings)</h2>
             <iframe 
-                id="test1"
-                src="https://cloud-ui.krystal.app/pools?embed=1" 
-                height="600px"
-                onload="document.getElementById('status1').innerHTML = '✅ Successfully loaded!'"
-                onerror="document.getElementById('status1').innerHTML = '❌ Failed to load'">
+                src="https://cloud-ui.krystal.app/pools?embed=1&utm_source=CLOUD" 
+                height="600px">
             </iframe>
+            <div class="code-block">
+&lt;iframe src="https://cloud-ui.krystal.app/pools?embed=1&utm_source=CLOUD" height="600px"&gt;&lt;/iframe&gt;
+            </div>
         </div>
 
         <div class="test-section">
-            <h2>2. Custom Branded Embed Test</h2>
-            <div id="status2" class="status">Testing...</div>
+            <h2>2. Custom Branded Embed (Orange Theme, No Navigation)</h2>
             <iframe 
-                id="test2"
-                src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false" 
-                height="600px"
-                onload="document.getElementById('status2').innerHTML = '✅ Successfully loaded!'"
-                onerror="document.getElementById('status2').innerHTML = '❌ Failed to load'">
+                src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false&utm_source=CLOUD" 
+                height="600px">
             </iframe>
+            <div class="code-block">
+&lt;iframe src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false&utm_source=CLOUD" height="600px"&gt;&lt;/iframe&gt;
+            </div>
         </div>
 
         <div class="test-section">
-            <h2>3. Minimal Embed Test</h2>
-            <div id="status3" class="status">Testing...</div>
+            <h2>3. Minimal Embed (No Navigation, No Breadcrumbs)</h2>
             <iframe 
-                id="test3"
-                src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false" 
-                height="500px"
-                onload="document.getElementById('status3').innerHTML = '✅ Successfully loaded!'"
-                onerror="document.getElementById('status3').innerHTML = '❌ Failed to load'">
+                src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false&utm_source=CLOUD" 
+                height="500px">
             </iframe>
+            <div class="code-block">
+&lt;iframe src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false&utm_source=CLOUD" height="500px"&gt;&lt;/iframe&gt;
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>4. Specific Pool Embed</h2>
+            <iframe 
+                src="https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35&showNavigation=false&utm_source=CLOUD" 
+                height="700px">
+            </iframe>
+            <div class="code-block">
+&lt;iframe src="https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35&showNavigation=false&utm_source=CLOUD" height="700px"&gt;&lt;/iframe&gt;
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>5. Wallet Positions Embed</h2>
+            <iframe 
+                src="https://cloud-ui.krystal.app/wallets/0x1234567890123456789012345678901234567890?embed=1&primaryColor=%2310b981&showNavigation=false&utm_source=CLOUD" 
+                height="700px">
+            </iframe>
+            <div class="code-block">
+&lt;iframe src="https://cloud-ui.krystal.app/wallets/0x1234567890123456789012345678901234567890?embed=1&primaryColor=%2310b981&showNavigation=false&utm_source=CLOUD" height="700px"&gt;&lt;/iframe&gt;
+            </div>
         </div>
 
         <div class="test-section">

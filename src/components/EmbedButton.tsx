@@ -25,6 +25,7 @@ import { SettingsIcon } from "@chakra-ui/icons";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { IEmbedConfig } from "../common/config";
 import { useEmbedConfig } from "../contexts/EmbedConfigContext";
+import { useFirebaseAnalytics } from "../hooks/useFirebaseAnalytics";
 
 export default function EmbedButton() {
   const {
@@ -34,6 +35,7 @@ export default function EmbedButton() {
     isEmbedMode: contextIsEmbedMode,
     isConfigDisabled: contextIsConfigDisabled,
   } = useEmbedConfig();
+  const { trackButtonClick, trackEmbedInteraction } = useFirebaseAnalytics();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -100,96 +102,114 @@ export default function EmbedButton() {
         showNavigation:
           showNavigation !== null
             ? showNavigation === "true"
-            : (embedConfig?.showNavigation ?? false),
+            : embedConfig?.showNavigation ?? true,
         showBreadcrumbs:
           showBreadcrumbs !== null
-            ? showBreadcrumbs !== "false"
-            : (embedConfig?.showBreadcrumbs ?? true),
+            ? showBreadcrumbs === "true"
+            : embedConfig?.showBreadcrumbs ?? true,
       };
 
-      console.log(
-        "EmbedButton: Loading config from URL params (first load):",
-        newConfig
-      );
       setEmbedConfig(newConfig);
       setHasLoadedFromUrl(true);
-    }
 
-    // Validate hex color
+      // Track embed config loaded from URL
+      trackEmbedInteraction("config_loaded_from_url", "embed_config", {
+        has_primary_color: !!primaryColor,
+        has_theme: !!theme,
+        has_show_navigation: showNavigation !== null,
+        has_show_breadcrumbs: showBreadcrumbs !== null,
+      });
+    }
+  }, [
+    mounted,
+    hasLoadedFromUrl,
+    searchParams,
+    embedConfig,
+    setEmbedConfig,
+    trackEmbedInteraction,
+  ]);
+
+  // Validate hex color
+  const validateHexColor = (color: string) => {
     const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-    setIsValidHex(hexRegex.test(embedConfig?.primaryColor || "#3b82f6"));
-  }, [searchParams, embedConfig, setEmbedConfig, mounted, hasLoadedFromUrl]);
+    return hexRegex.test(color);
+  };
 
   const handleColorPickerChange = (color: string) => {
-    // Convert color picker value to hex format
-    const hexColor = color.startsWith("#") ? color : `#${color}`;
-    updateEmbedConfig("primaryColor", hexColor);
+    const isValid = validateHexColor(color);
+    setIsValidHex(isValid);
+    if (isValid) {
+      handleConfigUpdate("primaryColor", color);
+    }
   };
 
   const handleConfigUpdate = (
     key: keyof IEmbedConfig,
     value: string | boolean
   ) => {
-    // Block re-clicks during updates
-    if (isUpdating) return;
+    if (!embedConfig) return;
 
-    // Validate hex color format for primaryColor
-    if (key === "primaryColor") {
-      const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
-      const isValid = hexRegex.test(value as string);
-      setIsValidHex(isValid);
+    // Prevent unnecessary updates
+    if (embedConfig[key] === value) return;
 
-      if (!isValid) {
-        // If invalid hex, don't update the config
-        return;
-      }
-    }
-
-    // Set updating state to block re-clicks
     setIsUpdating(true);
 
-    // Update the embed config (this will update both immediate and cached state)
+    // Update immediate config first for responsive UI
     updateEmbedConfig(key, value);
 
-    // Update URL parameters ONLY (don't sync back to cache to avoid loops)
+    // Track the configuration change
+    trackEmbedInteraction("config_updated", "embed_config", {
+      config_key: key,
+      config_value: value,
+      page: pathname,
+    });
+
+    // Update URL parameters
     const updateUrlParams = () => {
       const params = new URLSearchParams(searchParams.toString());
+      if (key === "primaryColor") {
+        params.set("primaryColor", value as string);
+      } else if (key === "theme") {
+        params.set("theme", value as string);
+      } else if (key === "showNavigation") {
+        params.set("showNavigation", value.toString());
+      } else if (key === "showBreadcrumbs") {
+        params.set("showBreadcrumbs", value.toString());
+      }
 
-      // Update the specific parameter
-      params.set(key.toString(), value.toString());
-
-      // Always add embed=1 when updating config
-      params.set("embed", "1");
-
-      // Remove config=disabled if it exists (since user is actively configuring)
-      params.delete("config");
-
-      // Update URL without triggering cache sync
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      // Use replace to avoid adding to browser history
+      router.replace(`${pathname}?${params.toString()}`);
     };
 
-    // Debounce URL updates to prevent loops and allow UI to update first
-    setTimeout(() => {
+    // Debounce URL updates to prevent excessive calls
+    const timeoutId = setTimeout(() => {
       updateUrlParams();
-      // Reset updating state after a short delay to allow rendering to complete
-      setTimeout(() => setIsUpdating(false), 100);
-    }, 150);
+      setIsUpdating(false);
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   };
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        title: `${label} copied!`,
-        description: `The ${label.toLowerCase()} has been copied to your clipboard.`,
+        title: "Copied!",
+        description: `${label} copied to clipboard`,
         status: "success",
-        duration: 3000,
+        duration: 2000,
         isClosable: true,
+      });
+
+      // Track copy action
+      trackButtonClick("copy_embed_config", {
+        copy_type: label.toLowerCase().replace(" ", "_"),
+        page: pathname,
       });
     } catch (err) {
       toast({
         title: "Failed to copy",
-        description: "Please copy manually.",
+        description: "Please copy manually",
         status: "error",
         duration: 3000,
         isClosable: true,
@@ -199,10 +219,17 @@ export default function EmbedButton() {
 
   const handleOpenEmbedConfig = () => {
     onOpen();
+    trackButtonClick("open_embed_config", {
+      page: pathname,
+      is_embed_mode: isEmbedMode,
+    });
   };
 
   const handleCloseConfig = () => {
     onClose();
+    trackButtonClick("close_embed_config", {
+      page: pathname,
+    });
   };
 
   const generateShareableLink = () => {
@@ -210,13 +237,15 @@ export default function EmbedButton() {
 
     const params = new URLSearchParams();
     params.set("embed", "1");
-    params.set("config", "disabled");
-    params.set("theme", embedConfig.theme);
     params.set("primaryColor", embedConfig.primaryColor);
+    params.set("theme", embedConfig.theme);
     params.set("showNavigation", embedConfig.showNavigation.toString());
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
+    params.set("config", "disabled");
+    params.set("utm_source", "CLOUD");
 
-    return `${window.location.origin}${pathname}?${params.toString()}`;
+    const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
+    return shareableUrl;
   };
 
   const generateEmbedCode = () => {
@@ -224,14 +253,15 @@ export default function EmbedButton() {
 
     const params = new URLSearchParams();
     params.set("embed", "1");
-    params.set("config", "disabled");
-    params.set("theme", embedConfig.theme);
     params.set("primaryColor", embedConfig.primaryColor);
+    params.set("theme", embedConfig.theme);
     params.set("showNavigation", embedConfig.showNavigation.toString());
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
+    params.set("config", "disabled");
+    params.set("utm_source", "CLOUD");
 
     const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
-    return `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+    return `<iframe src="${embedUrl}" width="100%" height="600px" frameborder="0"></iframe>`;
   };
 
   // Don't show embed button when config is disabled

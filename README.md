@@ -1,11 +1,15 @@
 # Krystal Cloud Demo
 
-A demo application for [cloud.krystal.app](https://cloud.krystal.app) that showcases the Krystal Cloud API integration.
+A demo application for [cloud.krystal.app](https://cloud.krystal.app?utm_source=CLOUD) that showcases the Krystal Cloud API integration.
 
 ## Features
 
-- **Header Bar**:
-  - Header link to cloud.krystal.app
+- **Embeddable UI**: Fully customizable and embeddable via iframes
+- **Real-time Data**: Live pool and position data from Krystal Cloud API
+- **Customizable Branding**: Dynamic theming with custom primary colors
+- **Responsive Design**: Works on desktop and mobile devices
+- **UTM Tracking**: All external links include UTM tracking for analytics
+- Header link to cloud.krystal.app
   - API key input with localStorage persistence
   - Link to generate API key if none present
 
@@ -51,7 +55,7 @@ A demo application for [cloud.krystal.app](https://cloud.krystal.app) that showc
 
 ## API Integration
 
-The app integrates with the [Krystal Cloud API](https://cloud-api.krystal.app/swagger/index.html#/) to fetch:
+The app integrates with the [Krystal Cloud API](https://cloud-api.krystal.app/swagger/index.html?utm_source=CLOUD) to fetch:
 
 - Pools: `/api/v1/pools`
 - Positions: `/api/v1/positions`

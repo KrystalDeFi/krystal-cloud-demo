@@ -9,6 +9,7 @@ import { EmbedConfigProvider } from "../contexts/EmbedConfigContext";
 import { EmbedWrapper } from "../components/EmbedWrapper";
 import EmbedButton from "../components/EmbedButton";
 import NavBar from "./NavBar";
+import { FirebaseProvider } from "../components/FirebaseProvider";
 
 export const metadata: Metadata = {
   title: "Krystal Cloud: Embeddable UI",
@@ -26,11 +27,13 @@ export default function RootLayout({
         <EmbedConfigProvider>
           <ThemeProvider>
             <ChainsProtocolsProvider>
-              <EmbedWrapper type="navigation">
-                <NavBar />
-              </EmbedWrapper>
-              {children}
-              <EmbedButton />
+              <FirebaseProvider>
+                <EmbedWrapper type="navigation">
+                  <NavBar />
+                </EmbedWrapper>
+                {children}
+                <EmbedButton />
+              </FirebaseProvider>
             </ChainsProtocolsProvider>
           </ThemeProvider>
         </EmbedConfigProvider>

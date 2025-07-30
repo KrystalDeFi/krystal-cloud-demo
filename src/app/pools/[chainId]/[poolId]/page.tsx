@@ -843,7 +843,7 @@ function PoolDetailsPageContent() {
                       {
                         img: "/images/krystal.png",
                         label: "[krystal]",
-                        href: `https://defi.krystal.app/pools/detail?chainId=${pool.chain.id}&poolAddress=${pool.poolAddress}&protocol=${pool.protocol.key}`,
+                        href: `https://defi.krystal.app/pools/detail?chainId=${pool.chain.id}&poolAddress=${pool.poolAddress}&protocol=${pool.protocol.key}&utm_source=cloudui`,
                       },
                       {
                         img: "/images/dexscreener.png",

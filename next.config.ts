@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: "script-src 'self' 'unsafe-inline' onesignal.com cdn.onesignal.com www.googletagmanager.com googletagmanager.com static.hotjar.com static.cloudflareinsights.com script.hotjar.com www.google-analytics.com; frame-ancestors 'self' *;", // Allow embedding in iframes from any origin
+            value: "script-src 'self' 'unsafe-inline' 'unsafe-eval' onesignal.com cdn.onesignal.com www.googletagmanager.com googletagmanager.com static.hotjar.com static.cloudflareinsights.com script.hotjar.com www.google-analytics.com; frame-ancestors 'self' *;", // Allow embedding in iframes from any origin
           },
           {
             key: "X-Content-Type-Options",

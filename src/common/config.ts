@@ -1,6 +1,12 @@
 export const CLOUD_API_KEY = "5434932e2240f3d895f79061090361aa5f987604";
 export const DOMAIN = "https://cloud-ui.krystal.app";
 
+// UTM tracking utility
+export const addUtmTracking = (url: string, source: string = "CLOUD") => {
+  const separator = url.includes("?") ? "&" : "?";
+  return `${url}${separator}utm_source=${source}`;
+};
+
 // ============================================================================
 // STATISTICS INTERFACES
 // ============================================================================
