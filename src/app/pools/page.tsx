@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo, Suspense } from "react";
+import React, { useState, useEffect, useMemo, Suspense, useRef } from "react";
 
 export const dynamic = "force-dynamic";
 import {
@@ -70,6 +70,9 @@ function PoolsPageContent() {
   // Cache data
   const { chains, protocols } = useChainsProtocols();
 
+  // Track if we've made the initial API call
+  const initialApiCallMade = useRef(false);
+
   const selectedChain = useMemo(() => {
     return chains.find(chain => chain.id == filters?.chainId);
   }, [chains, filters?.chainId]);
@@ -111,10 +114,19 @@ function PoolsPageContent() {
     }
   };
 
-  // Fetch pools whenever parameters change
+  // Fetch pools whenever filters change (but only after initial load)
   useEffect(() => {
     if (filters) {
-      fetchPools();
+      if (!initialApiCallMade.current) {
+        // Initial load
+        console.log("Pools page: initial load", filters);
+        fetchPools();
+        initialApiCallMade.current = true;
+      } else {
+        // Subsequent filter changes
+        console.log("Pools page: fetching pools due to filter change", filters);
+        fetchPools();
+      }
     }
   }, [filters]);
 
@@ -134,6 +146,17 @@ function PoolsPageContent() {
     }
 
     updateFilters(updates);
+  };
+
+  const handleMultipleFilterChanges = (updates: Partial<FilterParams>) => {
+    // Only trigger when some value changes
+    const hasChanges = Object.keys(updates).some(
+      key => updates[key as keyof FilterParams] !== filters?.[key as keyof FilterParams]
+    );
+
+    if (hasChanges) {
+      updateFilters({ offset: 0, ...updates, withIncentives: undefined });
+    }
   };
 
   const tableColumns = useMemo(
@@ -292,12 +315,10 @@ function PoolsPageContent() {
               w="fit-content"
               value={filters?.chainId?.toString() || "all"}
               onChange={e =>
-                handleFilterChange(
-                  "chainId",
-                  e.target.value === "all"
-                    ? undefined
-                    : parseInt(e.target.value)
-                )
+                handleMultipleFilterChanges({ 
+                  chainId: e.target.value === "all" ? undefined : parseInt(e.target.value),
+                  protocol: undefined,
+                })
               }
               size="sm"
             >

@@ -404,6 +404,9 @@ export function useFilterCache<T extends Record<string, any>>(options: {
     invalidate: clearCachedFilters,
   } = useCache<T>(cacheKey, { defaultValue: defaultFilters });
 
+  // Track if we've loaded from URL params to prevent loops
+  const [hasLoadedFromUrl, setHasLoadedFromUrl] = useState(false);
+
   // Initialize filters state
   const [filters, setFiltersState] = useState<T>(() => {
     // Priority: URL params -> cached filters -> default filters
@@ -431,6 +434,11 @@ export function useFilterCache<T extends Record<string, any>>(options: {
       ? urlFilters
       : cachedFilters || defaultFilters;
 
+    // Mark that we've loaded from URL if we found URL params
+    if (hasUrlParams) {
+      setHasLoadedFromUrl(true);
+    }
+
     return { ...defaultFilters, ...initialFilters } as T;
   });
 
@@ -440,7 +448,7 @@ export function useFilterCache<T extends Record<string, any>>(options: {
     [searchParams]
   );
 
-  // Update URL params when filters change
+  // Update URL params when filters change (without triggering API calls)
   const updateUrlParams = useCallback(
     (updates: Partial<T>) => {
       const params = new URLSearchParams(searchParamsString);
@@ -460,23 +468,27 @@ export function useFilterCache<T extends Record<string, any>>(options: {
     [searchParamsString, router, pathname, filterToParamMap]
   );
 
-  // Update filters and cache
+  // Update filters and cache (this should trigger API call)
   const updateFilters = useCallback(
     (updates: Partial<T>) => {
       const newFilters = { ...filters, ...updates };
+
+      console.log("useFilterCache: updating filters", updates);
       setFiltersState(newFilters);
 
       // Save to cache
       setCachedFilters(newFilters);
 
-      // Update URL params
+      // Update URL params (this won't trigger API call because we're not syncing back)
       updateUrlParams(updates);
     },
     [filters, setCachedFilters, updateUrlParams]
   );
 
-  // Sync with URL params when they change
+  // Load from URL params only on first load (not on every URL change)
   useEffect(() => {
+    if (hasLoadedFromUrl) return; // Don't reload if we've already loaded from URL
+
     const urlFilters: Partial<T> = {};
     let hasChanges = false;
 
@@ -501,11 +513,12 @@ export function useFilterCache<T extends Record<string, any>>(options: {
       }
     });
 
-    // If URL params have changed, update filters and cache
+    // If URL params have changed and we haven't loaded from URL yet, update filters
     if (hasChanges) {
       const newFilters = { ...filters, ...urlFilters };
       setFiltersState(newFilters);
       setCachedFilters(newFilters);
+      setHasLoadedFromUrl(true);
     }
   }, [
     searchParamsString,
@@ -513,6 +526,7 @@ export function useFilterCache<T extends Record<string, any>>(options: {
     defaultFilters,
     filterToParamMap,
     setCachedFilters,
+    hasLoadedFromUrl,
   ]);
 
   // Reset filters to defaults
