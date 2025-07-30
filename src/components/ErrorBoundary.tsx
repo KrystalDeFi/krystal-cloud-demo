@@ -105,7 +105,7 @@ export function ErrorFallback({ error, onRetry }: ErrorFallbackProps) {
             <VStack spacing={4} w="full">
               <Button
                 as="a"
-                href="https://cloud.krystal.app?utm_source=CLOUD"
+                href="https://cloud.krystal.app?utm_source=cloudui"
                 target="_blank"
                 rel="noopener noreferrer"
                 leftIcon={<ExternalLinkIcon />}

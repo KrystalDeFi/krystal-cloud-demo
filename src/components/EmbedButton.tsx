@@ -242,7 +242,7 @@ export default function EmbedButton() {
     params.set("showNavigation", embedConfig.showNavigation.toString());
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
     params.set("config", "disabled");
-    params.set("utm_source", "CLOUD");
+    params.set("utm_source", "cloudui");
 
     const shareableUrl = `${window.location.origin}${pathname}?${params.toString()}`;
     return shareableUrl;
@@ -258,7 +258,7 @@ export default function EmbedButton() {
     params.set("showNavigation", embedConfig.showNavigation.toString());
     params.set("showBreadcrumbs", embedConfig.showBreadcrumbs.toString());
     params.set("config", "disabled");
-    params.set("utm_source", "CLOUD");
+    params.set("utm_source", "cloudui");
 
     const embedUrl = `${window.location.origin}${pathname}?${params.toString()}`;
     return `<iframe src="${embedUrl}" width="100%" height="600px" frameborder="0"></iframe>`;
