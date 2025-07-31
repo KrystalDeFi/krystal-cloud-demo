@@ -1,11 +1,12 @@
 export class Formatter {
   static formatCurrency(value: number) {
+    const roundedValue = Math.round(value * 100) / 100;
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(value);
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(roundedValue);
   }
 
   static formatAPR(value: number, isPercentage: boolean = true) {
@@ -71,6 +72,17 @@ export class Formatter {
     } else {
       return "about 1 hour";
     }
+  }
+
+  static formatDate(timestamp: number) {
+    const date = new Date(timestamp * 1000);
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(date);
   }
 
   static shortAddress(address: string) {

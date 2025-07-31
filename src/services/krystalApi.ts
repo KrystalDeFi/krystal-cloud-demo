@@ -12,6 +12,8 @@ import {
   IAPosition,
   IAPositionDetails,
   IAPoolHistorical,
+  IAPositionTransactionsResponse,
+  IAPositionTransaction,
 } from "./apiTypes";
 
 // ============================================================================
@@ -61,6 +63,17 @@ export interface IPositionsParams {
 export interface IPositionDetailParams {
   chainId: string;
   positionId: string;
+}
+
+// Position transactions API parameters
+export interface IPositionTransactionsParams {
+  chainId: string;
+  wallet?: string;
+  tokenAddress: string;
+  tokenId?: string;
+  startTimestamp?: number;
+  endTimestamp?: number;
+  limit?: number;
 }
 
 // ============================================================================
@@ -124,6 +137,7 @@ const apiRequest = async <T>(
   });
 
   console.log("API Response status:", response.status, response.statusText);
+  console.log("API Response headers:", Object.fromEntries(response.headers.entries()));
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -244,6 +258,22 @@ const positionsApi = {
     const response = await apiRequest<IAPositionDetails>(
       `/v1/positions/${chainId}/${positionId}`,
       apiKey
+    );
+    return response;
+  },
+
+  // Get position transactions
+  getTransactions: async (
+    apiKey: string,
+    params: IPositionTransactionsParams
+  ): Promise<IAPositionTransactionsResponse | IAPositionTransaction[]> => {
+    const { chainId, ...queryParams } = params;
+    console.log("PositionTransactions API Request - chainId:", chainId);
+    console.log("PositionTransactions API Request - queryParams:", queryParams);
+    const response = await apiRequest<IAPositionTransactionsResponse | IAPositionTransaction[]>(
+      `/v1/positions/${chainId}/transactions`,
+      apiKey,
+      queryParams
     );
     return response;
   },

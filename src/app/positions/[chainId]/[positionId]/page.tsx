@@ -47,6 +47,7 @@ import ErrorBoundary from "../../../../components/ErrorBoundary";
 import { Footer } from "@/app/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import EmbedWrapper from "../../../../components/EmbedWrapper";
+import PositionTransactions from "../../../../components/PositionTransactions";
 
 function PositionDetailsPageContent() {
   const params = useParams();
@@ -671,6 +672,17 @@ function PositionDetailsPageContent() {
             </Card>
           </VStack>
         </SimpleGrid>
+
+        {/* Transactions Section */}
+        <Box mb={8}>
+          <PositionTransactions
+            chainId={chainId}
+            wallet={position.ownerAddress}
+            tokenAddress={position.tokenAddress}
+            tokenId={position.tokenId}
+            chainExplorer={position.chain.explorer}
+          />
+        </Box>
 
         {/* Footer */}
         <Footer />
