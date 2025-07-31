@@ -174,3 +174,48 @@ export interface IAPositionDetails {
   feesEarned: number;
   apr: number;
 }
+
+// Position transaction interface
+export interface IAPositionTransaction {
+  type: 'MINT' | 'BURN' | 'COLLECT' | 'INCREASE_LIQUIDITY' | 'DECREASE_LIQUIDITY' | 'COLLECT_FEE' | 'WITHDRAW' | 'DEPOSIT';
+  txHash: string;
+  blockTime: number;
+  emitContractAddress: string;
+  gasFeeAmount?: number;
+  gasFeeValue?: number;
+  transactions?: IATransactionDetail[];
+  balance?: IATokenBalance[];
+  totalValue?: number;
+  txFee?: {
+    amount: string;
+    usdValue: number;
+  };
+}
+
+export interface IATransactionDetail {
+  tokenIndex: number;
+  tokenWithValue: {
+    token: IAToken;
+    balance: string;
+    price: number;
+    value: number;
+  };
+}
+
+export interface IATokenBalance {
+  token: IAToken;
+  amount: string;
+  value: number;
+  change: 'positive' | 'negative';
+}
+
+// Position transactions response interface
+export interface IAPositionTransactionsResponse {
+  transactions?: IAPositionTransaction[];
+  data?: IAPositionTransaction[];
+  total?: number;
+  count?: number;
+  page?: number;
+  pageSize?: number;
+  limit?: number;
+}
