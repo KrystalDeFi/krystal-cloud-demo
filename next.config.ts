@@ -2,10 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  
+  eslint: {},
+
   // Add headers to allow embedding
   async headers() {
     return [
@@ -15,7 +13,8 @@ const nextConfig: NextConfig = {
         headers: [
           {
             key: "Content-Security-Policy",
-            value: "script-src 'self' 'unsafe-inline' 'unsafe-eval' onesignal.com cdn.onesignal.com www.googletagmanager.com googletagmanager.com static.hotjar.com static.cloudflareinsights.com script.hotjar.com www.google-analytics.com; frame-ancestors 'self' *;", // Allow embedding in iframes from any origin
+            value:
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' onesignal.com cdn.onesignal.com www.googletagmanager.com googletagmanager.com static.hotjar.com static.cloudflareinsights.com script.hotjar.com www.google-analytics.com; frame-ancestors 'self' *;", // Allow embedding in iframes from any origin
           },
           {
             key: "X-Content-Type-Options",

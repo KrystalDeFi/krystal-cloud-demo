@@ -23,20 +23,24 @@ npm install firebase
 ## Analytics Events Tracked
 
 ### Page Views
+
 - Automatic page view tracking when routes change
 - Tracks page title and URL
 
 ### Embed Configuration
+
 - `embed_interaction` - Config loaded from URL, config updates
 - `button_click` - Copy embed config, open/close embed panel
 - Parameters: `action`, `embed_type`, `config_key`, `config_value`
 
 ### Navigation
+
 - `navigation` - Navbar link clicks
 - `button_click` - Theme toggle
 - Parameters: `from`, `to`, `method`, `new_theme`
 
 ### Errors
+
 - `error` - API key errors, network errors, general errors
 - `button_click` - Error retry, get API key
 - Parameters: `error_type`, `error_message`, `page`
@@ -71,6 +75,7 @@ function MyComponent() {
 ## Firebase Configuration
 
 The Firebase configuration is set up with:
+
 - **Project ID**: `krystal-cloud-ui`
 - **Measurement ID**: `G-5PGHRL7M5D`
 - **Analytics**: Enabled with automatic page view tracking
@@ -109,6 +114,6 @@ const { trackEvent } = useFirebaseAnalytics();
 trackEvent("custom_action", {
   action_type: "download",
   file_type: "pdf",
-  user_segment: "premium"
+  user_segment: "premium",
 });
-``` 
+```

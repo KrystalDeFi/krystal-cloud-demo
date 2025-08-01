@@ -151,7 +151,9 @@ function PoolsPageContent() {
   const handleMultipleFilterChanges = (updates: Partial<FilterParams>) => {
     // Only trigger when some value changes
     const hasChanges = Object.keys(updates).some(
-      key => updates[key as keyof FilterParams] !== filters?.[key as keyof FilterParams]
+      key =>
+        updates[key as keyof FilterParams] !==
+        filters?.[key as keyof FilterParams]
     );
 
     if (hasChanges) {
@@ -315,8 +317,11 @@ function PoolsPageContent() {
               w="fit-content"
               value={filters?.chainId?.toString() || "all"}
               onChange={e =>
-                handleMultipleFilterChanges({ 
-                  chainId: e.target.value === "all" ? undefined : parseInt(e.target.value),
+                handleMultipleFilterChanges({
+                  chainId:
+                    e.target.value === "all"
+                      ? undefined
+                      : parseInt(e.target.value),
                   protocol: undefined,
                 })
               }

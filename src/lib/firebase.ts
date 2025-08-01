@@ -11,7 +11,7 @@ const firebaseConfig = {
   storageBucket: "krystal-cloud-ui.firebasestorage.app",
   messagingSenderId: "527652328978",
   appId: "1:527652328978:web:d8bfd7db5b037318cdeacb",
-  measurementId: "G-5PGHRL7M5D"
+  measurementId: "G-5PGHRL7M5D",
 };
 
 // Initialize Firebase
@@ -23,19 +23,23 @@ let analytics: any = null;
 if (typeof window !== "undefined") {
   try {
     // Check if analytics is supported before initializing
-    isSupported().then((supported) => {
-      if (supported) {
-        analytics = getAnalytics(app);
-        console.log("Firebase Analytics initialized successfully");
-      } else {
-        console.warn("Firebase Analytics is not supported in this environment");
-      }
-    }).catch((error) => {
-      console.warn("Firebase Analytics initialization failed:", error);
-    });
+    isSupported()
+      .then(supported => {
+        if (supported) {
+          analytics = getAnalytics(app);
+          console.log("Firebase Analytics initialized successfully");
+        } else {
+          console.warn(
+            "Firebase Analytics is not supported in this environment"
+          );
+        }
+      })
+      .catch(error => {
+        console.warn("Firebase Analytics initialization failed:", error);
+      });
   } catch (error) {
     console.warn("Firebase Analytics failed to initialize:", error);
   }
 }
 
-export { app, analytics }; 
+export { app, analytics };
