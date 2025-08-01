@@ -1,158 +1,200 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Test Krystal Cloud Embed</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .test-section {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        iframe {
-            border: none;
-            border-radius: 8px;
-            width: 100%;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .status {
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-        .success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .test-section {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      iframe {
+        border: none;
+        border-radius: 8px;
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>🧪 Test Krystal Cloud Embedding</h1>
-        
-        <div class="test-section">
-            <h2>1. Basic Embed (Default Settings)</h2>
-            <iframe 
-                src="https://cloud-ui.krystal.app/pools?embed=1&utm_source=CLOUD" 
-                height="600px">
-            </iframe>
-            <div class="code-block">
-&lt;iframe src="https://cloud-ui.krystal.app/pools?embed=1&utm_source=CLOUD" height="600px"&gt;&lt;/iframe&gt;
-            </div>
-        </div>
+      <h1>🧪 Test Krystal Cloud Embedding</h1>
 
-        <div class="test-section">
-            <h2>2. Custom Branded Embed (Orange Theme, No Navigation)</h2>
-            <iframe 
-                src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false&utm_source=CLOUD" 
-                height="600px">
-            </iframe>
-            <div class="code-block">
-&lt;iframe src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false&utm_source=CLOUD" height="600px"&gt;&lt;/iframe&gt;
-            </div>
+      <div class="test-section">
+        <h2>1. Basic Embed (Default Settings)</h2>
+        <iframe
+          src="https://cloud-ui.krystal.app/pools?embed=1&utm_source=CLOUD"
+          height="600px"
+        >
+        </iframe>
+        <div class="code-block">
+          &lt;iframe
+          src="https://cloud-ui.krystal.app/pools?embed=1&utm_source=CLOUD"
+          height="600px"&gt;&lt;/iframe&gt;
         </div>
+      </div>
 
-        <div class="test-section">
-            <h2>3. Minimal Embed (No Navigation, No Breadcrumbs)</h2>
-            <iframe 
-                src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false&utm_source=CLOUD" 
-                height="500px">
-            </iframe>
-            <div class="code-block">
-&lt;iframe src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false&utm_source=CLOUD" height="500px"&gt;&lt;/iframe&gt;
-            </div>
+      <div class="test-section">
+        <h2>2. Custom Branded Embed (Orange Theme, No Navigation)</h2>
+        <iframe
+          src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false&utm_source=CLOUD"
+          height="600px"
+        >
+        </iframe>
+        <div class="code-block">
+          &lt;iframe
+          src="https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false&utm_source=CLOUD"
+          height="600px"&gt;&lt;/iframe&gt;
         </div>
+      </div>
 
-        <div class="test-section">
-            <h2>4. Specific Pool Embed</h2>
-            <iframe 
-                src="https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35&showNavigation=false&utm_source=CLOUD" 
-                height="700px">
-            </iframe>
-            <div class="code-block">
-&lt;iframe src="https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35&showNavigation=false&utm_source=CLOUD" height="700px"&gt;&lt;/iframe&gt;
-            </div>
+      <div class="test-section">
+        <h2>3. Minimal Embed (No Navigation, No Breadcrumbs)</h2>
+        <iframe
+          src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false&utm_source=CLOUD"
+          height="500px"
+        >
+        </iframe>
+        <div class="code-block">
+          &lt;iframe
+          src="https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false&utm_source=CLOUD"
+          height="500px"&gt;&lt;/iframe&gt;
         </div>
+      </div>
 
-        <div class="test-section">
-            <h2>5. Wallet Positions Embed</h2>
-            <iframe 
-                src="https://cloud-ui.krystal.app/wallets/0x1234567890123456789012345678901234567890?embed=1&primaryColor=%2310b981&showNavigation=false&utm_source=CLOUD" 
-                height="700px">
-            </iframe>
-            <div class="code-block">
-&lt;iframe src="https://cloud-ui.krystal.app/wallets/0x1234567890123456789012345678901234567890?embed=1&primaryColor=%2310b981&showNavigation=false&utm_source=CLOUD" height="700px"&gt;&lt;/iframe&gt;
-            </div>
+      <div class="test-section">
+        <h2>4. Specific Pool Embed</h2>
+        <iframe
+          src="https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35&showNavigation=false&utm_source=CLOUD"
+          height="700px"
+        >
+        </iframe>
+        <div class="code-block">
+          &lt;iframe
+          src="https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35&showNavigation=false&utm_source=CLOUD"
+          height="700px"&gt;&lt;/iframe&gt;
         </div>
+      </div>
 
-        <div class="test-section">
-            <h2>📋 Current Configuration</h2>
-            <p><strong>Issue Found:</strong> The deployed website has <code>frame-ancestors app.safe.global</code> in its Content Security Policy, which only allows embedding from that specific domain.</p>
-            
-            <p><strong>Solution:</strong> Updated <code>next.config.ts</code> to include:</p>
-            <pre><code>Content-Security-Policy: frame-ancestors 'self' *;</code></pre>
-            
-            <p><strong>Next Steps:</strong></p>
-            <ol>
-                <li>Deploy the updated configuration to production</li>
-                <li>Test the embedding with this HTML file</li>
-                <li>Share embed URLs with users</li>
-            </ol>
+      <div class="test-section">
+        <h2>5. Wallet Positions Embed</h2>
+        <iframe
+          src="https://cloud-ui.krystal.app/wallets/0x1234567890123456789012345678901234567890?embed=1&primaryColor=%2310b981&showNavigation=false&utm_source=CLOUD"
+          height="700px"
+        >
+        </iframe>
+        <div class="code-block">
+          &lt;iframe
+          src="https://cloud-ui.krystal.app/wallets/0x1234567890123456789012345678901234567890?embed=1&primaryColor=%2310b981&showNavigation=false&utm_source=CLOUD"
+          height="700px"&gt;&lt;/iframe&gt;
         </div>
+      </div>
 
-        <div class="test-section">
-            <h2>🔗 Embed URLs to Test</h2>
-            <ul>
-                <li><strong>Basic:</strong> <code>https://cloud-ui.krystal.app/pools?embed=1</code></li>
-                <li><strong>Branded:</strong> <code>https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false</code></li>
-                <li><strong>Minimal:</strong> <code>https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false</code></li>
-                <li><strong>Pool Specific:</strong> <code>https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35</code></li>
-            </ul>
-        </div>
+      <div class="test-section">
+        <h2>📋 Current Configuration</h2>
+        <p>
+          <strong>Issue Found:</strong> The deployed website has
+          <code>frame-ancestors app.safe.global</code> in its Content Security
+          Policy, which only allows embedding from that specific domain.
+        </p>
+
+        <p>
+          <strong>Solution:</strong> Updated <code>next.config.ts</code> to
+          include:
+        </p>
+        <pre><code>Content-Security-Policy: frame-ancestors 'self' *;</code></pre>
+
+        <p><strong>Next Steps:</strong></p>
+        <ol>
+          <li>Deploy the updated configuration to production</li>
+          <li>Test the embedding with this HTML file</li>
+          <li>Share embed URLs with users</li>
+        </ol>
+      </div>
+
+      <div class="test-section">
+        <h2>🔗 Embed URLs to Test</h2>
+        <ul>
+          <li>
+            <strong>Basic:</strong>
+            <code>https://cloud-ui.krystal.app/pools?embed=1</code>
+          </li>
+          <li>
+            <strong>Branded:</strong>
+            <code
+              >https://cloud-ui.krystal.app/pools?embed=1&primaryColor=%23ff6b35&theme=dark&showNavigation=false</code
+            >
+          </li>
+          <li>
+            <strong>Minimal:</strong>
+            <code
+              >https://cloud-ui.krystal.app/pools?embed=1&showNavigation=false&showBreadcrumbs=false</code
+            >
+          </li>
+          <li>
+            <strong>Pool Specific:</strong>
+            <code
+              >https://cloud-ui.krystal.app/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8?embed=1&primaryColor=%23ff6b35</code
+            >
+          </li>
+        </ul>
+      </div>
     </div>
 
     <script>
-        // Test if iframes are loading
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                const iframes = document.querySelectorAll('iframe');
-                iframes.forEach((iframe, index) => {
-                    try {
-                        // Try to access iframe content (will fail due to CORS, but that's expected)
-                        const status = document.getElementById(`status${index + 1}`);
-                        if (status.innerHTML === 'Testing...') {
-                            status.innerHTML = '✅ Iframe loaded (CORS prevents content access, but embedding works)';
-                            status.className = 'status success';
-                        }
-                    } catch (e) {
-                        // CORS error is expected, but iframe should still load
-                        const status = document.getElementById(`status${index + 1}`);
-                        if (status.innerHTML === 'Testing...') {
-                            status.innerHTML = '✅ Iframe loaded (CORS prevents content access, but embedding works)';
-                            status.className = 'status success';
-                        }
-                    }
-                });
-            }, 3000);
-        });
+      // Test if iframes are loading
+      window.addEventListener("load", function () {
+        setTimeout(() => {
+          const iframes = document.querySelectorAll("iframe");
+          iframes.forEach((iframe, index) => {
+            try {
+              // Try to access iframe content (will fail due to CORS, but that's expected)
+              const status = document.getElementById(`status${index + 1}`);
+              if (status.innerHTML === "Testing...") {
+                status.innerHTML =
+                  "✅ Iframe loaded (CORS prevents content access, but embedding works)";
+                status.className = "status success";
+              }
+            } catch (e) {
+              // CORS error is expected, but iframe should still load
+              const status = document.getElementById(`status${index + 1}`);
+              if (status.innerHTML === "Testing...") {
+                status.innerHTML =
+                  "✅ Iframe loaded (CORS prevents content access, but embedding works)";
+                status.className = "status success";
+              }
+            }
+          });
+        }, 3000);
+      });
     </script>
-</body>
-</html> 
+  </body>
+</html>

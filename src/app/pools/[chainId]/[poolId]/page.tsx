@@ -381,10 +381,19 @@ function PoolDetailsPageContent() {
                 <RechartsTooltip
                   content={(props: TooltipProps<any, any>) => {
                     const anyProps = props as any;
-                    if (!anyProps.active || !anyProps.payload || anyProps.payload.length === 0) return null;
+                    if (
+                      !anyProps.active ||
+                      !anyProps.payload ||
+                      anyProps.payload.length === 0
+                    )
+                      return null;
                     // Find volume and fee
-                    const volume = anyProps.payload.find((p: any) => p.dataKey === "volume");
-                    const fee = anyProps.payload.find((p: any) => p.dataKey === "fee");
+                    const volume = anyProps.payload.find(
+                      (p: any) => p.dataKey === "volume"
+                    );
+                    const fee = anyProps.payload.find(
+                      (p: any) => p.dataKey === "fee"
+                    );
                     return (
                       <div
                         style={{
@@ -397,15 +406,27 @@ function PoolDetailsPageContent() {
                           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                         }}
                       >
-                        <div style={{ fontWeight: 600, marginBottom: 4, color: "#222" }}>{`Date: ${anyProps.label}`}</div>
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            marginBottom: 4,
+                            color: "#222",
+                          }}
+                        >{`Date: ${anyProps.label}`}</div>
                         {fee && (
                           <div style={{ color: "#1A365D", fontWeight: 500 }}>
-                            Fee: <span style={{ color: "#2B6CB0", fontWeight: 700 }}>{formatCurrency(fee.value)}</span>
+                            Fee:{" "}
+                            <span style={{ color: "#2B6CB0", fontWeight: 700 }}>
+                              {formatCurrency(fee.value)}
+                            </span>
                           </div>
                         )}
                         {volume && (
                           <div style={{ color: "#22543D", fontWeight: 500 }}>
-                            Volume: <span style={{ color: "#38A169", fontWeight: 700 }}>{formatCurrency(volume.value)}</span>
+                            Volume:{" "}
+                            <span style={{ color: "#38A169", fontWeight: 700 }}>
+                              {formatCurrency(volume.value)}
+                            </span>
                           </div>
                         )}
                       </div>

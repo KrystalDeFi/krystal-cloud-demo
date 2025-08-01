@@ -102,11 +102,11 @@ export default function EmbedButton() {
         showNavigation:
           showNavigation !== null
             ? showNavigation === "true"
-            : embedConfig?.showNavigation ?? true,
+            : (embedConfig?.showNavigation ?? true),
         showBreadcrumbs:
           showBreadcrumbs !== null
             ? showBreadcrumbs === "true"
-            : embedConfig?.showBreadcrumbs ?? true,
+            : (embedConfig?.showBreadcrumbs ?? true),
       };
 
       setEmbedConfig(newConfig);

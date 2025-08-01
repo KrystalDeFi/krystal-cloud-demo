@@ -49,7 +49,12 @@ export default function NavBar() {
               href="https://cloud.krystal.app?utm_source=cloudui"
               isExternal
               _hover={{ opacity: 0.8 }}
-              onClick={() => handleNavigationClick("logo", "https://cloud.krystal.app?utm_source=cloudui")}
+              onClick={() =>
+                handleNavigationClick(
+                  "logo",
+                  "https://cloud.krystal.app?utm_source=cloudui"
+                )
+              }
             >
               <Image
                 src={
@@ -81,7 +86,12 @@ export default function NavBar() {
                 fontWeight="medium"
                 color="text.common"
                 _hover={{ color: "text.primary" }}
-                onClick={() => handleNavigationClick("swagger", "https://cloud-api.krystal.app/swagger/index.html")}
+                onClick={() =>
+                  handleNavigationClick(
+                    "swagger",
+                    "https://cloud-api.krystal.app/swagger/index.html"
+                  )
+                }
               >
                 Swagger
               </Link>
@@ -92,7 +102,12 @@ export default function NavBar() {
                 fontWeight="medium"
                 color="text.common"
                 _hover={{ color: "text.primary" }}
-                onClick={() => handleNavigationClick("api_docs", "https://krystalapp.gitbook.io/cloud-docs/open-api/api-v1/api-references")}
+                onClick={() =>
+                  handleNavigationClick(
+                    "api_docs",
+                    "https://krystalapp.gitbook.io/cloud-docs/open-api/api-v1/api-references"
+                  )
+                }
               >
                 API Docs
               </Link>

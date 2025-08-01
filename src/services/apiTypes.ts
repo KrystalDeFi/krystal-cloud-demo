@@ -177,7 +177,15 @@ export interface IAPositionDetails {
 
 // Position transaction interface
 export interface IAPositionTransaction {
-  type: 'MINT' | 'BURN' | 'COLLECT' | 'INCREASE_LIQUIDITY' | 'DECREASE_LIQUIDITY' | 'COLLECT_FEE' | 'WITHDRAW' | 'DEPOSIT';
+  type:
+    | "MINT"
+    | "BURN"
+    | "COLLECT"
+    | "INCREASE_LIQUIDITY"
+    | "DECREASE_LIQUIDITY"
+    | "COLLECT_FEE"
+    | "WITHDRAW"
+    | "DEPOSIT";
   txHash: string;
   blockTime: number;
   emitContractAddress: string;
@@ -206,7 +214,7 @@ export interface IATokenBalance {
   token: IAToken;
   amount: string;
   value: number;
-  change: 'positive' | 'negative';
+  change: "positive" | "negative";
 }
 
 // Position transactions response interface

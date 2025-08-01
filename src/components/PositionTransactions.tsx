@@ -16,18 +16,19 @@ import {
   Th,
   Td,
   TableContainer,
-  Badge,
   Spinner,
   Button,
   Select,
   useColorModeValue,
-  Link,
   IconButton,
   Tooltip,
   Image,
 } from "@chakra-ui/react";
-import { ExternalLinkIcon, CopyIcon } from "@chakra-ui/icons";
-import { KrystalApi, IPositionTransactionsParams } from "../services/krystalApi";
+import { CopyIcon } from "@chakra-ui/icons";
+import {
+  KrystalApi,
+  IPositionTransactionsParams,
+} from "../services/krystalApi";
 import { IAPositionTransaction, IATokenBalance } from "../services/apiTypes";
 import { Formatter } from "../common/formatter";
 import { useApiError, useApiKeyValidation } from "../hooks/useApiError";
@@ -51,7 +52,12 @@ export default function PositionTransactions({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [limit, setLimit] = useState(50);
-  const { error: apiError, setError: setApiError, handleApiError, clearError } = useApiError();
+  const {
+    error: apiError,
+    setError: setApiError,
+    handleApiError,
+    clearError,
+  } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
 
   const bgColor = useColorModeValue("white", "gray.800");
@@ -61,49 +67,59 @@ export default function PositionTransactions({
     try {
       setLoading(true);
       setError(null);
-      
+
       const params: IPositionTransactionsParams = {
         chainId,
         wallet,
         tokenAddress,
         tokenId,
-        limit
+        limit,
       };
-      
+
       console.log("Fetching transactions with params:", params);
-      
-      const response = await KrystalApi.positions.getTransactions(validateApiKey(), params);
+
+      const response = await KrystalApi.positions.getTransactions(
+        validateApiKey(),
+        params
+      );
       console.log("API Response:", response);
-      
+
       let transactionData: IAPositionTransaction[] = [];
-      
+
       // Handle different response structures
       if (Array.isArray(response)) {
         transactionData = response;
-      } else if (response && typeof response === 'object') {
+      } else if (response && typeof response === "object") {
         if (Array.isArray(response.transactions)) {
           transactionData = response.transactions;
         } else if (Array.isArray(response.data)) {
           transactionData = response.data;
         }
       }
-      
+
       console.log("Extracted transaction data:", transactionData);
-      
+
       if (transactionData.length > 0) {
         console.log("First transaction raw data:", transactionData[0]);
         console.log("First transaction keys:", Object.keys(transactionData[0]));
-        console.log("First transaction has transactions property:", 'transactions' in transactionData[0]);
-        console.log("First transaction.transactions:", transactionData[0].transactions);
+        console.log(
+          "First transaction has transactions property:",
+          "transactions" in transactionData[0]
+        );
+        console.log(
+          "First transaction.transactions:",
+          transactionData[0].transactions
+        );
       }
-      
+
       // Transform the data to include calculated balance and total value
       const transformedData = transactionData.map(transformTransactionData);
       setTransactions(transformedData);
-      
     } catch (err) {
       console.error("Error fetching transactions:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch transactions");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch transactions"
+      );
     } finally {
       setLoading(false);
     }
@@ -117,36 +133,43 @@ export default function PositionTransactions({
 
   const transformTransactionData = (tx: IAPositionTransaction) => {
     console.log("Processing transaction:", tx.type, tx.txHash);
-    
+
     const balance: IATokenBalance[] = [];
-    
+
     // Extract token data from the transactions array
     if (tx.transactions && Array.isArray(tx.transactions)) {
-      console.log("Found transactions array with", tx.transactions.length, "items");
-      
+      console.log(
+        "Found transactions array with",
+        tx.transactions.length,
+        "items"
+      );
+
       tx.transactions.forEach((transactionDetail: any, index: number) => {
-        console.log(`Processing transaction detail ${index}:`, transactionDetail);
-        
+        console.log(
+          `Processing transaction detail ${index}:`,
+          transactionDetail
+        );
+
         if (transactionDetail.tokenWithValue) {
           const tokenData = transactionDetail.tokenWithValue;
           const token = tokenData.token;
           const balanceValue = tokenData.balance;
           const price = tokenData.price;
           const value = tokenData.value;
-          
+
           console.log("Token data:", {
             symbol: token.symbol,
             balance: balanceValue,
             decimals: token.decimals,
             price: price,
-            value: value
+            value: value,
           });
-          
+
           // Calculate actual amount by dividing balance by decimals
           const balanceNum = parseFloat(balanceValue);
           const decimals = token.decimals || 18;
           const actualAmount = balanceNum / Math.pow(10, decimals);
-          
+
           console.log("USDT Debug:", {
             symbol: token.symbol,
             rawBalance: balanceValue,
@@ -154,52 +177,57 @@ export default function PositionTransactions({
             decimals: decimals,
             calculation: `${balanceNum} / 10^${decimals}`,
             actualAmount: actualAmount,
-            expectedUSDT: token.symbol === 'USDT' ? `${balanceNum} / 1000000 = ${balanceNum / 1000000}` : 'N/A'
+            expectedUSDT:
+              token.symbol === "USDT"
+                ? `${balanceNum} / 1000000 = ${balanceNum / 1000000}`
+                : "N/A",
           });
-          
+
           console.log("Calculated amount:", actualAmount, "for", token.symbol);
-          
+
           // Determine if this is positive or negative based on transaction type
-          let change: 'positive' | 'negative' = 'positive';
-          if (tx.type === 'DEPOSIT') {
-            change = 'negative'; // Depositing means removing from wallet
-          } else if (tx.type === 'WITHDRAW') {
-            change = 'positive'; // Withdrawing means adding to wallet
-          } else if (tx.type === 'COLLECT_FEE') {
-            change = 'positive'; // Collecting fees means adding to wallet
+          let change: "positive" | "negative" = "positive";
+          if (tx.type === "DEPOSIT") {
+            change = "negative"; // Depositing means removing from wallet
+          } else if (tx.type === "WITHDRAW") {
+            change = "positive"; // Withdrawing means adding to wallet
+          } else if (tx.type === "COLLECT_FEE") {
+            change = "positive"; // Collecting fees means adding to wallet
           }
-          
+
           balance.push({
             token: {
               address: token.address,
               symbol: token.symbol,
               name: token.name,
               decimals: token.decimals,
-              logo: token.logo
+              logo: token.logo,
             },
             amount: actualAmount.toString(),
             value: value,
-            change: change
+            change: change,
           });
         }
       });
     }
-    
+
     console.log("Final balance array:", balance);
-    
+
     // Calculate tx fee
-    const txFee = tx.gasFeeAmount ? {
-      amount: tx.gasFeeAmount.toString(),
-      usdValue: tx.gasFeeValue || 0 // Use gasFeeValue directly from API
-    } : undefined;
-    
+    const txFee = tx.gasFeeAmount
+      ? {
+          amount: tx.gasFeeAmount.toString(),
+          usdValue: tx.gasFeeValue || 0, // Use gasFeeValue directly from API
+        }
+      : undefined;
+
     return {
       ...tx,
       balance: balance.length > 0 ? balance : undefined,
       totalValue: balance.reduce((sum, item) => {
-        return sum + (item.change === 'positive' ? item.value : -item.value);
+        return sum + (item.change === "positive" ? item.value : -item.value);
       }, 0),
-      txFee
+      txFee,
     };
   };
 
@@ -325,10 +353,17 @@ export default function PositionTransactions({
                         <Td>
                           <VStack align="start" spacing={1}>
                             <Text fontSize="xs" color="gray.500">
-                              {tx.blockTime ? Formatter.formatDate(tx.blockTime) : 'Unknown'}
+                              {tx.blockTime
+                                ? Formatter.formatDate(tx.blockTime)
+                                : "Unknown"}
                             </Text>
                             <HStack spacing={1}>
-                              <Box w="4" h="4" bg="blue.500" borderRadius="sm" />
+                              <Box
+                                w="4"
+                                h="4"
+                                bg="blue.500"
+                                borderRadius="sm"
+                              />
                               <Text fontSize="xs" fontFamily="mono">
                                 {Formatter.shortAddress(tx.txHash)}
                               </Text>
@@ -347,17 +382,21 @@ export default function PositionTransactions({
                         <Td>
                           <VStack align="start" spacing={1}>
                             <HStack spacing={1}>
-                              <Box 
-                                w="4" 
-                                h="4" 
-                                bg={getTransactionTypeColor(tx.type)} 
+                              <Box
+                                w="4"
+                                h="4"
+                                bg={getTransactionTypeColor(tx.type)}
                                 borderRadius="sm"
                                 display="flex"
                                 alignItems="center"
                                 justifyContent="center"
                               >
                                 {/* Transaction type icon */}
-                                <Text fontSize="xs" color="white" fontWeight="bold">
+                                <Text
+                                  fontSize="xs"
+                                  color="white"
+                                  fontWeight="bold"
+                                >
                                   {getTransactionTypeIcon(tx.type)}
                                 </Text>
                               </Box>
@@ -367,13 +406,16 @@ export default function PositionTransactions({
                             </HStack>
                             <HStack spacing={1}>
                               <Text fontSize="xs" color="gray.500">
-                                contract {Formatter.shortAddress(tx.emitContractAddress)}
+                                contract{" "}
+                                {Formatter.shortAddress(tx.emitContractAddress)}
                               </Text>
                               <Tooltip label="Copy contract address">
                                 <IconButton
                                   size="xs"
                                   icon={<CopyIcon />}
-                                  onClick={() => copyToClipboard(tx.emitContractAddress)}
+                                  onClick={() =>
+                                    copyToClipboard(tx.emitContractAddress)
+                                  }
                                   aria-label="Copy contract address"
                                   variant="ghost"
                                 />
@@ -393,19 +435,27 @@ export default function PositionTransactions({
                                     borderRadius="full"
                                     fallbackSrc="/images/token-fallback.png"
                                   />
-                                  <Text 
-                                    fontSize="xs" 
-                                    color={balance.change === 'positive' ? 'green.500' : 'red.500'}
+                                  <Text
+                                    fontSize="xs"
+                                    color={
+                                      balance.change === "positive"
+                                        ? "green.500"
+                                        : "red.500"
+                                    }
                                     fontWeight="medium"
                                   >
-                                    {balance.change === 'positive' ? '+' : '-'}
-                                    {balance.amount && parseFloat(balance.amount) !== 0 ? 
-                                      new Intl.NumberFormat("en-US", {
-                                        minimumFractionDigits: 0,
-                                        maximumFractionDigits: balance.token.decimals > 6 ? 6 : balance.token.decimals,
-                                      }).format(parseFloat(balance.amount)) + ` ${balance.token.symbol}` : 
-                                      `0 ${balance.token.symbol}`
-                                    }
+                                    {balance.change === "positive" ? "+" : "-"}
+                                    {balance.amount &&
+                                    parseFloat(balance.amount) !== 0
+                                      ? new Intl.NumberFormat("en-US", {
+                                          minimumFractionDigits: 0,
+                                          maximumFractionDigits:
+                                            balance.token.decimals > 6
+                                              ? 6
+                                              : balance.token.decimals,
+                                        }).format(parseFloat(balance.amount)) +
+                                        ` ${balance.token.symbol}`
+                                      : `0 ${balance.token.symbol}`}
                                   </Text>
                                   {balance.value > 0 && (
                                     <Text fontSize="xs" color="gray.500">
@@ -415,36 +465,48 @@ export default function PositionTransactions({
                                 </HStack>
                               ))
                             ) : (
-                              <Text fontSize="xs" color="gray.500">No balance data</Text>
+                              <Text fontSize="xs" color="gray.500">
+                                No balance data
+                              </Text>
                             )}
                           </VStack>
                         </Td>
                         <Td>
-                          <Text 
-                            fontSize="sm" 
+                          <Text
+                            fontSize="sm"
                             fontWeight="medium"
-                            color={tx.totalValue && tx.totalValue > 0 ? 'green.500' : 'red.500'}
+                            color={
+                              tx.totalValue && tx.totalValue > 0
+                                ? "green.500"
+                                : "red.500"
+                            }
                           >
-                            {tx.totalValue ? (
-                              tx.totalValue > 0 ? '+' : ''
-                            ) + Formatter.formatCurrency(tx.totalValue) : '-'}
+                            {tx.totalValue
+                              ? (tx.totalValue > 0 ? "+" : "") +
+                                Formatter.formatCurrency(tx.totalValue)
+                              : "-"}
                           </Text>
                         </Td>
                         <Td>
                           {tx.txFee ? (
                             <VStack align="start" spacing={1}>
-                              <Text fontSize="xs">
-                                {tx.txFee.amount} ETH
-                              </Text>
+                              <Text fontSize="xs">{tx.txFee.amount} ETH</Text>
                               <HStack spacing={1}>
-                                <Box w="3" h="3" bg="blue.500" borderRadius="sm" />
+                                <Box
+                                  w="3"
+                                  h="3"
+                                  bg="blue.500"
+                                  borderRadius="sm"
+                                />
                                 <Text fontSize="xs" color="gray.500">
                                   {Formatter.formatCurrency(tx.txFee.usdValue)}
                                 </Text>
                               </HStack>
                             </VStack>
                           ) : (
-                            <Text fontSize="xs" color="gray.500">-</Text>
+                            <Text fontSize="xs" color="gray.500">
+                              -
+                            </Text>
                           )}
                         </Td>
                       </Tr>
@@ -461,7 +523,7 @@ export default function PositionTransactions({
                     size="sm"
                     w="80px"
                     value={limit}
-                    onChange={(e) => {
+                    onChange={e => {
                       setLimit(Number(e.target.value));
                     }}
                   >
@@ -473,7 +535,8 @@ export default function PositionTransactions({
                   </Select>
                 </HStack>
                 <Text fontSize="sm" color="gray.500">
-                  Showing {transactions.length} of {transactions.length} transactions
+                  Showing {transactions.length} of {transactions.length}{" "}
+                  transactions
                 </Text>
               </HStack>
             </>
@@ -482,4 +545,4 @@ export default function PositionTransactions({
       </CardBody>
     </Card>
   );
-} 
+}

@@ -56,7 +56,11 @@ export const useFirebaseAnalytics = () => {
   );
 
   const trackEmbedInteraction = useCallback(
-    (action: string, embedType: string, additionalParams?: Record<string, any>) => {
+    (
+      action: string,
+      embedType: string,
+      additionalParams?: Record<string, any>
+    ) => {
       trackEvent("embed_interaction", {
         action,
         embed_type: embedType,
@@ -67,7 +71,11 @@ export const useFirebaseAnalytics = () => {
   );
 
   const trackError = useCallback(
-    (errorType: string, errorMessage: string, additionalParams?: Record<string, any>) => {
+    (
+      errorType: string,
+      errorMessage: string,
+      additionalParams?: Record<string, any>
+    ) => {
       trackEvent("error", {
         error_type: errorType,
         error_message: errorMessage,
@@ -85,4 +93,4 @@ export const useFirebaseAnalytics = () => {
     trackEmbedInteraction,
     trackError,
   };
-}; 
+};

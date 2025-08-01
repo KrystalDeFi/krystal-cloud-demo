@@ -20,4 +20,4 @@ export function FirebaseProvider({ children }: FirebaseProviderProps) {
   }, [pathname, trackPageView]);
 
   return <>{children}</>;
-} 
+}

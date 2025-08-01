@@ -137,7 +137,10 @@ const apiRequest = async <T>(
   });
 
   console.log("API Response status:", response.status, response.statusText);
-  console.log("API Response headers:", Object.fromEntries(response.headers.entries()));
+  console.log(
+    "API Response headers:",
+    Object.fromEntries(response.headers.entries())
+  );
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
@@ -270,11 +273,9 @@ const positionsApi = {
     const { chainId, ...queryParams } = params;
     console.log("PositionTransactions API Request - chainId:", chainId);
     console.log("PositionTransactions API Request - queryParams:", queryParams);
-    const response = await apiRequest<IAPositionTransactionsResponse | IAPositionTransaction[]>(
-      `/v1/positions/${chainId}/transactions`,
-      apiKey,
-      queryParams
-    );
+    const response = await apiRequest<
+      IAPositionTransactionsResponse | IAPositionTransaction[]
+    >(`/v1/positions/${chainId}/transactions`, apiKey, queryParams);
     return response;
   },
 };

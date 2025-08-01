@@ -1,0 +1,65 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+
+env:
+  NODE_VERSION: "18"
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  pr-checks:
+    name: Pull Request Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Code Quality Checks
+        run: |
+          echo "🔍 Running code quality checks..."
+          npm run check-all
+
+          echo "✅ All code quality checks passed!"
+
+      - name: Build Application
+        run: |
+          echo "🏗️ Building application..."
+          npm run build
+
+          echo "🔍 Verifying build output..."
+          if [ ! -d ".next" ]; then
+            echo "❌ Build failed: .next directory not found"
+            exit 1
+          fi
+          echo "✅ Build successful: .next directory created"
+
+      - name: Security Checks
+        run: |
+          echo "🔒 Running npm audit..."
+          npm audit --audit-level=moderate
+
+          echo "🔒 Scanning for secrets..."
+          # Install trufflehog if not available
+          if ! command -v trufflehog &> /dev/null; then
+            curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sh -s -- -b /usr/local/bin
+          fi
+          # Run trufflehog scan with correct syntax
+          trufflehog filesystem --only-verified --fail . || exit 1
+          echo "✅ Security checks passed!"

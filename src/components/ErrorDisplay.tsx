@@ -45,11 +45,22 @@ export function ErrorDisplay({
   React.useEffect(() => {
     if (error) {
       trackError(
-        isApiKeyError ? "api_key_error" : isNetworkError ? "network_error" : "general_error",
+        isApiKeyError
+          ? "api_key_error"
+          : isNetworkError
+            ? "network_error"
+            : "general_error",
         error,
         {
-          error_type: isApiKeyError ? "api_key" : isNetworkError ? "network" : "general",
-          page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+          error_type: isApiKeyError
+            ? "api_key"
+            : isNetworkError
+              ? "network"
+              : "general",
+          page:
+            typeof window !== "undefined"
+              ? window.location.pathname
+              : "unknown",
         }
       );
     }
@@ -74,15 +85,21 @@ export function ErrorDisplay({
 
   const handleRetry = () => {
     trackButtonClick("error_retry", {
-      error_type: isApiKeyError ? "api_key" : isNetworkError ? "network" : "general",
-      page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+      error_type: isApiKeyError
+        ? "api_key"
+        : isNetworkError
+          ? "network"
+          : "general",
+      page:
+        typeof window !== "undefined" ? window.location.pathname : "unknown",
     });
     onRetry?.();
   };
 
   const handleGetApiKey = () => {
     trackButtonClick("get_api_key", {
-      page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+      page:
+        typeof window !== "undefined" ? window.location.pathname : "unknown",
     });
   };
 
