@@ -1,5 +1,4 @@
 # Krystal Cloud Demo
-
 A demo application for [cloud.krystal.app](https://cloud.krystal.app?utm_source=CLOUD) that showcases the Krystal Cloud API integration.
 
 ## Features
