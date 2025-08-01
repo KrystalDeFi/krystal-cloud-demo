@@ -11,10 +11,11 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "prettier": "prettier --check .",
+    "prettier:fix": "prettier --write .",
     "type-check": "tsc --noEmit",
-    "code-quality": "npm run lint && npm run format:check && npm run type-check"
+    "check-all": "npm run lint && npm run prettier && npm run type-check",
+    "fix-all": "npm run lint:fix && npm run prettier:fix"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",

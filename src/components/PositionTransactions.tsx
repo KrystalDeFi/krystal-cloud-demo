@@ -16,17 +16,15 @@ import {
   Th,
   Td,
   TableContainer,
-  Badge,
   Spinner,
   Button,
   Select,
   useColorModeValue,
-  Link,
   IconButton,
   Tooltip,
   Image,
 } from "@chakra-ui/react";
-import { ExternalLinkIcon, CopyIcon } from "@chakra-ui/icons";
+import { CopyIcon } from "@chakra-ui/icons";
 import {
   KrystalApi,
   IPositionTransactionsParams,

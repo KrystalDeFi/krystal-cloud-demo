@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  NODE_VERSION: '18'
+  NODE_VERSION: "18"
 
 permissions:
   contents: read
@@ -17,7 +17,7 @@ jobs:
   pr-checks:
     name: Pull Request Checks
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,32 +26,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
       - name: Code Quality Checks
         run: |
-          echo "🔍 Running TypeScript type check..."
-          npm run type-check
-          
-          echo "🔍 Running ESLint..."
-          npm run lint
-          
-          echo "🔍 Checking Prettier formatting..."
-          npm run format:check
-          
           echo "🔍 Running code quality checks..."
-          npm run code-quality
-          
+          npm run check-all
+
           echo "✅ All code quality checks passed!"
 
       - name: Build Application
         run: |
           echo "🏗️ Building application..."
           npm run build
-          
+
           echo "🔍 Verifying build output..."
           if [ ! -d ".next" ]; then
             echo "❌ Build failed: .next directory not found"
@@ -63,7 +54,7 @@ jobs:
         run: |
           echo "🔒 Running npm audit..."
           npm audit --audit-level=moderate
-          
+
           echo "🔒 Scanning for secrets..."
           # Install trufflehog if not available
           if ! command -v trufflehog &> /dev/null; then
@@ -71,4 +62,4 @@ jobs:
           fi
           # Run trufflehog scan
           trufflehog --only-verified --fail . || exit 1
-          echo "✅ Security checks passed!" 
+          echo "✅ Security checks passed!"
