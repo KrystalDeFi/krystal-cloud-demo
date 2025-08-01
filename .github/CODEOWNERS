@@ -1,5 +1,6 @@
+# Global owners for the entire repository
 * @KrystalDeFi/dev
 
-
-# GitHub workflows and configuration
-/.github/ @jarvisnn @vinhnd2010
+# Critical configuration files
+package.json @jarvisnn @vinhnd2010
+/.github/* @jarvisnn @vinhnd2010
