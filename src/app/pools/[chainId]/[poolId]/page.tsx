@@ -32,6 +32,7 @@ import {
   Image,
   useToast,
   useColorModeValue,
+  useColorMode,
 } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
@@ -61,6 +62,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/app/Footer";
 import EmbedWrapper from "@/components/EmbedWrapper";
 import { useChainsProtocols } from "@/contexts/ChainsProtocolsContext";
+import KrystalZap from "@krystaldefi/zap";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -77,6 +79,7 @@ function PoolDetailsPageContent() {
   const params = useParams();
   const chainId = params.chainId as string;
   const poolId = params.poolId as string;
+  const { colorMode } = useColorMode();
 
   const [pool, setPool] = useState<IAPoolDetails | null>(null);
   const [historicalData, setHistoricalData] = useState<ChartDataPoint[]>([]);
@@ -792,7 +795,17 @@ function PoolDetailsPageContent() {
 
           {/* Information */}
           <GridItem>
-            <Card w="full">
+            <KrystalZap
+              platform={pool.protocol.key}
+              chainId={pool.chain.id}
+              poolAddress={pool.poolAddress}
+              userAddress={"0x9E97A40996c749C8C86F16b4F412dD96467da69C"}
+              onTxDataReady={console.log}
+              onError={console.log}
+              onLoading={console.log}
+              theme={colorMode}
+            />
+            <Card w="full" mt="7">
               <CardBody>
                 <Heading size="md" mb={6}>
                   Information
