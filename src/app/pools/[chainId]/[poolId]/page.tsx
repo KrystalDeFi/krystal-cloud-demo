@@ -32,6 +32,7 @@ import {
   Image,
   useToast,
   useColorModeValue,
+  useColorMode,
 } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
@@ -77,6 +78,7 @@ function PoolDetailsPageContent() {
   const params = useParams();
   const chainId = params.chainId as string;
   const poolId = params.poolId as string;
+  const { colorMode } = useColorMode();
 
   const [pool, setPool] = useState<IAPoolDetails | null>(null);
   const [historicalData, setHistoricalData] = useState<ChartDataPoint[]>([]);
@@ -792,7 +794,7 @@ function PoolDetailsPageContent() {
 
           {/* Information */}
           <GridItem>
-            <Card w="full">
+            <Card w="full" mt="7">
               <CardBody>
                 <Heading size="md" mb={6}>
                   Information

@@ -32,7 +32,7 @@ const pages = [
   {
     title: "Pool Details",
     description: "View detailed information about a specific pool",
-    defaultLink: "/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",
+    defaultLink: "/pools/1/0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",
     icon: InfoIcon,
   },
   {
@@ -47,6 +47,12 @@ const pages = [
     description: "View detailed information about a specific position",
     defaultLink:
       "/positions/1/0xc36442b4a4522e871399cd717abdd847ab11fe88-1041224",
+    icon: InfoIcon,
+  },
+  {
+    title: "Zap in",
+    description: "View detailed information about a specific position",
+    defaultLink: "/zap/1/0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",
     icon: InfoIcon,
   },
 ];

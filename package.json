@@ -22,6 +22,7 @@
     "@chakra-ui/react": "^2.8.2",
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
+    "@krystaldefi/zap": "^0.0.6",
     "axios": "^1.10.0",
     "firebase": "^12.0.0",
     "framer-motion": "^12.23.9",
