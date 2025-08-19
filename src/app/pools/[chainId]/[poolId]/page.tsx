@@ -804,6 +804,22 @@ function PoolDetailsPageContent() {
               onError={console.log}
               onLoading={console.log}
               theme={colorMode}
+              colorScheme={{
+                dark: {
+                  "--card": "217.78 23.08% 22.94%",
+                  "--card-foreground": "0 0% 98%",
+                  "--primary": "217 91% 60%",
+                  "--secondary": "220 15% 30%",
+                  "--ring": "217 91% 60%",
+                },
+                light: {
+                  "--card": "0 0% 100%",
+                  "--card-foreground": "240 10% 15%",
+                  "--primary": "217 91% 60%",
+                  "--secondary": "240 5% 95%",
+                  "--ring": "217 91% 60%",
+                },
+              }}
             />
             <Card w="full" mt="7">
               <CardBody>

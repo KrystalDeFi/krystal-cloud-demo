@@ -32,7 +32,7 @@ const pages = [
   {
     title: "Pool Details",
     description: "View detailed information about a specific pool",
-    defaultLink: "/pools/1/0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",
+    defaultLink: "/pools/1/0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",
     icon: InfoIcon,
   },
   {
