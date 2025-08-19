@@ -49,6 +49,12 @@ const pages = [
       "/positions/1/0xc36442b4a4522e871399cd717abdd847ab11fe88-1041224",
     icon: InfoIcon,
   },
+  {
+    title: "Zap in",
+    description: "View detailed information about a specific position",
+    defaultLink: "/zap/1/0x99ac8ca7087fa4a2a1fb6357269965a2014abc35",
+    icon: InfoIcon,
+  },
 ];
 
 export default function Home() {

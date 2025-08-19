@@ -62,7 +62,6 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/app/Footer";
 import EmbedWrapper from "@/components/EmbedWrapper";
 import { useChainsProtocols } from "@/contexts/ChainsProtocolsContext";
-import KrystalZap from "@krystaldefi/zap";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -795,32 +794,6 @@ function PoolDetailsPageContent() {
 
           {/* Information */}
           <GridItem>
-            <KrystalZap
-              platform={pool.protocol.key}
-              chainId={pool.chain.id}
-              poolAddress={pool.poolAddress}
-              userAddress={"0x9E97A40996c749C8C86F16b4F412dD96467da69C"}
-              onTxDataReady={console.log}
-              onError={console.log}
-              onLoading={console.log}
-              theme={colorMode}
-              colorScheme={{
-                dark: {
-                  "--card": "217.78 23.08% 22.94%",
-                  "--card-foreground": "0 0% 98%",
-                  "--primary": "217 91% 60%",
-                  "--secondary": "220 15% 30%",
-                  "--ring": "217 91% 60%",
-                },
-                light: {
-                  "--card": "0 0% 100%",
-                  "--card-foreground": "240 10% 15%",
-                  "--primary": "217 91% 60%",
-                  "--secondary": "240 5% 95%",
-                  "--ring": "217 91% 60%",
-                },
-              }}
-            />
             <Card w="full" mt="7">
               <CardBody>
                 <Heading size="md" mb={6}>
