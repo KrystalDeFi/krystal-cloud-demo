@@ -38,6 +38,13 @@ export interface IStats {
 // POOL INTERFACES
 // ============================================================================
 
+// Token with balance interface for pools
+export interface IATokenWithBalance {
+  token: IAToken;
+  balance: string;
+  value: number;
+}
+
 // Pool Item in the List
 export interface IAPool {
   chain: IAChain;
@@ -45,8 +52,8 @@ export interface IAPool {
   poolPrice: string;
   protocol: IAProtocol;
   feeTier: number;
-  token0: IAToken;
-  token1: IAToken;
+  token0: IATokenWithBalance;
+  token1: IATokenWithBalance;
   tvl: number;
   stats1h: IStats;
   stats24h: IStats;
@@ -71,8 +78,8 @@ export interface IAPoolDetails {
   poolPrice: string;
   protocol: IAProtocol;
   feeTier: number;
-  token0: IAToken;
-  token1: IAToken;
+  token0: IATokenWithBalance;
+  token1: IATokenWithBalance;
   tvl: number;
   stats1h: IStats;
   stats24h: IStats;

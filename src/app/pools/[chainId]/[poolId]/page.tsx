@@ -598,22 +598,23 @@ function PoolDetailsPageContent() {
           <HStack spacing={4} align="center">
             <HStack spacing={2}>
               <Image
-                src={pool.token0.logo || `/images/token-fallback.png`}
-                alt={pool.token0.symbol}
+                src={pool.token0.token.logo || `/images/token-fallback.png`}
+                alt={pool.token0.token.symbol}
                 boxSize="32px"
                 borderRadius="full"
                 fallbackSrc="/images/token-fallback.png"
               />
+              <Text>/</Text>
               <Image
-                src={pool.token1.logo || `/images/token-fallback.png`}
-                alt={pool.token1.symbol}
+                src={pool.token1.token.logo || `/images/token-fallback.png`}
+                alt={pool.token1.token.symbol}
                 boxSize="32px"
                 borderRadius="full"
                 fallbackSrc="/images/token-fallback.png"
               />
             </HStack>
             <Heading size="lg">
-              {pool.token0.symbol}/{pool.token1.symbol}
+              {pool.token0.token.symbol}/{pool.token1.token.symbol}
             </Heading>
           </HStack>
 
@@ -736,7 +737,7 @@ function PoolDetailsPageContent() {
                       color="chakra-metrics"
                     >
                       Current price: {parseFloat(pool.poolPrice).toFixed(5)}{" "}
-                      {pool.token1.symbol}/{pool.token0.symbol}
+                      {pool.token1.token.symbol}/{pool.token0.token.symbol}
                     </Text>
                   </VStack>
                   <HStack spacing={2}>
@@ -842,16 +843,16 @@ function PoolDetailsPageContent() {
                     <VStack align="end" spacing={0}>
                       <HStack spacing={2}>
                         <FallbackImg
-                          src={pool.token0.logo ?? ""}
-                          alt={pool.token0.symbol}
+                          src={pool.token0.token.logo ?? ""}
+                          alt={pool.token0.token.symbol}
                           boxSize="20px"
                         />
                         <Text fontSize="sm">
-                          {pool.token0.symbol} ({pool.token0.name})
+                          {pool.token0.token.symbol} ({pool.token0.token.name})
                         </Text>
                       </HStack>
                       <Address
-                        address={pool.token0.address}
+                        address={pool.token0.token.address}
                         explorerBaseUrl={pool.chain.explorer + "/token/"}
                         fontSize="xs"
                       />
@@ -862,16 +863,16 @@ function PoolDetailsPageContent() {
                     <VStack align="end" spacing={0}>
                       <HStack spacing={2}>
                         <FallbackImg
-                          src={pool.token1.logo ?? ""}
-                          alt={pool.token1.symbol}
+                          src={pool.token1.token.logo ?? ""}
+                          alt={pool.token1.token.symbol}
                           boxSize="20px"
                         />
                         <Text fontSize="sm">
-                          {pool.token1.symbol} ({pool.token1.name})
+                          {pool.token1.token.symbol} ({pool.token1.token.name})
                         </Text>
                       </HStack>
                       <Address
-                        address={pool.token1.address}
+                        address={pool.token1.token.address}
                         explorerBaseUrl={pool.chain.explorer + "/token/"}
                         fontSize="xs"
                       />
