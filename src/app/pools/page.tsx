@@ -169,19 +169,19 @@ function PoolsPageContent() {
           <HStack>
             <Image
               boxSize={5}
-              src={pool.token0.logo}
-              alt={pool.token0.symbol}
+              src={pool.token0.token.logo}
+              alt={pool.token0.token.symbol}
               fallbackSrc="/images/token-fallback.png"
             />
-            <Text fontWeight="medium">{pool.token0.symbol}</Text>
+            <Text fontWeight="medium">{pool.token0.token.symbol}</Text>
             <Text>/</Text>
             <Image
               boxSize={5}
-              src={pool.token1.logo}
-              alt={pool.token1.symbol}
+              src={pool.token1.token.logo}
+              alt={pool.token1.token.symbol}
               fallbackSrc="/images/token-fallback.png"
             />
-            <Text fontWeight="medium">{pool.token1.symbol}</Text>
+            <Text fontWeight="medium">{pool.token1.token.symbol}</Text>
           </HStack>
         ),
       },
