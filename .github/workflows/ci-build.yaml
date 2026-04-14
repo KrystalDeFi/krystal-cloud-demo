@@ -23,7 +23,7 @@ jobs:
   build-and-push-js-app:
     name: Build the image and push to registry
     environment: dev
-    runs-on: ubuntu-latest
+    runs-on: [arc-kyrd-runner, size-m-amd64]
     env:
       SERVICE_NAME: krystal-cloud-demo
     steps:
@@ -53,7 +53,7 @@ jobs:
 
       - name: Configure docker
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
-        
+
       - name: Docker build and push
         uses: docker/build-push-action@v5
         with:
