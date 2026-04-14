@@ -23,13 +23,16 @@
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
     "@krystaldefi/zap": "^0.0.6",
-    "axios": "^1.10.0",
+    "axios": "^1.15.0",
     "firebase": "^12.0.0",
     "framer-motion": "^12.23.9",
     "next": "^15.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recharts": "^3.1.0"
+  },
+  "overrides": {
+    "axios": "^1.15.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
