@@ -6,8 +6,8 @@ on:
       - main
 
 env:
-  CI_REGISTRY: asia.gcr.io
-  CI_IMAGE_FOLDER: krystal-operation/krystal
+  CI_REGISTRY: us-central1-docker.pkg.dev
+  CI_IMAGE_FOLDER: krystal-operation/images-dev
 
 permissions:
   # Required: allow read access to the content for analysis.
