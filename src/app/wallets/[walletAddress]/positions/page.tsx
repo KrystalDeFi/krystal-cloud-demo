@@ -5,16 +5,11 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Box,
   Container,
-  Heading,
   Text,
   VStack,
   HStack,
   Card,
-  Badge,
   Spinner,
-  Alert,
-  AlertIcon,
-  useColorModeValue,
   Button,
   Input,
   InputGroup,
@@ -27,24 +22,13 @@ import {
   Th,
   Td,
   TableContainer,
-  IconButton,
-  Tooltip,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-  Flex,
-  Image,
-  Link,
-  SimpleGrid,
   Stat,
   StatLabel,
   StatNumber,
   StatHelpText,
 } from "@chakra-ui/react";
 import { SearchIcon, ChevronUpIcon, ChevronDownIcon } from "@chakra-ui/icons";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { KrystalApi, IPositionsParams } from "../../../../services/krystalApi";
 import { IAPosition } from "../../../../services/apiTypes";
 import { Formatter } from "../../../../common/formatter";
@@ -62,18 +46,6 @@ import { Footer } from "@/app/Footer";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { FallbackImg } from "@/components/FallbackImg";
 import { EmbedWrapper } from "@/components/EmbedWrapper";
-
-interface WalletStats {
-  totalValue: number;
-  totalPositions: number;
-  activePositions: number;
-  closedPositions: number;
-  totalFeesEarned: number;
-  pendingFees: number;
-  totalPnL: number;
-  activePnL: number;
-  averageApr: number;
-}
 
 // Virtualized table row component for better performance
 const VirtualizedTableRow = React.memo(
@@ -192,21 +164,16 @@ VirtualizedTableRow.displayName = "VirtualizedTableRow";
 function WalletPositionsPageContent() {
   const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const walletAddress = params.walletAddress as string;
 
-  const [positions, setPositions] = useState<IAPosition[]>([]);
   const [openPositions, setOpenPositions] = useState<IAPosition[]>([]);
   const [closedPositions, setClosedPositions] = useState<IAPosition[]>([]);
-  const [filteredPositions, setFilteredPositions] = useState<IAPosition[]>([]);
-  const [stats, setStats] = useState<WalletStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const { error, setError, handleApiError, clearError } = useApiError();
+  const { error, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedChain, setSelectedChain] = useState("all");
   const [selectedStatus, setSelectedStatus] = useState("OPEN");
-  const [newWalletAddress, setNewWalletAddress] = useState(walletAddress);
   const [sortField, setSortField] = useState("currentPositionValue");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
@@ -214,8 +181,6 @@ function WalletPositionsPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const isEmbedMode = searchParams.get("embed") === "1";
 
   // Memoized filtered positions
   const memoizedFilteredPositions = useMemo(() => {
@@ -345,7 +310,10 @@ function WalletPositionsPageContent() {
     const pendingFees = allPositions.reduce((sum, pos) => {
       return (
         sum +
-        pos.tradingFee.pending.reduce((feeSum, fee) => feeSum + (fee.value || 0), 0)
+        pos.tradingFee.pending.reduce(
+          (feeSum, fee) => feeSum + (fee.value || 0),
+          0
+        )
       );
     }, 0);
 
@@ -381,6 +349,7 @@ function WalletPositionsPageContent() {
 
   useEffect(() => {
     fetchAllPositions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress]);
 
   useEffect(() => {
@@ -417,7 +386,6 @@ function WalletPositionsPageContent() {
 
       setOpenPositions(openPositions);
       setClosedPositions(closedPositions);
-      setPositions([...openPositions, ...closedPositions]);
     } catch (err) {
       handleApiError(err);
     } finally {
@@ -435,21 +403,6 @@ function WalletPositionsPageContent() {
     [sortField, sortOrder]
   );
 
-  const handleWalletAddressChange = useCallback(() => {
-    if (newWalletAddress && newWalletAddress !== walletAddress) {
-      router.push(`/wallets/${newWalletAddress}/positions`);
-    }
-  }, [newWalletAddress, walletAddress, router]);
-
-  const handleWalletAddressKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "Enter") {
-        handleWalletAddressChange();
-      }
-    },
-    [handleWalletAddressChange]
-  );
-
   const handleRowClick = useCallback(
     (position: IAPosition) => {
       router.push(`/positions/${position.chain.id}/${position.id}`);
@@ -465,7 +418,6 @@ function WalletPositionsPageContent() {
     }, 100);
   }, []);
 
-  const totalPages = Math.ceil(memoizedFilteredPositions.length / pageSize);
   const hasMore = currentPage * pageSize < memoizedFilteredPositions.length;
 
   if (loading) {

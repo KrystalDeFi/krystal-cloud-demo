@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useCallback, useMemo } from "react";
 import { useCache } from "../hooks/useCache";
-import { CLOUD_API_KEY, IEmbedConfig } from "../common/config";
+import { CLOUD_API_KEY } from "../common/config";
 import { KrystalApi } from "../services/krystalApi";
 import { IAChain, IAProtocol } from "@/services/apiTypes";
 

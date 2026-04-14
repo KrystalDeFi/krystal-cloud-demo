@@ -10,7 +10,6 @@ import {
   Button,
   Alert,
   AlertIcon,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { ExternalLinkIcon, RepeatIcon } from "@chakra-ui/icons";
 

@@ -36,17 +36,6 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
       .padStart(2, "0")}`;
   };
 
-  // Create a darker version for light mode buttons
-  const darkenColor = (r: number, g: number, b: number, factor: number) => {
-    return `#${Math.round(r * (1 - factor))
-      .toString(16)
-      .padStart(2, "0")}${Math.round(g * (1 - factor))
-      .toString(16)
-      .padStart(2, "0")}${Math.round(b * (1 - factor))
-      .toString(16)
-      .padStart(2, "0")}`;
-  };
-
   const brandColors = {
     50: `${primaryColor}0a`, // 4% opacity
     100: `${primaryColor}1a`, // 10% opacity
@@ -60,9 +49,8 @@ const createTheme = (primaryColorHex: string = "#3b82f6") => {
     900: primaryColor, // Same as 500 for now
   };
 
-  // Create brighter and darker versions for different themes
+  // Create brighter version for different themes
   const brightPrimary = brightenColor(rgb.r, rgb.g, rgb.b, 0.3);
-  const darkPrimary = darkenColor(rgb.r, rgb.g, rgb.b, 0.2);
 
   return extendTheme({
     config: {

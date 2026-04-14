@@ -2,7 +2,6 @@ import {
   Box,
   Container,
   Text,
-  Flex,
   Image,
   Link,
   useColorModeValue,

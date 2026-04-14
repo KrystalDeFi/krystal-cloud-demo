@@ -17,16 +17,10 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  useColorModeValue,
   Image,
-  Grid,
-  GridItem,
-  IconButton,
-  Divider,
   Link,
 } from "@chakra-ui/react";
-import { ExternalLinkIcon, ArrowBackIcon, CopyIcon } from "@chakra-ui/icons";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   KrystalApi,
   IPositionDetailParams,
@@ -34,10 +28,7 @@ import {
 import { IAPositionDetails } from "../../../../services/apiTypes";
 import { Formatter } from "../../../../common/formatter";
 import { DotIndicator } from "../../../../components/DotIndicator";
-import { ChainDisplay } from "../../../../components/ChainDisplay";
 import { ProtocolDisplay } from "../../../../components/ProtocolDisplay";
-import { TokenPairDisplay } from "../../../../components/TokenPairDisplay";
-import { PriceRangeDisplay } from "../../../../components/PriceRangeDisplay";
 import {
   useApiError,
   useApiKeyValidation,
@@ -51,21 +42,13 @@ import PositionTransactions from "../../../../components/PositionTransactions";
 
 function PositionDetailsPageContent() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const chainId = params.chainId as string;
   const positionId = params.positionId as string;
 
   const [position, setPosition] = useState<IAPositionDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const { error, setError, handleApiError, clearError } = useApiError();
+  const { error, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const isEmbedMode = searchParams.get("embed") === "1";
 
   // Helper functions for calculations
   const getTotalPendingFees = useMemo(() => {
@@ -84,14 +67,9 @@ function PositionDetailsPageContent() {
     );
   }, [position]);
 
-  const getCurrentPrice = useMemo(() => {
-    if (!position || !position.currentAmounts[0] || !position.currentAmounts[1])
-      return undefined;
-    return position.currentAmounts[1].price / position.currentAmounts[0].price;
-  }, [position]);
-
   useEffect(() => {
     fetchPositionDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chainId, positionId]);
 
   const fetchPositionDetails = async () => {
@@ -113,11 +91,6 @@ function PositionDetailsPageContent() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    // You could add a toast notification here
   };
 
   if (loading) {

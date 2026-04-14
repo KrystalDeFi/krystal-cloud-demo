@@ -6,13 +6,11 @@ import {
   Flex,
   Box,
   Container,
-  Heading,
   Text,
   VStack,
   HStack,
   Card,
   Spinner,
-  useColorModeValue,
   Select,
   Table,
   Thead,
@@ -23,7 +21,7 @@ import {
   TableContainer,
   Image,
 } from "@chakra-ui/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { IPoolsParams, KrystalApi } from "../../services/krystalApi";
 import { SORT_OPTIONS } from "../../common/config";
 import { useChainsProtocols } from "../../contexts/ChainsProtocolsContext";
@@ -35,7 +33,7 @@ import { useApiError, useApiKeyValidation } from "../../hooks/useApiError";
 import { ErrorDisplay } from "../../components/ErrorDisplay";
 import ErrorBoundary from "../../components/ErrorBoundary";
 import Breadcrumbs from "@/components/Breadcrumbs";
-import { useCache, useFilterCache } from "../../hooks/useCache";
+import { useFilterCache } from "../../hooks/useCache";
 import { Footer } from "../Footer";
 import EmbedWrapper from "@/components/EmbedWrapper";
 
@@ -89,7 +87,9 @@ function PoolsPageContent() {
       // Filter out undefined values to avoid sending them to the API
       const apiParams: IPoolsParams = Object.fromEntries(
         Object.entries(filters || {}).filter(
-          ([_, value]) => value !== undefined && value !== null && value !== ""
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          ([_key, value]) =>
+            value !== undefined && value !== null && value !== ""
         )
       );
 
@@ -128,6 +128,7 @@ function PoolsPageContent() {
         fetchPools();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const handleFilterChange = (

@@ -38,7 +38,7 @@ export function EmbedWrapper({
       // For other components, use the general showInEmbed rule
       return showInEmbed;
     }
-  }, [isEmbedMode, type, showNavigation, showBreadcrumbs, showInEmbed]);
+  }, [type, showNavigation, showBreadcrumbs, showInEmbed]);
 
   // Only log in development mode to reduce console noise
   if (process.env.NODE_ENV === "development") {

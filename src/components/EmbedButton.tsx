@@ -9,7 +9,6 @@ import {
   FormControl,
   FormLabel,
   Input,
-  useColorModeValue,
   useDisclosure,
   Divider,
   useToast,
@@ -28,13 +27,7 @@ import { useEmbedConfig } from "../contexts/EmbedConfigContext";
 import { useFirebaseAnalytics } from "../hooks/useFirebaseAnalytics";
 
 export default function EmbedButton() {
-  const {
-    embedConfig,
-    setEmbedConfig,
-    updateEmbedConfig,
-    isEmbedMode: contextIsEmbedMode,
-    isConfigDisabled: contextIsConfigDisabled,
-  } = useEmbedConfig();
+  const { embedConfig, setEmbedConfig, updateEmbedConfig } = useEmbedConfig();
   const { trackButtonClick, trackEmbedInteraction } = useFirebaseAnalytics();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const searchParams = useSearchParams();
@@ -206,7 +199,7 @@ export default function EmbedButton() {
         copy_type: label.toLowerCase().replace(" ", "_"),
         page: pathname,
       });
-    } catch (err) {
+    } catch {
       toast({
         title: "Failed to copy",
         description: "Please copy manually",

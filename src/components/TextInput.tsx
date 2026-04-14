@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Input, InputProps, Box, Text, HStack } from "@chakra-ui/react";
+import { Input, InputProps, Box, Text } from "@chakra-ui/react";
 
 interface TextInputProps extends InputProps {
   onInputFinalized?: (value: string) => void;
