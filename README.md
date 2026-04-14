@@ -80,3 +80,4 @@ src/app/
 - Responsive design with mobile-first approach
 - Error handling and loading states included
 - API key management with localStorage persistence
+
