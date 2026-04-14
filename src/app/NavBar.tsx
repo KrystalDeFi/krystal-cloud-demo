@@ -26,7 +26,8 @@ export default function NavBar() {
     });
   };
 
-  const handleNavigationClick = (linkName: string, url: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleNavigationClick = (linkName: string, _url: string) => {
     trackNavigation("navbar", linkName, "click");
   };
 

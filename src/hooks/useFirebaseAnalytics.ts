@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/lib/firebase";
 

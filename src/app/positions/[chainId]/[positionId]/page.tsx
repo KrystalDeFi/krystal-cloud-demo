@@ -17,16 +17,10 @@ import {
   Stat,
   StatLabel,
   StatNumber,
-  useColorModeValue,
   Image,
-  Grid,
-  GridItem,
-  IconButton,
-  Divider,
   Link,
 } from "@chakra-ui/react";
-import { ExternalLinkIcon, ArrowBackIcon, CopyIcon } from "@chakra-ui/icons";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   KrystalApi,
   IPositionDetailParams,
@@ -34,10 +28,7 @@ import {
 import { IAPositionDetails } from "../../../../services/apiTypes";
 import { Formatter } from "../../../../common/formatter";
 import { DotIndicator } from "../../../../components/DotIndicator";
-import { ChainDisplay } from "../../../../components/ChainDisplay";
 import { ProtocolDisplay } from "../../../../components/ProtocolDisplay";
-import { TokenPairDisplay } from "../../../../components/TokenPairDisplay";
-import { PriceRangeDisplay } from "../../../../components/PriceRangeDisplay";
 import {
   useApiError,
   useApiKeyValidation,
@@ -51,41 +42,34 @@ import PositionTransactions from "../../../../components/PositionTransactions";
 
 function PositionDetailsPageContent() {
   const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const chainId = params.chainId as string;
   const positionId = params.positionId as string;
 
   const [position, setPosition] = useState<IAPositionDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const { error, setError, handleApiError, clearError } = useApiError();
+  const { error, handleApiError, clearError } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const isEmbedMode = searchParams.get("embed") === "1";
 
   // Helper functions for calculations
   const getTotalPendingFees = useMemo(() => {
     if (!position) return 0;
-    return position.tradingFee.pending.reduce((sum, fee) => sum + fee.value, 0);
+    return position.tradingFee.pending.reduce(
+      (sum, fee) => sum + (fee.value || 0),
+      0
+    );
   }, [position]);
 
   const getTotalClaimedFees = useMemo(() => {
     if (!position) return 0;
-    return position.tradingFee.claimed.reduce((sum, fee) => sum + fee.value, 0);
-  }, [position]);
-
-  const getCurrentPrice = useMemo(() => {
-    if (!position || !position.currentAmounts[0] || !position.currentAmounts[1])
-      return undefined;
-    return position.currentAmounts[1].price / position.currentAmounts[0].price;
+    return position.tradingFee.claimed.reduce(
+      (sum, fee) => sum + (fee.value || 0),
+      0
+    );
   }, [position]);
 
   useEffect(() => {
     fetchPositionDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chainId, positionId]);
 
   const fetchPositionDetails = async () => {
@@ -107,11 +91,6 @@ function PositionDetailsPageContent() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    // You could add a toast notification here
   };
 
   if (loading) {
@@ -442,7 +421,7 @@ function PositionDetailsPageContent() {
                             )}
                           </Text>
                           <Text fontSize="xs" color="text.muted">
-                            {Formatter.formatCurrency(fee.value)}
+                            {Formatter.formatCurrency(fee.value || 0)}
                           </Text>
                         </HStack>
                       </HStack>
@@ -482,7 +461,7 @@ function PositionDetailsPageContent() {
                             )}
                           </Text>
                           <Text fontSize="xs" color="text.muted">
-                            {Formatter.formatCurrency(fee.value)}
+                            {Formatter.formatCurrency(fee.value || 0)}
                           </Text>
                         </HStack>
                       </HStack>
@@ -552,7 +531,8 @@ function PositionDetailsPageContent() {
                     </Text>
                     {position.currentAmounts.map((amount, index) => {
                       const currentPercentage = (
-                        (amount.value / (position.currentPositionValue || 1)) *
+                        ((amount.value || 0) /
+                          (position.currentPositionValue || 1)) *
                         100
                       ).toFixed(0);
 
@@ -587,7 +567,7 @@ function PositionDetailsPageContent() {
                               )}
                             </Text>
                             <Text fontSize="xs" color="text.muted">
-                              {Formatter.formatCurrency(amount.value)}
+                              {Formatter.formatCurrency(amount.value || 0)}
                             </Text>
                           </HStack>
                         </HStack>
@@ -602,7 +582,7 @@ function PositionDetailsPageContent() {
                     </Text>
                     {position.providedAmounts.map((amount, index) => {
                       const hodlPercentage = (
-                        (amount.value /
+                        ((amount.value || 0) /
                           (position.performance.totalDepositValue || 1)) *
                         100
                       ).toFixed(0);
@@ -638,7 +618,7 @@ function PositionDetailsPageContent() {
                               )}
                             </Text>
                             <Text fontSize="xs" color="text.muted">
-                              {Formatter.formatCurrency(amount.value)}
+                              {Formatter.formatCurrency(amount.value || 0)}
                             </Text>
                           </HStack>
                         </HStack>

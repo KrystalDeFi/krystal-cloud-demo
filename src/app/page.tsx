@@ -14,7 +14,6 @@ import {
   CardHeader,
   SimpleGrid,
   Icon,
-  useColorModeValue,
   Link,
 } from "@chakra-ui/react";
 import { SearchIcon, ViewIcon, InfoIcon } from "@chakra-ui/icons";
@@ -62,10 +61,6 @@ export default function Home() {
   const router = useRouter();
 
   const isEmbedMode = searchParams.get("embed") === "1";
-
-  const handleCardClick = (path: string) => {
-    router.push(path);
-  };
 
   return (
     <ErrorBoundary>
@@ -115,7 +110,7 @@ export default function Home() {
           {/* Available Pages */}
           <Box mb={8}>
             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-              {pages.map((page, index) => (
+              {pages.map(page => (
                 <Card
                   key={page.title}
                   bg="bg.primary"

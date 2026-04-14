@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { IEmbedConfig } from "../common/config";
 
 const DEFAULT_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
@@ -149,9 +148,10 @@ export function useCache<T>(
       console.error("Error reading param data:", error);
       return null;
     }
-  }, [paramKey, searchParams, defaultValue]);
+  }, [paramKey, searchParams, defaultValue, cacheKey]);
 
   // Debounced URL update to prevent excessive router calls
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedSetParamData = useCallback(
     (() => {
       let timeoutId: NodeJS.Timeout;
@@ -520,6 +520,7 @@ export function useFilterCache<T extends Record<string, any>>(options: {
       setCachedFilters(newFilters);
       setHasLoadedFromUrl(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchParamsString,
     filters,

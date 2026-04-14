@@ -32,7 +32,6 @@ import {
   Image,
   useToast,
   useColorModeValue,
-  useColorMode,
 } from "@chakra-ui/react";
 import { useParams } from "next/navigation";
 import { KrystalApi } from "../../../../services/krystalApi";
@@ -61,7 +60,6 @@ import { CHAIN_CONFIGS } from "@/common/config";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { Footer } from "@/app/Footer";
 import EmbedWrapper from "@/components/EmbedWrapper";
-import { useChainsProtocols } from "@/contexts/ChainsProtocolsContext";
 
 // Chart data interface for processed historical data
 interface ChartDataPoint {
@@ -78,12 +76,11 @@ function PoolDetailsPageContent() {
   const params = useParams();
   const chainId = params.chainId as string;
   const poolId = params.poolId as string;
-  const { colorMode } = useColorMode();
 
   const [pool, setPool] = useState<IAPoolDetails | null>(null);
   const [historicalData, setHistoricalData] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [chartTimeRange, setChartTimeRange] = useState<"7D" | "30D" | "90D">(
     "30D"
   );
@@ -129,12 +126,14 @@ function PoolDetailsPageContent() {
 
   useEffect(() => {
     fetchPoolDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chainId, poolId]);
 
   useEffect(() => {
     if (pool) {
       fetchHistoricalData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pool, chartTimeRange]);
 
   const fetchHistoricalData = async () => {
@@ -206,7 +205,7 @@ function PoolDetailsPageContent() {
       (a, b) => a.timestamp - b.timestamp
     );
 
-    return sortedData.map((item, index) => {
+    return sortedData.map(item => {
       const date = new Date(item.timestamp * 1000);
 
       // Format date based on time range
@@ -275,22 +274,6 @@ function PoolDetailsPageContent() {
       selectedChart !== "volFee"
         ? data.filter(item => item[selectedChart] != 0)
         : data;
-
-    // Extract values for the selected chart type
-    const getValue = (item: ChartDataPoint) => {
-      switch (selectedChart) {
-        case "price":
-          return item.price;
-        case "apr":
-          return item.apr;
-        case "tvl":
-          return item.tvl;
-        case "volFee":
-          return item.volume; // For combined chart, we'll handle volume and fee separately
-        default:
-          return item.tvl;
-      }
-    };
 
     const formatYAxis = (value: number) => {
       if (selectedChart === "price") return value.toFixed(6);

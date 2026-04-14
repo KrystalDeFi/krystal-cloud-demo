@@ -15,7 +15,7 @@ interface BreadcrumbsProps {
   color?: string; // allow override, but default to brand.500
 }
 
-export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items, color }) => {
+export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ items }) => {
   return (
     <Breadcrumb
       spacing="2"

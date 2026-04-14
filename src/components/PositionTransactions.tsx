@@ -31,7 +31,7 @@ import {
 } from "../services/krystalApi";
 import { IAPositionTransaction, IATokenBalance } from "../services/apiTypes";
 import { Formatter } from "../common/formatter";
-import { useApiError, useApiKeyValidation } from "../hooks/useApiError";
+import { useApiKeyValidation } from "../hooks/useApiError";
 
 interface PositionTransactionsProps {
   chainId: string;
@@ -46,18 +46,11 @@ export default function PositionTransactions({
   wallet,
   tokenAddress,
   tokenId,
-  chainExplorer,
 }: PositionTransactionsProps) {
   const [transactions, setTransactions] = useState<IAPositionTransaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [limit, setLimit] = useState(50);
-  const {
-    error: apiError,
-    setError: setApiError,
-    handleApiError,
-    clearError,
-  } = useApiError();
   const { validateApiKey } = useApiKeyValidation();
 
   const bgColor = useColorModeValue("white", "gray.800");
@@ -129,6 +122,7 @@ export default function PositionTransactions({
     if (tokenAddress) {
       fetchTransactions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chainId, wallet, tokenAddress, tokenId, limit]);
 
   const transformTransactionData = (tx: IAPositionTransaction) => {
