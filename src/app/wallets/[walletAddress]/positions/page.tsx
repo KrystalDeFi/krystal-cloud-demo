@@ -97,7 +97,7 @@ const VirtualizedTableRow = React.memo(
 
     const getTotalPendingFees = useCallback((position: IAPosition) => {
       return position.tradingFee.pending.reduce(
-        (sum, fee) => sum + fee.value,
+        (sum, fee) => sum + (fee.value || 0),
         0
       );
     }, []);
@@ -275,11 +275,11 @@ function WalletPositionsPageContent() {
           break;
         case "fees":
           aValue = a.tradingFee.pending.reduce(
-            (sum, fee) => sum + fee.value,
+            (sum, fee) => sum + (fee.value || 0),
             0
           );
           bValue = b.tradingFee.pending.reduce(
-            (sum, fee) => sum + fee.value,
+            (sum, fee) => sum + (fee.value || 0),
             0
           );
           break;
@@ -332,11 +332,11 @@ function WalletPositionsPageContent() {
     // Calculate fees
     const totalFeesEarned = allPositions.reduce((sum, pos) => {
       const pendingFees = pos.tradingFee.pending.reduce(
-        (feeSum, fee) => feeSum + fee.value,
+        (feeSum, fee) => feeSum + (fee.value || 0),
         0
       );
       const claimedFees = pos.tradingFee.claimed.reduce(
-        (feeSum, fee) => feeSum + fee.value,
+        (feeSum, fee) => feeSum + (fee.value || 0),
         0
       );
       return sum + pendingFees + claimedFees;
@@ -345,7 +345,7 @@ function WalletPositionsPageContent() {
     const pendingFees = allPositions.reduce((sum, pos) => {
       return (
         sum +
-        pos.tradingFee.pending.reduce((feeSum, fee) => feeSum + fee.value, 0)
+        pos.tradingFee.pending.reduce((feeSum, fee) => feeSum + (fee.value || 0), 0)
       );
     }, 0);
 

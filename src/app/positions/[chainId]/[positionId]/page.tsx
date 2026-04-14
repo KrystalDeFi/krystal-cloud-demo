@@ -70,12 +70,18 @@ function PositionDetailsPageContent() {
   // Helper functions for calculations
   const getTotalPendingFees = useMemo(() => {
     if (!position) return 0;
-    return position.tradingFee.pending.reduce((sum, fee) => sum + fee.value, 0);
+    return position.tradingFee.pending.reduce(
+      (sum, fee) => sum + (fee.value || 0),
+      0
+    );
   }, [position]);
 
   const getTotalClaimedFees = useMemo(() => {
     if (!position) return 0;
-    return position.tradingFee.claimed.reduce((sum, fee) => sum + fee.value, 0);
+    return position.tradingFee.claimed.reduce(
+      (sum, fee) => sum + (fee.value || 0),
+      0
+    );
   }, [position]);
 
   const getCurrentPrice = useMemo(() => {
@@ -442,7 +448,7 @@ function PositionDetailsPageContent() {
                             )}
                           </Text>
                           <Text fontSize="xs" color="text.muted">
-                            {Formatter.formatCurrency(fee.value)}
+                            {Formatter.formatCurrency(fee.value || 0)}
                           </Text>
                         </HStack>
                       </HStack>
@@ -482,7 +488,7 @@ function PositionDetailsPageContent() {
                             )}
                           </Text>
                           <Text fontSize="xs" color="text.muted">
-                            {Formatter.formatCurrency(fee.value)}
+                            {Formatter.formatCurrency(fee.value || 0)}
                           </Text>
                         </HStack>
                       </HStack>
@@ -552,7 +558,8 @@ function PositionDetailsPageContent() {
                     </Text>
                     {position.currentAmounts.map((amount, index) => {
                       const currentPercentage = (
-                        (amount.value / (position.currentPositionValue || 1)) *
+                        ((amount.value || 0) /
+                          (position.currentPositionValue || 1)) *
                         100
                       ).toFixed(0);
 
@@ -587,7 +594,7 @@ function PositionDetailsPageContent() {
                               )}
                             </Text>
                             <Text fontSize="xs" color="text.muted">
-                              {Formatter.formatCurrency(amount.value)}
+                              {Formatter.formatCurrency(amount.value || 0)}
                             </Text>
                           </HStack>
                         </HStack>
@@ -602,7 +609,7 @@ function PositionDetailsPageContent() {
                     </Text>
                     {position.providedAmounts.map((amount, index) => {
                       const hodlPercentage = (
-                        (amount.value /
+                        ((amount.value || 0) /
                           (position.performance.totalDepositValue || 1)) *
                         100
                       ).toFixed(0);
@@ -638,7 +645,7 @@ function PositionDetailsPageContent() {
                               )}
                             </Text>
                             <Text fontSize="xs" color="text.muted">
-                              {Formatter.formatCurrency(amount.value)}
+                              {Formatter.formatCurrency(amount.value || 0)}
                             </Text>
                           </HStack>
                         </HStack>

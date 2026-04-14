@@ -107,7 +107,7 @@ export interface IATokenAmount {
   token: IAToken;
   balance: string;
   price: number;
-  value: number;
+  value?: number;
 }
 
 // Trading fee interface
